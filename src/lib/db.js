@@ -12,9 +12,9 @@
  */
 
 import {
-  collection, doc, getDoc, getDocs, addDoc, setDoc, updateDoc,
-  deleteDoc, query, where, orderBy, limit, onSnapshot,
-  serverTimestamp, increment, Timestamp,
+  collection, doc, getDoc, getDocs, addDoc, updateDoc,
+  query, where, orderBy, limit, onSnapshot,
+  serverTimestamp, increment,
 } from "firebase/firestore";
 import { db } from "./firebase";
 

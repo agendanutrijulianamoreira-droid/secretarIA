@@ -231,8 +231,10 @@ function Portal({client,onBack}){
   const [invoices,setInvoices]=useState([]);
   const [draft,setDraft]=useState("");
   const [editBriefing,setEditBriefing]=useState(false);
-  const pm=PLAN_META[client.plan]||PLAN_META.Starter;
-  const b=client.briefing||{};
+  const [localBriefing,setLocalBriefing]=useState(client.briefing||{});
+  const [localPlan,setLocalPlan]=useState(client.plan);
+  const pm=PLAN_META[localPlan]||PLAN_META.Starter;
+  const b=localBriefing;
   const pct=[b.description,b.ai_name,b.ai_tone,b.ai_goal,b.business_hours].filter(Boolean).length*20;
 
   useEffect(()=>{
@@ -381,7 +383,7 @@ function Portal({client,onBack}){
         <BriefingWizard
           initial={client.briefing||{}}
           planInit={client.plan}
-          onSave={async(b,p)=>{await Clientes.updateBriefing(client.id,b,p);client.briefing=b;client.plan=p;setEditBriefing(false);}}
+          onSave={async(nb,np)=>{await Clientes.updateBriefing(client.id,nb,np);setLocalBriefing(nb);setLocalPlan(np);setEditBriefing(false);}}
           onCancel={()=>setEditBriefing(false)}
         />
       )}
