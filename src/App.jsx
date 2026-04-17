@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Clientes, Invoices, PortalMessages } from "./lib/db";
+import { Clientes, Invoices, PortalMessages, Contatos } from "./lib/db";
 
 // ── Tokens ──────────────────────────────────────────────────────────────────
 const T = {
@@ -11,6 +11,13 @@ const T = {
 };
 
 const CAP_META={text:{label:"Texto",icon:"✍️"},audio:{label:"Áudio",icon:"🎙️"},image:{label:"Imagem",icon:"🖼️"},file:{label:"Arquivo",icon:"📎"}};
+const CRM_STATUSES = {
+  novo: { label: "Novo", color: T.blue, bg: T.blueDim, icon: "✨" },
+  contatado: { label: "Em Contato", color: T.amber, bg: T.amberDim, icon: "💬" },
+  qualificado: { label: "Qualificado", color: "#8B5CF6", bg: "rgba(139,92,246,0.12)", icon: "🔥" },
+  convertido: { label: "Convertido", color: T.green, bg: T.greenDim, icon: "✅" },
+  perdido: { label: "Perdido", color: T.red, bg: T.redDim, icon: "✖️" },
+};
 const PLAN_META={Starter:{color:T.inkSec,bg:"rgba(156,163,176,0.1)"},Pro:{color:T.green,bg:T.greenDim},Enterprise:{color:T.amber,bg:T.amberDim}};
 const SEGMENTS=["Saúde / Clínica","Saúde / Odontologia","Beleza / Salão","Educação","Imobiliária","Jurídico","Alimentação","Varejo","Serviços Gerais","Outro"];
 const TONES=["Acolhedora e profissional","Formal e sério","Descontraído e amigável","Jovial e animado","Técnico e objetivo"];
@@ -229,8 +236,10 @@ function Portal({client,onBack}){
   const [tab,setTab]=useState("briefing");
   const [msgs,setMsgs]=useState([]);
   const [invoices,setInvoices]=useState([]);
+  const [leads,setLeads]=useState([]);
   const [draft,setDraft]=useState("");
   const [editBriefing,setEditBriefing]=useState(false);
+  const [editingLead,setEditingLead]=useState(null);
   const [localBriefing,setLocalBriefing]=useState(client.briefing||{});
   const [localPlan,setLocalPlan]=useState(client.plan);
   const pm=PLAN_META[localPlan]||PLAN_META.Starter;
@@ -246,13 +255,23 @@ function Portal({client,onBack}){
     Invoices.list(client.id).then(setInvoices);
   },[client.id]);
 
+  useEffect(()=>{
+    const unsub = Contatos.onList(client.id, setLeads);
+    return unsub;
+  },[client.id]);
+
   const send = async () => {
     if(!draft.trim()) return;
     await PortalMessages.send(client.id, draft, "client");
     setDraft("");
   };
 
-  const TABS=[{id:"briefing",icon:"📋",label:"Meu Briefing"},{id:"mensagens",icon:"💬",label:"Mensagens"},{id:"pagamentos",icon:"💳",label:"Pagamentos"}];
+  const TABS=[
+    {id:"briefing",icon:"📋",label:"Meu Briefing"},
+    {id:"crm",icon:"🎯",label:"CRM / Leads"},
+    {id:"mensagens",icon:"💬",label:"Mensagens"},
+    {id:"pagamentos",icon:"💳",label:"Pagamentos"}
+  ];
 
   return(
     <div style={{background:T.bg,minHeight:"100vh",fontFamily:"-apple-system,BlinkMacSystemFont,'Inter',sans-serif",color:T.ink}}>
@@ -374,6 +393,78 @@ function Portal({client,onBack}){
                   {inv.status!=="pago"&&<button style={{padding:"7px 14px",borderRadius:8,background:"rgba(0,180,216,0.12)",border:"1px solid rgba(0,180,216,0.3)",color:"#00B4D8",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}} onClick={()=>inv.payment_link&&window.open(inv.payment_link,"_blank")}>Pagar</button>}
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {tab==="crm" && (
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>
+            <div style={{background:"linear-gradient(135deg, #1A1D26 0%, #13161D 100%)",borderRadius:16,padding:20,border:`1px solid ${T.borderSt}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div>
+                <div style={{fontSize:16,fontWeight:700,color:T.ink}}>Pipeline de Leads</div>
+                <div style={{fontSize:12,color:T.inkTert,marginTop:4}}>Gerencie os contatos vindos do WhatsApp</div>
+              </div>
+              <div style={{display:"flex",gap:12}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:700,color:T.ink}}>{leads.length}</div><div style={{fontSize:10,color:T.inkTert,textTransform:"uppercase"}}>Total</div></div>
+                <div style={{width:1,height:24,background:T.border}}/>
+                <div style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:700,color:T.green}}>{leads.filter(l=>l.crm_status==="convertido").length}</div><div style={{fontSize:10,color:T.inkTert,textTransform:"uppercase"}}>Vendas</div></div>
+              </div>
+            </div>
+
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {leads.length === 0 && <div style={{padding:40,textAlign:"center",color:T.inkTert,fontSize:13,background:T.surface,borderRadius:16,border:`1px dashed ${T.border}`}}>Nenhum lead capturado ainda.</div>}
+              {leads.map(lead => {
+                const s = CRM_STATUSES[lead.crm_status || "novo"] || CRM_STATUSES.novo;
+                const isEd = editingLead?.id === lead.id;
+                return (
+                  <div key={lead.id} style={{background:T.surface,borderRadius:16,border:`1px solid ${isEd?T.green+"33":T.border}`,overflow:"hidden",transition:"all 200ms"}}>
+                    <div style={{padding:"14px 20px",display:"flex",alignItems:"center",gap:14}}>
+                      <Av initials={lead.nome?.split(" ").map(w=>w[0]).join("").toUpperCase() || "?"} color={COLORS[lead.telefone?.length % COLORS.length]} size={36}/>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:14,fontWeight:600,color:T.ink}}>{lead.nome || "Lead S/ Nome"}</div>
+                        <div style={{fontSize:11,color:T.inkTert}}>{lead.telefone}</div>
+                      </div>
+                      <div style={{display:"flex",alignItems:"center",gap:12}}>
+                        <Tag color={s.color} bg={s.bg}>{s.icon} {s.label}</Tag>
+                        <Btn variant="ghost" onClick={() => setEditingLead(isEd ? null : lead)} style={{padding:"6px 12px",fontSize:11}}>
+                          {isEd ? "Fechar" : "Gerenciar"}
+                        </Btn>
+                      </div>
+                    </div>
+                    
+                    {isEd && (
+                      <div style={{padding:"0 20px 20px",borderTop:`1px solid ${T.border}`,background:"rgba(255,255,255,0.01)",animation:"fadeIn 150ms ease"}}>
+                        <div style={{paddingTop:16,display:"flex",flexDirection:"column",gap:14}}>
+                          <div>
+                            <label style={{fontSize:11,color:T.inkTert,display:"block",marginBottom:8}}>Mudar Status</label>
+                            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                              {Object.entries(CRM_STATUSES).map(([id, meta]) => (
+                                <Chip key={id} active={lead.crm_status === id} onClick={() => Contatos.updateCRM(client.id, lead.id, { crm_status: id })}>
+                                  {meta.icon} {meta.label}
+                                </Chip>
+                              ))}
+                            </div>
+                          </div>
+                          <Inp 
+                            label="Notas sobre o atendimento" 
+                            value={lead.crm_notes || ""} 
+                            onChange={(v) => Contatos.updateCRM(client.id, lead.id, { crm_notes: v })} 
+                            placeholder="Ex: Interessado no plano Pro, aguardando retorno..." 
+                            rows={3}
+                          />
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:4}}>
+                            <div style={{fontSize:10,color:T.inkTert}}>Última interação: {lead.ultima_interacao?.toDate?.()?.toLocaleString("pt-BR") || "—"}</div>
+                            <div style={{display:"flex",alignItems:"center",gap:6}}>
+                               <Pulse status={lead.atendimento_ia === "ativo" ? "online" : "offline"} />
+                               <span style={{fontSize:11,color:T.inkSec}}>IA {lead.atendimento_ia === "ativo" ? "Ativa" : "Pausada"}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

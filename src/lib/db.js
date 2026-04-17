@@ -77,6 +77,8 @@ export const Contatos = {
     const docRef = await addDoc(this._col(clienteId), {
       telefone, nome,
       atendimento_ia:    "ativo",
+      crm_status:        "novo",
+      crm_notes:         "",
       ultima_interacao:  now(),
       total_mensagens:   0,
       created_at:        now(),
@@ -93,9 +95,22 @@ export const Contatos = {
     }
   },
 
+  async updateCRM(clienteId, contatoId, data) {
+    await updateDoc(ref("clientes", clienteId, "contatos", contatoId), {
+      ...data,
+      updated_at: now(),
+    });
+  },
+
   async list(clienteId) {
-    const snap = await getDocs(this._col(clienteId));
+    const q = query(this._col(clienteId), orderBy("ultima_interacao", "desc"));
+    const snap = await getDocs(q);
     return listToJS(snap);
+  },
+
+  onList(clienteId, callback) {
+    const q = query(this._col(clienteId), orderBy("ultima_interacao", "desc"));
+    return onSnapshot(q, snap => callback(listToJS(snap)));
   },
 };
 
