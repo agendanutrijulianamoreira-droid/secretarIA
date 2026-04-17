@@ -1,0 +1,1764 @@
+{
+  "name": "SecretarIA — WhatsApp Cloud API (Multi-Tenant)",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "whatsapp",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "wbhk-0001",
+      "name": "Webhook Meta",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [80, 300],
+      "webhookId": "secretaria-whatsapp-meta"
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
+                "conditions": [
+                  {
+                    "id": "cond-get",
+                    "leftValue": "={{ $json.method }}",
+                    "rightValue": "GET",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "output": 0,
+              "renameOutput": true,
+              "outputKey": "GET"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "loose" },
+                "conditions": [
+                  {
+                    "id": "cond-post",
+                    "leftValue": "={{ $json.method }}",
+                    "rightValue": "POST",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "output": 1,
+              "renameOutput": true,
+              "outputKey": "POST"
+            }
+          ]
+        },
+        "fallbackOutput": "extra"
+      },
+      "id": "sw-0001",
+      "name": "Switch Método HTTP",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [280, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              { "name": "Content-Type", "value": "text/plain" }
+            ]
+          }
+        }
+      },
+      "id": "resp-0001",
+      "name": "Responder Verificação GET",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [480, 160]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Extrai dados do webhook POST do WhatsApp Cloud API\nconst body = $input.first().json.body;\n\nif (!body || !body.entry || !body.entry[0]) {\n  return [{ json: { valid: false, reason: 'no_entry' } }];\n}\n\nconst change = body.entry[0]?.changes?.[0];\n\n// Só processar campo \"messages\"\nif (!change || change.field !== 'messages') {\n  return [{ json: { valid: false, reason: 'not_messages_field' } }];\n}\n\nconst value = change.value;\nconst metadata = value?.metadata;\n\nif (!metadata) {\n  return [{ json: { valid: false, reason: 'no_metadata' } }];\n}\n\nconst phone_number_id = metadata.phone_number_id;\nconst display_phone = metadata.display_phone_number;\n\n// Status updates (entrega/leitura) — não são mensagens\nif (value.statuses && value.statuses.length > 0 && (!value.messages || value.messages.length === 0)) {\n  return [{ json: { valid: false, reason: 'status_update' } }];\n}\n\nconst messages = value.messages;\nif (!messages || messages.length === 0) {\n  return [{ json: { valid: false, reason: 'no_messages' } }];\n}\n\nconst message = messages[0];\nconst contact = value.contacts?.[0];\nconst sender_phone = message.from;\nconst sender_name = contact?.profile?.name || sender_phone;\nconst message_id = message.id;\nconst timestamp = message.timestamp;\nconst message_type = message.type;\n\nlet message_body = '';\nlet media_id = '';\n\nif (message_type === 'text') {\n  message_body = message.text?.body || '';\n} else if (message_type === 'audio') {\n  media_id = message.audio?.id || '';\n  message_body = '[ÁUDIO]';\n} else if (message_type === 'image') {\n  media_id = message.image?.id || '';\n  message_body = message.image?.caption || '[IMAGEM]';\n} else if (message_type === 'document') {\n  media_id = message.document?.id || '';\n  message_body = message.document?.caption || '[DOCUMENTO]';\n} else if (message_type === 'sticker') {\n  message_body = '[FIGURINHA]';\n} else if (message_type === 'location') {\n  const loc = message.location;\n  message_body = `[LOCALIZAÇÃO: lat=${loc?.latitude}, lon=${loc?.longitude}]`;\n} else if (message_type === 'button') {\n  message_body = message.button?.text || '[BOTÃO]';\n} else if (message_type === 'interactive') {\n  const interactive = message.interactive;\n  if (interactive?.type === 'button_reply') {\n    message_body = interactive.button_reply?.title || '[RESPOSTA BOTÃO]';\n  } else if (interactive?.type === 'list_reply') {\n    message_body = interactive.list_reply?.title || '[RESPOSTA LISTA]';\n  } else {\n    message_body = '[INTERATIVO]';\n  }\n} else {\n  message_body = `[${message_type.toUpperCase()}]`;\n}\n\nreturn [{\n  json: {\n    valid: true,\n    phone_number_id,\n    display_phone,\n    sender_phone,\n    sender_name,\n    message_id,\n    timestamp,\n    message_type,\n    message_body,\n    media_id,\n    redis_key: `secretaria:msg:${phone_number_id}:${sender_phone}`\n  }\n}];"
+      },
+      "id": "code-0001",
+      "name": "Extrair Dados POST",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "cond-valid",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-0001",
+      "name": "É Mensagem Válida?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "OK",
+        "options": { "responseCode": 200 }
+      },
+      "id": "resp-0002",
+      "name": "Responder 200 (ignorar)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 460]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/get_tenant_by_phone_number_id",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ p_phone_number_id: $json.phone_number_id }) }}",
+        "options": {}
+      },
+      "id": "http-0001",
+      "name": "Buscar Tenant",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "cond-tenant",
+              "leftValue": "={{ $json[0]?.user_id }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-0002",
+      "name": "Tenant Ativo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1080, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/get_tenant_config",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ p_user_id: $('Buscar Tenant').first().json[0].user_id }) }}",
+        "options": {}
+      },
+      "id": "http-0002",
+      "name": "Buscar Config Tenant",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1280, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "a1", "name": "user_id", "value": "={{ $('Buscar Tenant').first().json[0].user_id }}", "type": "string" },
+            { "id": "a2", "name": "nome_assistente", "value": "={{ $('Buscar Tenant').first().json[0].nome_assistente || 'Lívia' }}", "type": "string" },
+            { "id": "a3", "name": "wa_access_token", "value": "={{ $('Buscar Tenant').first().json[0].wa_access_token }}", "type": "string" },
+            { "id": "a4", "name": "wa_phone_number_id", "value": "={{ $('Buscar Tenant').first().json[0].wa_phone_number_id }}", "type": "string" },
+            { "id": "a5", "name": "tenant_config", "value": "={{ $json }}", "type": "object" },
+            { "id": "a6", "name": "sender_phone", "value": "={{ $('Extrair Dados POST').first().json.sender_phone }}", "type": "string" },
+            { "id": "a7", "name": "sender_name", "value": "={{ $('Extrair Dados POST').first().json.sender_name }}", "type": "string" },
+            { "id": "a8", "name": "message_body", "value": "={{ $('Extrair Dados POST').first().json.message_body }}", "type": "string" },
+            { "id": "a9", "name": "message_type", "value": "={{ $('Extrair Dados POST').first().json.message_type }}", "type": "string" },
+            { "id": "a10", "name": "media_id", "value": "={{ $('Extrair Dados POST').first().json.media_id }}", "type": "string" },
+            { "id": "a11", "name": "redis_key", "value": "={{ $('Extrair Dados POST').first().json.redis_key }}", "type": "string" },
+            { "id": "a12", "name": "nome_profissional", "value": "={{ $json.nome_profissional || '' }}", "type": "string" },
+            { "id": "a13", "name": "nome_consultorio", "value": "={{ $json.nome_consultorio || '' }}", "type": "string" },
+            { "id": "a14", "name": "metodo_marca", "value": "={{ $json.metodo_marca || '' }}", "type": "string" },
+            { "id": "a15", "name": "foco_atendimento", "value": "={{ $json.foco_atendimento || '' }}", "type": "string" },
+            { "id": "a16", "name": "publico_alvo", "value": "={{ $json.publico_alvo || '' }}", "type": "string" },
+            { "id": "a17", "name": "modalidade", "value": "={{ $json.modalidade || 'online' }}", "type": "string" },
+            { "id": "a18", "name": "horario_atendimento", "value": "={{ $json.horario_atendimento || 'Segunda a sexta, 8h às 18h' }}", "type": "string" },
+            { "id": "a19", "name": "tom_voz", "value": "={{ $json.tom_voz || 'acolhedor' }}", "type": "string" },
+            { "id": "a20", "name": "palavras_escalar", "value": "={{ $json.palavras_escalar_humano || 'urgente,emergência,dor forte,internação,desmaio' }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-0001",
+      "name": "Montar Contexto Tenant",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1480, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/contatos",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "resolution=merge-duplicates,return=representation" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ user_id: $json.user_id, phone: $json.sender_phone, nome: $json.sender_name, primeiro_contato: new Date().toISOString(), ultima_mensagem: new Date().toISOString(), status: 'LEAD', etiqueta: 'NOVO_LEAD' }) }}",
+        "options": {}
+      },
+      "id": "http-0003",
+      "name": "Upsert Contato",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1680, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/contatos",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "user_id", "value": "=eq.{{ $('Montar Contexto Tenant').first().json.user_id }}" },
+            { "name": "phone", "value": "=eq.{{ $('Montar Contexto Tenant').first().json.sender_phone }}" },
+            { "name": "select", "value": "*" },
+            { "name": "limit", "value": "1" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-0004",
+      "name": "Buscar Contato",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1880, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "cond-pausada",
+              "leftValue": "={{ $json[0]?.ia_pausada }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-0003",
+      "name": "IA Pausada?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2080, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Verifica se a mensagem é para retomar a IA\nconst contato = $('Buscar Contato').first().json[0];\nconst msg = $('Montar Contexto Tenant').first().json.message_body.toLowerCase().trim();\n\nconst frases_retomar = [\n  'atendimento finalizado',\n  'finalizar atendimento',\n  'retomar ia',\n  'ativar ia',\n  'ligar ia'\n];\n\nconst retomar = frases_retomar.some(f => msg.includes(f));\n\nreturn [{\n  json: {\n    retomar,\n    phone: contato.phone,\n    user_id: $('Montar Contexto Tenant').first().json.user_id,\n    ...($('Montar Contexto Tenant').first().json)\n  }\n}];"
+      },
+      "id": "code-0002",
+      "name": "Mensagem Retomar IA?",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2280, 160]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "cond-retomar",
+              "leftValue": "={{ $json.retomar }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-0004",
+      "name": "Retomar IA?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2480, 160]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/retomar_ia",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ p_phone: $json.phone }) }}",
+        "options": {}
+      },
+      "id": "http-0005",
+      "name": "Retomar IA (RPC)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2680, 80]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "id": "lgpd-null",
+                    "leftValue": "={{ $('Buscar Contato').first().json[0]?.lgpd_consent }}",
+                    "rightValue": "",
+                    "operator": { "type": "string", "operation": "isEmpty" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "output": 0,
+              "renameOutput": true,
+              "outputKey": "Novo"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "id": "lgpd-aguardando",
+                    "leftValue": "={{ $('Buscar Contato').first().json[0]?.status }}",
+                    "rightValue": "AGUARDANDO_LGPD",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "output": 1,
+              "renameOutput": true,
+              "outputKey": "Aguardando"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "id": "lgpd-false",
+                    "leftValue": "={{ $('Buscar Contato').first().json[0]?.lgpd_consent }}",
+                    "rightValue": false,
+                    "operator": { "type": "boolean", "operation": "false" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "output": 2,
+              "renameOutput": true,
+              "outputKey": "Recusado"
+            }
+          ]
+        },
+        "fallbackOutput": "extra"
+      },
+      "id": "sw-0002",
+      "name": "Switch LGPD",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [2280, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v18.0/{{ $('Montar Contexto Tenant').first().json.wa_phone_number_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $('Montar Contexto Tenant').first().json.wa_access_token }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: $('Montar Contexto Tenant').first().json.sender_phone, type: 'text', text: { preview_url: false, body: $('Buscar Config Tenant').first().json.lgpd_mensagem || 'Antes de continuarmos, preciso te informar que registramos as informações compartilhadas para te atender melhor. Seus dados são tratados com sigilo. Você concorda? (responda Sim ou Não)' } }) }}",
+        "options": {}
+      },
+      "id": "http-0006",
+      "name": "Enviar Mensagem LGPD",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2480, 420]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/contatos",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "user_id", "value": "=eq.{{ $('Montar Contexto Tenant').first().json.user_id }}" },
+            { "name": "phone", "value": "=eq.{{ $('Montar Contexto Tenant').first().json.sender_phone }}" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ status: 'AGUARDANDO_LGPD' }) }}",
+        "options": {}
+      },
+      "id": "http-0007",
+      "name": "Salvar LGPD Pendente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2680, 420]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Analisa resposta do LGPD\nconst msg = $('Montar Contexto Tenant').first().json.message_body.toLowerCase().trim();\n\nconst aceite = ['sim', 's', 'aceito', 'aceitar', 'concordo', 'ok', 'claro', 'pode', 'tudo bem', 'yes', '1'];\nconst recusa = ['não', 'nao', 'n', 'recuso', 'recusar', 'não concordo', 'no', '2'];\n\nconst respondeu_sim = aceite.some(p => msg === p || msg.startsWith(p + ' '));\nconst respondeu_nao = recusa.some(p => msg === p || msg.startsWith(p + ' '));\n\nreturn [{ json: { respondeu_sim, respondeu_nao, msg_original: msg } }];"
+      },
+      "id": "code-0003",
+      "name": "Analisar Resposta LGPD",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2480, 560]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/registrar_lgpd",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ p_phone: $('Montar Contexto Tenant').first().json.sender_phone, p_consent: true }) }}",
+        "options": {}
+      },
+      "id": "http-0008",
+      "name": "Salvar LGPD Aceito",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2680, 520]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/registrar_lgpd",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ p_phone: $('Montar Contexto Tenant').first().json.sender_phone, p_consent: false }) }}",
+        "options": {}
+      },
+      "id": "http-0009",
+      "name": "Salvar LGPD Recusado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2680, 640]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v18.0/{{ $('Montar Contexto Tenant').first().json.wa_phone_number_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $('Montar Contexto Tenant').first().json.wa_access_token }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: $('Montar Contexto Tenant').first().json.sender_phone, type: 'text', text: { preview_url: false, body: 'Entendido. Seus dados não serão armazenados. Se mudar de ideia, pode nos chamar novamente. Até mais! 🙏' } }) }}",
+        "options": {}
+      },
+      "id": "http-0010",
+      "name": "Enviar Despedida LGPD",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2880, 640]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "id": "tipo-audio",
+                    "leftValue": "={{ $('Montar Contexto Tenant').first().json.message_type }}",
+                    "rightValue": "audio",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "output": 0,
+              "renameOutput": true,
+              "outputKey": "Áudio"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "id": "tipo-image",
+                    "leftValue": "={{ $('Montar Contexto Tenant').first().json.message_type }}",
+                    "rightValue": "image",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "output": 1,
+              "renameOutput": true,
+              "outputKey": "Imagem"
+            }
+          ]
+        },
+        "fallbackOutput": "extra"
+      },
+      "id": "sw-0003",
+      "name": "Switch Tipo Mídia",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [2480, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/v18.0/{{ $('Montar Contexto Tenant').first().json.media_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $('Montar Contexto Tenant').first().json.wa_access_token }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-0011",
+      "name": "Buscar URL Mídia",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2680, 180]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $('Montar Contexto Tenant').first().json.wa_access_token }}" }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "http-0012",
+      "name": "Download Mídia",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2880, 180]
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "binaryPropertyName": "data",
+        "options": {
+          "language": "pt",
+          "responseFormat": "text"
+        }
+      },
+      "id": "http-0013",
+      "name": "Transcrever Áudio (Whisper)",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.5,
+      "position": [3080, 140],
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "txt-1",
+              "name": "mensagem_processada",
+              "value": "=[ÁUDIO TRANSCRITO]: {{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "set-0002",
+      "name": "Montar Texto Áudio",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [3280, 140]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "txt-img",
+              "name": "mensagem_processada",
+              "value": "=[IMAGEM RECEBIDA] {{ $('Montar Contexto Tenant').first().json.message_body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "set-0003",
+      "name": "Montar Nota Imagem",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [3080, 280]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "txt-dir",
+              "name": "mensagem_processada",
+              "value": "={{ $('Montar Contexto Tenant').first().json.message_body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "set-0004",
+      "name": "Montar Texto Direto",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [2680, 300]
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $json.redis_key || $('Montar Contexto Tenant').first().json.redis_key }}",
+        "value": "={{ $json.mensagem_processada }}",
+        "keyType": "automatic",
+        "expire": true,
+        "ttl": 60
+      },
+      "id": "redis-0001",
+      "name": "Redis SET Mensagem",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [3480, 300],
+      "credentials": {
+        "redis": {
+          "id": "REDIS_CREDENTIAL_ID",
+          "name": "Redis"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{ $('Montar Contexto Tenant').first().json.redis_key }}"
+      },
+      "id": "redis-0002",
+      "name": "Redis GET Memória 1",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [3480, 440],
+      "credentials": {
+        "redis": {
+          "id": "REDIS_CREDENTIAL_ID",
+          "name": "Redis"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "seconds"
+      },
+      "id": "wait-0001",
+      "name": "Espera 1 Segundo",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [3680, 440]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{ $('Montar Contexto Tenant').first().json.redis_key }}"
+      },
+      "id": "redis-0003",
+      "name": "Redis GET Memória 2",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [3880, 440],
+      "credentials": {
+        "redis": {
+          "id": "REDIS_CREDENTIAL_ID",
+          "name": "Redis"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Verifica se mensagem está completa (sem novas mensagens no último 1s)\nconst mem1 = $('Redis GET Memória 1').first().json.value || '';\nconst mem2 = $('Redis GET Memória 2').first().json.value || '';\nconst ctx = $('Montar Contexto Tenant').first().json;\n\n// Se mem1 == mem2, nenhuma mensagem nova chegou durante o wait → processar\n// Se diferente, uma nova mensagem chegou → skip (ela será processada)\nconst is_complete = mem1 === mem2;\nconst mensagem_final = mem2 || ctx.message_body;\n\nreturn [{\n  json: {\n    is_complete,\n    mensagem_final,\n    ...ctx\n  }\n}];"
+      },
+      "id": "code-0004",
+      "name": "Verificar Buffer Completo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [4080, 440]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "cond-complete",
+              "leftValue": "={{ $json.is_complete }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-0005",
+      "name": "Mensagem Completa?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [4280, 440]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "OK",
+        "options": { "responseCode": 200 }
+      },
+      "id": "resp-0003",
+      "name": "Responder 200 (aguardando)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [4480, 560]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/contatos",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "user_id", "value": "=eq.{{ $json.user_id }}" },
+            { "name": "phone", "value": "=eq.{{ $json.sender_phone }}" },
+            { "name": "select", "value": "*" },
+            { "name": "limit", "value": "1" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-0014",
+      "name": "Buscar Contato Atualizado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [4480, 440]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Monta o prompt do Gerente de Setores\nconst ctx = $('Verificar Buffer Completo').first().json;\nconst contato = $('Buscar Contato Atualizado').first().json[0] || {};\n\nconst prompt_gerente = `Você é o gerente de atendimento de um consultório de nutrição.\nClassifique esta mensagem em um dos setores abaixo.\n\n=== CONTATO ===\nNome: ${contato.nome || 'Desconhecido'}\nStatus: ${contato.status || 'LEAD'}\nEtiqueta atual: ${contato.etiqueta || 'NOVO_LEAD'}\nHistórico resumido: ${contato.resumo_historico || 'Primeiro contato'}\n\n=== MENSAGEM ===\n${ctx.mensagem_final}\n\n=== SETORES DISPONÍVEIS ===\n- RECEPCAO: Novos leads, dúvidas gerais, agendamentos, apresentação do consultório\n- ACOMPANHAMENTO: Pacientes ativos com dúvidas sobre plano alimentar, retorno, evolução\n- PRECO: Perguntas sobre valores, planos, investimentos (NUNCA revelar preços, escaldar p/ PRECO)\n- HUMANO: Situações urgentes, emergências, reclamações, pedidos explícitos de falar com humano\n- EXAME: Envio ou dúvidas sobre exames de sangue, laudos médicos, resultados\n- FOLLOWUP: Mensagens de follow-up de leads que não agendaram\n\n=== REGRA IMPORTANTE ===\nPaciente ATIVO perguntando sobre upgrade/outros planos → HUMANO (não PRECO)\nMensagens com: ${ctx.palavras_escalar || 'urgente,emergência,dor forte'} → HUMANO\n\nResponda APENAS com JSON válido: {\"setor\": \"NOME_SETOR\", \"motivo\": \"breve justificativa\"}`;\n\nreturn [{\n  json: {\n    prompt_gerente,\n    contato,\n    ...ctx\n  }\n}];"
+      },
+      "id": "code-0005",
+      "name": "Montar Prompt Gerente",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [4680, 440]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.OPENAI_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ model: 'gpt-4.1-mini', messages: [{ role: 'user', content: $json.prompt_gerente }], temperature: 0, max_tokens: 200, response_format: { type: 'json_object' } }) }}",
+        "options": {}
+      },
+      "id": "http-0015",
+      "name": "Gerente Setor (LLM)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [4880, 440]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Parseia resposta do gerente e prepara dados para roteamento\nlet resposta_raw = $json.choices[0].message.content;\nlet routing;\ntry {\n  routing = JSON.parse(resposta_raw);\n} catch(e) {\n  routing = { setor: 'RECEPCAO', motivo: 'fallback' };\n}\n\nconst ctx = $('Verificar Buffer Completo').first().json;\nconst contato = $('Buscar Contato Atualizado').first().json[0] || {};\n\n// Mapeia etiqueta pelo setor\nconst etiqueta_map = {\n  RECEPCAO: 'EM_ATENDIMENTO_IA',\n  ACOMPANHAMENTO: 'EM_ATENDIMENTO_IA',\n  PRECO: 'AGUARDANDO_PRECO',\n  HUMANO: 'AGUARDANDO_HUMANO',\n  EXAME: 'EM_ATENDIMENTO_IA',\n  FOLLOWUP: 'FOLLOW_UP_PENDENTE'\n};\n\nreturn [{\n  json: {\n    setor: routing.setor || 'RECEPCAO',\n    motivo_setor: routing.motivo || '',\n    etiqueta_nova: etiqueta_map[routing.setor] || 'EM_ATENDIMENTO_IA',\n    contato,\n    ...ctx\n  }\n}];"
+      },
+      "id": "code-0006",
+      "name": "Parser Gerente",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [5080, 440]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/contatos",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "user_id", "value": "=eq.{{ $json.user_id }}" },
+            { "name": "phone", "value": "=eq.{{ $json.sender_phone }}" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ setor: $json.setor, etiqueta: $json.etiqueta_nova, ultima_mensagem: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "http-0016",
+      "name": "Atualizar Setor Contato",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [5280, 440]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [{ "id": "s1", "leftValue": "={{ $('Parser Gerente').first().json.setor }}", "rightValue": "RECEPCAO", "operator": { "type": "string", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "output": 0, "renameOutput": true, "outputKey": "RECEPCAO"
+            },
+            {
+              "conditions": {
+                "conditions": [{ "id": "s2", "leftValue": "={{ $('Parser Gerente').first().json.setor }}", "rightValue": "ACOMPANHAMENTO", "operator": { "type": "string", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "output": 1, "renameOutput": true, "outputKey": "ACOMPANHAMENTO"
+            },
+            {
+              "conditions": {
+                "conditions": [{ "id": "s3", "leftValue": "={{ $('Parser Gerente').first().json.setor }}", "rightValue": "PRECO", "operator": { "type": "string", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "output": 2, "renameOutput": true, "outputKey": "PRECO"
+            },
+            {
+              "conditions": {
+                "conditions": [{ "id": "s4", "leftValue": "={{ $('Parser Gerente').first().json.setor }}", "rightValue": "HUMANO", "operator": { "type": "string", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "output": 3, "renameOutput": true, "outputKey": "HUMANO"
+            },
+            {
+              "conditions": {
+                "conditions": [{ "id": "s5", "leftValue": "={{ $('Parser Gerente').first().json.setor }}", "rightValue": "EXAME", "operator": { "type": "string", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "output": 4, "renameOutput": true, "outputKey": "EXAME"
+            }
+          ]
+        },
+        "fallbackOutput": 0
+      },
+      "id": "sw-0004",
+      "name": "Switch Setor",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [5480, 440]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Parser Gerente').first().json.mensagem_final }}",
+        "options": {
+          "systemMessage": "=Você é {{ $('Parser Gerente').first().json.nome_assistente }}, assistente virtual do consultório de nutrição de {{ $('Parser Gerente').first().json.nome_profissional }}.\n\nCONSULTÓRIO: {{ $('Parser Gerente').first().json.nome_consultorio }}\nMÉTODO: {{ $('Parser Gerente').first().json.metodo_marca }}\nFOCO: {{ $('Parser Gerente').first().json.foco_atendimento }}\nPÚBLICO-ALVO: {{ $('Parser Gerente').first().json.publico_alvo }}\nMODALIDADE: {{ $('Parser Gerente').first().json.modalidade }}\nHORÁRIOS: {{ $('Parser Gerente').first().json.horario_atendimento }}\nTOM DE VOZ: {{ $('Parser Gerente').first().json.tom_voz }}\n\n=== REGRAS INVIOLÁVEIS ===\n1. NUNCA revele preços ou valores — se perguntarem, diga que a equipe passará os detalhes e inclua o código 251213 na resposta para escalar ao humano\n2. Se detectar emergência médica ou as palavras ({{ $('Parser Gerente').first().json.palavras_escalar }}), inclua 251213\n3. Nunca finja ser humano se perguntarem diretamente\n4. Mensagens curtas e acolhedoras, máximo 3 parágrafos\n5. Se não souber algo, diga que vai verificar com a equipe\n\n=== PACIENTE ATUAL ===\nNome: {{ $('Parser Gerente').first().json.contato.nome }}\nStatus: {{ $('Parser Gerente').first().json.contato.status }}\nHistórico: {{ $('Parser Gerente').first().json.contato.resumo_historico || 'Primeiro contato' }}",
+          "maxIterations": 3
+        }
+      },
+      "id": "agent-0001",
+      "name": "Agente Lívia (Recepção)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [5700, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4.1",
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 1500
+        }
+      },
+      "id": "llm-0001",
+      "name": "LLM Lívia",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [5700, 480],
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Parser Gerente').first().json.sender_phone }}_livia",
+        "tableName": "n8n_chat_histories",
+        "contextWindowLength": 20
+      },
+      "id": "mem-0001",
+      "name": "Memória Lívia",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [5900, 480],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Postgres DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Parser Gerente').first().json.mensagem_final }}",
+        "options": {
+          "systemMessage": "=Você é {{ $('Parser Gerente').first().json.nome_assistente }}, assistente especializada em acompanhamento nutricional do consultório de {{ $('Parser Gerente').first().json.nome_profissional }}.\n\nMÉTODO EXCLUSIVO: {{ $('Parser Gerente').first().json.metodo_marca }}\nFOCO: {{ $('Parser Gerente').first().json.foco_atendimento }}\nTOM DE VOZ: {{ $('Parser Gerente').first().json.tom_voz }}\n\n=== REGRAS INVIOLÁVEIS ===\n1. NUNCA forneça orientações nutricionais específicas — isso é responsabilidade exclusiva da nutricionista\n2. NUNCA revele preços — use código 251213 se perguntarem\n3. Para dúvidas clínicas: acolha e diga que a nutricionista responderá\n4. Valorize sempre a metodologia e resultados do método {{ $('Parser Gerente').first().json.metodo_marca }}\n5. Incentive retornos e manutenção do acompanhamento\n\n=== PACIENTE ATIVO ===\nNome: {{ $('Parser Gerente').first().json.contato.nome }}\nÚltima consulta: {{ $('Parser Gerente').first().json.contato.consulta_realizada_em || 'N/A' }}\nRetorno agendado: {{ $('Parser Gerente').first().json.contato.retorno_agendado_em || 'N/A' }}",
+          "maxIterations": 3
+        }
+      },
+      "id": "agent-0002",
+      "name": "Agente REINO (Acompanhamento)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [5700, 600]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4.1",
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 1500
+        }
+      },
+      "id": "llm-0002",
+      "name": "LLM REINO",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [5700, 780],
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Parser Gerente').first().json.sender_phone }}_reino",
+        "tableName": "n8n_chat_histories",
+        "contextWindowLength": 20
+      },
+      "id": "mem-0002",
+      "name": "Memória REINO",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [5900, 780],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Postgres DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "preco-resp",
+              "name": "output",
+              "value": "={{ $('Buscar Config Tenant').first().json.mensagem_preco || 'Os investimentos dos planos são personalizados conforme o acompanhamento escolhido. Nossa equipe vai te passar todos os detalhes em breve — posso facilitar esse contato?' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "set-0005",
+      "name": "Resposta Preço (Skill)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [5700, 900]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Prepara notificação de escalada para humano\nconst ctx = $('Parser Gerente').first().json;\nconst contato = ctx.contato;\n\nreturn [{\n  json: {\n    output: `⚠️ Solicitação de atendimento humano\\nCliente: ${contato.nome || ctx.sender_phone}\\nTelefone: ${ctx.sender_phone}\\nÚltima mensagem: ${ctx.mensagem_final}`,\n    notif: {\n      user_id: ctx.user_id,\n      phone: ctx.sender_phone,\n      nome_contato: contato.nome || ctx.sender_phone,\n      motivo: ctx.motivo_setor || 'Solicitação de atendimento humano',\n      prioridade: 'ALTA',\n      mensagem: ctx.mensagem_final\n    },\n    ...ctx\n  }\n}];"
+      },
+      "id": "code-0007",
+      "name": "Preparar Notif Humano",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [5700, 1040]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/notificacoes_humano",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify($json.notif) }}",
+        "options": {}
+      },
+      "id": "http-0017",
+      "name": "Inserir Notificação Humano",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [5900, 1040]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "hum-resp",
+              "name": "output",
+              "value": "=Entendido! Vou acionar nossa equipe agora mesmo. Em breve você será atendido(a) por um de nossos especialistas. 😊",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "set-0006",
+      "name": "Resposta Humano (Ack)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [6100, 1040]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Parser Gerente').first().json.mensagem_final }}",
+        "options": {
+          "systemMessage": "=Você é {{ $('Parser Gerente').first().json.nome_assistente }}, assistente do consultório de {{ $('Parser Gerente').first().json.nome_profissional }}.\n\nSua função neste contexto é ajudar pacientes que estão enviando exames ou resultados de exames.\n\nTOM DE VOZ: {{ $('Parser Gerente').first().json.tom_voz }}\n\n=== REGRAS ===\n1. Confirme o recebimento do exame com gentileza\n2. Informe que a nutricionista irá analisar e retornar em breve\n3. Se for exame de sangue, confirme quais exames foram enviados\n4. NUNCA interprete resultados clínicos\n5. NUNCA dê diagnósticos ou orientações baseadas nos exames\n6. Para dúvidas sobre valores de referência → escalar para humano (251213)\n\nPACIENTE: {{ $('Parser Gerente').first().json.contato.nome }}",
+          "maxIterations": 2
+        }
+      },
+      "id": "agent-0003",
+      "name": "Agente Exame",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [5700, 1180]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4.1-mini",
+        "options": {
+          "temperature": 0.3,
+          "maxTokens": 800
+        }
+      },
+      "id": "llm-0003",
+      "name": "LLM Exame",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [5700, 1360],
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Normaliza output de qualquer agente/resposta para o campo 'output'\nconst item = $input.first().json;\n\n// Os agentes Langchain retornam em 'output'\n// Os Set nodes já têm 'output'\n// Garantir que sempre temos 'output'\nconst output = item.output || item.text || item.response || 'Desculpe, ocorreu um erro. Por favor, tente novamente.';\n\nconst ctx = $('Parser Gerente').first().json;\n\nreturn [{\n  json: {\n    output: output.trim(),\n    user_id: ctx.user_id,\n    sender_phone: ctx.sender_phone,\n    wa_phone_number_id: ctx.wa_phone_number_id,\n    wa_access_token: ctx.wa_access_token,\n    mensagem_final: ctx.mensagem_final,\n    setor: ctx.setor\n  }\n}];"
+      },
+      "id": "code-0008",
+      "name": "Normalizar Resposta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [6300, 600]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "cond-251213",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "251213",
+              "operator": { "type": "string", "operation": "contains" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-0006",
+      "name": "Tem Código 251213?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [6500, 600]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/pausar_ia",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ p_phone: $json.sender_phone, p_usuario: 'IA Auto' }) }}",
+        "options": {}
+      },
+      "id": "http-0018",
+      "name": "Pausar IA (251213)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [6700, 500]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/notificacoes_humano",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ user_id: $json.user_id, phone: $json.sender_phone, motivo: 'Escalada automática — IA detectou situação que requer humano', prioridade: 'ALTA', mensagem: $json.mensagem_final }) }}",
+        "options": {}
+      },
+      "id": "http-0019",
+      "name": "Inserir Notif Escalada",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [6700, 640]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Remove código 251213 e split em partes para envio\nconst item = $input.first().json;\nlet texto = item.output.replace(/251213/g, '').trim();\n\n// Split por dupla quebra de linha\nconst partes = texto.split(/\\n\\n+/).filter(p => p.trim().length > 0);\n\n// Limitar tamanho de cada parte (WhatsApp: 4096 chars mas ideal < 1000)\nconst mensagens = [];\nconst MAX = 1000;\n\nfor (const parte of partes) {\n  if (parte.length <= MAX) {\n    mensagens.push(parte.trim());\n  } else {\n    // Quebra por frases\n    const frases = parte.split(/(?<=[.!?])\\s+/);\n    let atual = '';\n    for (const frase of frases) {\n      if ((atual + ' ' + frase).length <= MAX) {\n        atual = (atual + ' ' + frase).trim();\n      } else {\n        if (atual) mensagens.push(atual);\n        atual = frase;\n      }\n    }\n    if (atual) mensagens.push(atual);\n  }\n}\n\nif (mensagens.length === 0) mensagens.push(texto);\n\n// Retorna uma linha por mensagem para o SplitInBatches\nreturn mensagens.map((msg, i) => ({\n  json: {\n    mensagem_texto: msg,\n    parte: i + 1,\n    total_partes: mensagens.length,\n    sender_phone: item.sender_phone,\n    wa_phone_number_id: item.wa_phone_number_id,\n    wa_access_token: item.wa_access_token,\n    user_id: item.user_id,\n    setor: item.setor,\n    mensagem_original: item.mensagem_final\n  }\n}));"
+      },
+      "id": "code-0009",
+      "name": "Split Mensagens",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [6700, 760]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-0001",
+      "name": "Loop de Envio",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [6900, 760]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v18.0/{{ $json.wa_phone_number_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $json.wa_access_token }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: $json.sender_phone, type: 'text', text: { preview_url: false, body: $json.mensagem_texto } }) }}",
+        "options": {}
+      },
+      "id": "http-0020",
+      "name": "Enviar via Cloud API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [7100, 760]
+    },
+    {
+      "parameters": {
+        "amount": 500,
+        "unit": "milliseconds"
+      },
+      "id": "wait-0002",
+      "name": "Delay entre Partes",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [7300, 760]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/n8n_chat_histories",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify([{ session_id: $('Split Mensagens').first().json.sender_phone + '_' + $('Split Mensagens').first().json.setor.toLowerCase(), message: { type: 'human', content: $('Split Mensagens').first().json.mensagem_original }, created_at: new Date().toISOString() }, { session_id: $('Split Mensagens').first().json.sender_phone + '_' + $('Split Mensagens').first().json.setor.toLowerCase(), message: { type: 'ai', content: $('Normalizar Resposta').first().json.output }, created_at: new Date().toISOString() }]) }}",
+        "options": {}
+      },
+      "id": "http-0021",
+      "name": "Salvar Histórico IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [7500, 760]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/contatos",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "user_id", "value": "=eq.{{ $('Split Mensagens').first().json.user_id }}" },
+            { "name": "phone", "value": "=eq.{{ $('Split Mensagens').first().json.sender_phone }}" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ ultima_mensagem: new Date().toISOString(), ultima_resposta_ia: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "http-0022",
+      "name": "Atualizar Último Contato",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [7700, 760]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "OK",
+        "options": { "responseCode": 200 }
+      },
+      "id": "resp-0004",
+      "name": "Responder 200 Final",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [7900, 760]
+    }
+  ],
+  "connections": {
+    "Webhook Meta": {
+      "main": [
+        [{ "node": "Switch Método HTTP", "type": "main", "index": 0 }]
+      ]
+    },
+    "Switch Método HTTP": {
+      "main": [
+        [{ "node": "Responder Verificação GET", "type": "main", "index": 0 }],
+        [{ "node": "Extrair Dados POST", "type": "main", "index": 0 }]
+      ]
+    },
+    "Extrair Dados POST": {
+      "main": [
+        [{ "node": "É Mensagem Válida?", "type": "main", "index": 0 }]
+      ]
+    },
+    "É Mensagem Válida?": {
+      "main": [
+        [{ "node": "Buscar Tenant", "type": "main", "index": 0 }],
+        [{ "node": "Responder 200 (ignorar)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Buscar Tenant": {
+      "main": [
+        [{ "node": "Tenant Ativo?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Tenant Ativo?": {
+      "main": [
+        [{ "node": "Buscar Config Tenant", "type": "main", "index": 0 }],
+        [{ "node": "Responder 200 (ignorar)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Buscar Config Tenant": {
+      "main": [
+        [{ "node": "Montar Contexto Tenant", "type": "main", "index": 0 }]
+      ]
+    },
+    "Montar Contexto Tenant": {
+      "main": [
+        [{ "node": "Upsert Contato", "type": "main", "index": 0 }]
+      ]
+    },
+    "Upsert Contato": {
+      "main": [
+        [{ "node": "Buscar Contato", "type": "main", "index": 0 }]
+      ]
+    },
+    "Buscar Contato": {
+      "main": [
+        [{ "node": "IA Pausada?", "type": "main", "index": 0 }]
+      ]
+    },
+    "IA Pausada?": {
+      "main": [
+        [{ "node": "Mensagem Retomar IA?", "type": "main", "index": 0 }],
+        [{ "node": "Switch LGPD", "type": "main", "index": 0 }]
+      ]
+    },
+    "Mensagem Retomar IA?": {
+      "main": [
+        [{ "node": "Retomar IA?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Retomar IA?": {
+      "main": [
+        [{ "node": "Retomar IA (RPC)", "type": "main", "index": 0 }],
+        [{ "node": "Responder 200 (ignorar)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Retomar IA (RPC)": {
+      "main": [
+        [{ "node": "Responder 200 Final", "type": "main", "index": 0 }]
+      ]
+    },
+    "Switch LGPD": {
+      "main": [
+        [{ "node": "Enviar Mensagem LGPD", "type": "main", "index": 0 }],
+        [{ "node": "Analisar Resposta LGPD", "type": "main", "index": 0 }],
+        [{ "node": "Responder 200 (ignorar)", "type": "main", "index": 0 }],
+        [{ "node": "Switch Tipo Mídia", "type": "main", "index": 0 }]
+      ]
+    },
+    "Enviar Mensagem LGPD": {
+      "main": [
+        [{ "node": "Salvar LGPD Pendente", "type": "main", "index": 0 }]
+      ]
+    },
+    "Salvar LGPD Pendente": {
+      "main": [
+        [{ "node": "Responder 200 (ignorar)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Analisar Resposta LGPD": {
+      "main": [
+        [{ "node": "Salvar LGPD Aceito", "type": "main", "index": 0 }],
+        [{ "node": "Salvar LGPD Recusado", "type": "main", "index": 0 }]
+      ]
+    },
+    "Salvar LGPD Aceito": {
+      "main": [
+        [{ "node": "Switch Tipo Mídia", "type": "main", "index": 0 }]
+      ]
+    },
+    "Salvar LGPD Recusado": {
+      "main": [
+        [{ "node": "Enviar Despedida LGPD", "type": "main", "index": 0 }]
+      ]
+    },
+    "Enviar Despedida LGPD": {
+      "main": [
+        [{ "node": "Responder 200 (ignorar)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Switch Tipo Mídia": {
+      "main": [
+        [{ "node": "Buscar URL Mídia", "type": "main", "index": 0 }],
+        [{ "node": "Buscar URL Mídia", "type": "main", "index": 0 }],
+        [{ "node": "Montar Texto Direto", "type": "main", "index": 0 }]
+      ]
+    },
+    "Buscar URL Mídia": {
+      "main": [
+        [{ "node": "Download Mídia", "type": "main", "index": 0 }]
+      ]
+    },
+    "Download Mídia": {
+      "main": [
+        [{ "node": "Transcrever Áudio (Whisper)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Transcrever Áudio (Whisper)": {
+      "main": [
+        [{ "node": "Montar Texto Áudio", "type": "main", "index": 0 }]
+      ]
+    },
+    "Montar Texto Áudio": {
+      "main": [
+        [{ "node": "Redis SET Mensagem", "type": "main", "index": 0 }]
+      ]
+    },
+    "Montar Nota Imagem": {
+      "main": [
+        [{ "node": "Redis SET Mensagem", "type": "main", "index": 0 }]
+      ]
+    },
+    "Montar Texto Direto": {
+      "main": [
+        [{ "node": "Redis SET Mensagem", "type": "main", "index": 0 }]
+      ]
+    },
+    "Redis SET Mensagem": {
+      "main": [
+        [{ "node": "Redis GET Memória 1", "type": "main", "index": 0 }]
+      ]
+    },
+    "Redis GET Memória 1": {
+      "main": [
+        [{ "node": "Espera 1 Segundo", "type": "main", "index": 0 }]
+      ]
+    },
+    "Espera 1 Segundo": {
+      "main": [
+        [{ "node": "Redis GET Memória 2", "type": "main", "index": 0 }]
+      ]
+    },
+    "Redis GET Memória 2": {
+      "main": [
+        [{ "node": "Verificar Buffer Completo", "type": "main", "index": 0 }]
+      ]
+    },
+    "Verificar Buffer Completo": {
+      "main": [
+        [{ "node": "Mensagem Completa?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Mensagem Completa?": {
+      "main": [
+        [{ "node": "Buscar Contato Atualizado", "type": "main", "index": 0 }],
+        [{ "node": "Responder 200 (aguardando)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Buscar Contato Atualizado": {
+      "main": [
+        [{ "node": "Montar Prompt Gerente", "type": "main", "index": 0 }]
+      ]
+    },
+    "Montar Prompt Gerente": {
+      "main": [
+        [{ "node": "Gerente Setor (LLM)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Gerente Setor (LLM)": {
+      "main": [
+        [{ "node": "Parser Gerente", "type": "main", "index": 0 }]
+      ]
+    },
+    "Parser Gerente": {
+      "main": [
+        [{ "node": "Atualizar Setor Contato", "type": "main", "index": 0 }]
+      ]
+    },
+    "Atualizar Setor Contato": {
+      "main": [
+        [{ "node": "Switch Setor", "type": "main", "index": 0 }]
+      ]
+    },
+    "Switch Setor": {
+      "main": [
+        [{ "node": "Agente Lívia (Recepção)", "type": "main", "index": 0 }],
+        [{ "node": "Agente REINO (Acompanhamento)", "type": "main", "index": 0 }],
+        [{ "node": "Resposta Preço (Skill)", "type": "main", "index": 0 }],
+        [{ "node": "Preparar Notif Humano", "type": "main", "index": 0 }],
+        [{ "node": "Agente Exame", "type": "main", "index": 0 }]
+      ]
+    },
+    "Agente Lívia (Recepção)": {
+      "main": [
+        [{ "node": "Normalizar Resposta", "type": "main", "index": 0 }]
+      ]
+    },
+    "Agente REINO (Acompanhamento)": {
+      "main": [
+        [{ "node": "Normalizar Resposta", "type": "main", "index": 0 }]
+      ]
+    },
+    "Resposta Preço (Skill)": {
+      "main": [
+        [{ "node": "Normalizar Resposta", "type": "main", "index": 0 }]
+      ]
+    },
+    "Agente Exame": {
+      "main": [
+        [{ "node": "Normalizar Resposta", "type": "main", "index": 0 }]
+      ]
+    },
+    "Preparar Notif Humano": {
+      "main": [
+        [{ "node": "Inserir Notificação Humano", "type": "main", "index": 0 }]
+      ]
+    },
+    "Inserir Notificação Humano": {
+      "main": [
+        [{ "node": "Resposta Humano (Ack)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Resposta Humano (Ack)": {
+      "main": [
+        [{ "node": "Normalizar Resposta", "type": "main", "index": 0 }]
+      ]
+    },
+    "LLM Lívia": {
+      "ai_languageModel": [
+        [{ "node": "Agente Lívia (Recepção)", "type": "ai_languageModel", "index": 0 }]
+      ]
+    },
+    "Memória Lívia": {
+      "ai_memory": [
+        [{ "node": "Agente Lívia (Recepção)", "type": "ai_memory", "index": 0 }]
+      ]
+    },
+    "LLM REINO": {
+      "ai_languageModel": [
+        [{ "node": "Agente REINO (Acompanhamento)", "type": "ai_languageModel", "index": 0 }]
+      ]
+    },
+    "Memória REINO": {
+      "ai_memory": [
+        [{ "node": "Agente REINO (Acompanhamento)", "type": "ai_memory", "index": 0 }]
+      ]
+    },
+    "LLM Exame": {
+      "ai_languageModel": [
+        [{ "node": "Agente Exame", "type": "ai_languageModel", "index": 0 }]
+      ]
+    },
+    "Normalizar Resposta": {
+      "main": [
+        [{ "node": "Tem Código 251213?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Tem Código 251213?": {
+      "main": [
+        [
+          { "node": "Pausar IA (251213)", "type": "main", "index": 0 },
+          { "node": "Inserir Notif Escalada", "type": "main", "index": 0 }
+        ],
+        [{ "node": "Split Mensagens", "type": "main", "index": 0 }]
+      ]
+    },
+    "Pausar IA (251213)": {
+      "main": [
+        [{ "node": "Split Mensagens", "type": "main", "index": 0 }]
+      ]
+    },
+    "Inserir Notif Escalada": {
+      "main": [
+        [{ "node": "Split Mensagens", "type": "main", "index": 0 }]
+      ]
+    },
+    "Split Mensagens": {
+      "main": [
+        [{ "node": "Loop de Envio", "type": "main", "index": 0 }]
+      ]
+    },
+    "Loop de Envio": {
+      "main": [
+        [{ "node": "Enviar via Cloud API", "type": "main", "index": 0 }],
+        [{ "node": "Salvar Histórico IA", "type": "main", "index": 0 }]
+      ]
+    },
+    "Enviar via Cloud API": {
+      "main": [
+        [{ "node": "Delay entre Partes", "type": "main", "index": 0 }]
+      ]
+    },
+    "Delay entre Partes": {
+      "main": [
+        [{ "node": "Loop de Envio", "type": "main", "index": 0 }]
+      ]
+    },
+    "Salvar Histórico IA": {
+      "main": [
+        [{ "node": "Atualizar Último Contato", "type": "main", "index": 0 }]
+      ]
+    },
+    "Atualizar Último Contato": {
+      "main": [
+        [{ "node": "Responder 200 Final", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "versionId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "meta": {
+    "instanceId": "secretaria-ia-nutri"
+  },
+  "notes": {
+    "variables_required": [
+      "SUPABASE_URL — URL do projeto Supabase (ex: https://xxxx.supabase.co)",
+      "SUPABASE_SERVICE_KEY — Chave service_role do Supabase (não a anon key!)",
+      "OPENAI_API_KEY — Chave da OpenAI para o Gerente Setor (HTTP Request node)",
+      "REDIS_CREDENTIAL_ID — Configurar credencial Redis no n8n",
+      "OPENAI_CREDENTIAL_ID — Configurar credencial OpenAI no n8n",
+      "POSTGRES_CREDENTIAL_ID — Configurar credencial Postgres no n8n"
+    ],
+    "webhook_url": "Configurar no Meta: https://seu-n8n.com/webhook/whatsapp",
+    "verify_token": "Usar o campo wa_verify_token da tabela profiles (único por nutricionista)"
+  }
+}

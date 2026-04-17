@@ -1,0 +1,396 @@
+{
+  "name": "SecretarIA Nutri Juliana — Follow-up Automático",
+  "nodes": [
+
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "hours", "hoursInterval": 6 }
+          ]
+        }
+      },
+      "id": "fb000001-0000-0000-0000-000000000001",
+      "name": "Cron 6h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-800, 800]
+    },
+
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "contatos",
+        "filters": {
+          "conditions": [
+            { "keyName": "ia_pausada", "condition": "eq", "keyValue": "false" },
+            { "keyName": "lgpd_consent", "condition": "eq", "keyValue": "true" }
+          ]
+        },
+        "options": { "limit": 50 }
+      },
+      "id": "fb000002-0000-0000-0000-000000000002",
+      "name": "Buscar Elegíveis Followup",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [-560, 800],
+      "credentials": { "supabaseApi": { "id": "NeuU5JBhqto8WxIv", "name": "Teste" } }
+    },
+
+    {
+      "parameters": {
+        "jsCode": "const agora = new Date();\nconst itens = $input.all();\n\n// Filtra apenas contatos elegíveis para follow-up:\n// - proximo_followup <= agora\n// - status em LEAD ou AGENDADO\n// - followup_count < 3\nconst elegiveis = itens.filter(item => {\n  const c = item.json;\n  if (!c.proximo_followup) return false;\n  const proximo = new Date(c.proximo_followup);\n  return (\n    proximo <= agora &&\n    ['LEAD', 'AGENDADO'].includes(c.status) &&\n    (c.followup_count || 0) < 3\n  );\n});\n\nreturn elegiveis;"
+      },
+      "id": "fb000003-0000-0000-0000-000000000003",
+      "name": "Filtrar Elegíveis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-320, 800]
+    },
+
+    {
+      "parameters": { "options": {} },
+      "id": "fb000004-0000-0000-0000-000000000004",
+      "name": "Loop Contatos",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [-80, 800]
+    },
+
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+                "conditions": [{ "id": "fc1", "leftValue": "={{ $json.followup_count }}", "rightValue": 0, "operator": { "type": "number", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "renameOutput": true, "outputKey": "FU_1"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+                "conditions": [{ "id": "fc2", "leftValue": "={{ $json.followup_count }}", "rightValue": 1, "operator": { "type": "number", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "renameOutput": true, "outputKey": "FU_2"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+                "conditions": [{ "id": "fc3", "leftValue": "={{ $json.followup_count }}", "rightValue": 2, "operator": { "type": "number", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "renameOutput": true, "outputKey": "FU_3_FINAL"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fb000005-0000-0000-0000-000000000005",
+      "name": "Switch Qual FollowUp",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [160, 800]
+    },
+
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Gere uma mensagem de follow-up personalizada para: Nome: {{ $json.nome || 'nossa lead' }}, Queixa principal: {{ $json.principal_queixa || 'não informada' }}, Número do follow-up: 1 (D+3 após primeiro contato).",
+        "options": {
+          "systemMessage": "Você é a Lívia, assistente do consultório da Nutri Juliana.\n\nGere uma mensagem de follow-up CURTA e NATURAL (máximo 3 parágrafos curtos) para uma lead que não respondeu após o primeiro contato.\n\nDiretrizes:\n- Tom acolhedor, feminino, sem pressão\n- Mencione a queixa da pessoa de forma natural se disponível\n- Convide para agendar uma avaliação\n- Sem emojis excessivos\n- Nunca mencione preços\n- Use o nome da pessoa\n- Máximo 200 caracteres por parágrafo\n\nRetorne apenas o texto da mensagem, sem aspas, sem prefixos."
+        }
+      },
+      "id": "fb000006-0000-0000-0000-000000000006",
+      "name": "Gerar FU1",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [400, 640]
+    },
+
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Gere uma mensagem de follow-up personalizada para: Nome: {{ $json.nome || 'nossa lead' }}, Queixa principal: {{ $json.principal_queixa || 'não informada' }}, Número do follow-up: 2 (D+7).",
+        "options": {
+          "systemMessage": "Você é a Lívia, assistente do consultório da Nutri Juliana.\n\nGere uma mensagem de follow-up CURTA e NATURAL (máximo 3 parágrafos curtos) para uma lead que não respondeu no 2º contato.\n\nDiretrizes:\n- Tom mais suave, sem insistência\n- Reforce que a porta está aberta\n- Mencione brevemente o impacto do acompanhamento nutricional no dia a dia\n- Sem emojis excessivos\n- Nunca mencione preços\n- Use o nome da pessoa\n- Máximo 200 caracteres por parágrafo\n\nRetorne apenas o texto da mensagem, sem aspas."
+        }
+      },
+      "id": "fb000007-0000-0000-0000-000000000007",
+      "name": "Gerar FU2",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [400, 800]
+    },
+
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Gere uma mensagem de follow-up personalizada para: Nome: {{ $json.nome || 'nossa lead' }}, Queixa principal: {{ $json.principal_queixa || 'não informada' }}, Número do follow-up: 3 (FINAL — D+14).",
+        "options": {
+          "systemMessage": "Você é a Lívia, assistente do consultório da Nutri Juliana.\n\nGere uma mensagem de follow-up FINAL e GENTIL para uma lead que não respondeu após 2 tentativas. Este é o último contato.\n\nDiretrizes:\n- Tom de cuidado genuíno, sem mágoa ou pressão\n- Informe que este é o último contato por enquanto\n- Deixe a porta aberta para quando ela estiver pronta\n- Use 💛 no final (único emoji permitido)\n- Nunca mencione preços\n- Use o nome da pessoa\n- Máximo 200 caracteres por parágrafo\n\nRetorne apenas o texto da mensagem, sem aspas."
+        }
+      },
+      "id": "fb000008-0000-0000-0000-000000000008",
+      "name": "Gerar FU3 Final",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [400, 960]
+    },
+
+    {
+      "parameters": {
+        "model": "gpt-4.1-mini",
+        "options": {}
+      },
+      "id": "fb000009-0000-0000-0000-000000000009",
+      "name": "OpenAI FU1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [400, 440]
+    },
+
+    {
+      "parameters": {
+        "model": "gpt-4.1-mini",
+        "options": {}
+      },
+      "id": "fb000010-0000-0000-0000-000000000010",
+      "name": "OpenAI FU2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [400, 600]
+    },
+
+    {
+      "parameters": {
+        "model": "gpt-4.1-mini",
+        "options": {}
+      },
+      "id": "fb000011-0000-0000-0000-000000000011",
+      "name": "OpenAI FU3",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [400, 760]
+    },
+
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "mf1",
+              "name": "mensagem_followup",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "mf2",
+              "name": "phone_destino",
+              "value": "={{ $('Loop Contatos').item.json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "mf3",
+              "name": "followup_count_atual",
+              "value": "={{ $('Loop Contatos').item.json.followup_count || 0 }}",
+              "type": "number"
+            },
+            {
+              "id": "mf4",
+              "name": "contato_id",
+              "value": "={{ $('Loop Contatos').item.json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fb000012-0000-0000-0000-000000000012",
+      "name": "Merge FU1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [680, 640]
+    },
+
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "mf5", "name": "mensagem_followup", "value": "={{ $json.text }}", "type": "string" },
+            { "id": "mf6", "name": "phone_destino", "value": "={{ $('Loop Contatos').item.json.phone }}", "type": "string" },
+            { "id": "mf7", "name": "followup_count_atual", "value": "={{ $('Loop Contatos').item.json.followup_count || 0 }}", "type": "number" },
+            { "id": "mf8", "name": "contato_id", "value": "={{ $('Loop Contatos').item.json.id }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fb000013-0000-0000-0000-000000000013",
+      "name": "Merge FU2",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [680, 800]
+    },
+
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "mf9", "name": "mensagem_followup", "value": "={{ $json.text }}", "type": "string" },
+            { "id": "mf10", "name": "phone_destino", "value": "={{ $('Loop Contatos').item.json.phone }}", "type": "string" },
+            { "id": "mf11", "name": "followup_count_atual", "value": "={{ $('Loop Contatos').item.json.followup_count || 0 }}", "type": "number" },
+            { "id": "mf12", "name": "contato_id", "value": "={{ $('Loop Contatos').item.json.id }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fb000014-0000-0000-0000-000000000014",
+      "name": "Merge FU3",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [680, 960]
+    },
+
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "NOME_DA_SUA_INSTANCIA_EVO",
+        "remoteJid": "={{ $json.phone_destino }}",
+        "messageText": "={{ $json.mensagem_followup }}",
+        "options_message": { "delay": 3000, "linkPreview": false }
+      },
+      "id": "fb000015-0000-0000-0000-000000000015",
+      "name": "Enviar FollowUp",
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [920, 800],
+      "credentials": { "evolutionApi": { "id": "KHvWRbASZNRfzD3a", "name": "EVOLUTION API" } }
+    },
+
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst count = item.json.followup_count_atual;\nconst config = {\n  1: 7,   // FU1 foi hoje (count=0→1), próximo em 7 dias\n  2: 7,   // FU2 foi hoje (count=1→2), próximo em 7 dias  \n  3: 9999 // FU3 foi hoje (count=2→3), não há mais follow-up\n};\n\nconst diasProximo = config[count + 1] || 9999;\nconst novoProximo = diasProximo < 9999 \n  ? new Date(Date.now() + diasProximo * 86400000).toISOString()\n  : null;\n\nconst novoStatus = (count + 1 >= 3) ? 'INATIVO' : item.json.status;\n\nreturn [{\n  json: {\n    ...item.json,\n    novo_followup_count: count + 1,\n    novo_proximo_followup: novoProximo,\n    novo_status: novoStatus\n  }\n}];"
+      },
+      "id": "fb000016-0000-0000-0000-000000000016",
+      "name": "Calcular Proximo FU",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1160, 800]
+    },
+
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "contatos",
+        "filters": { "conditions": [{ "keyName": "phone", "condition": "eq", "keyValue": "={{ $json.phone_destino }}" }] },
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "followup_count", "fieldValue": "={{ $json.novo_followup_count }}" },
+            { "fieldId": "ultimo_followup", "fieldValue": "={{ $now }}" },
+            { "fieldId": "proximo_followup", "fieldValue": "={{ $json.novo_proximo_followup }}" },
+            { "fieldId": "status", "fieldValue": "={{ $json.novo_status }}" },
+            { "fieldId": "etiqueta", "fieldValue": "={{ $json.novo_status === 'INATIVO' ? 'INATIVO_30D' : 'FOLLOW_UP_PENDENTE' }}" }
+          ]
+        }
+      },
+      "id": "fb000017-0000-0000-0000-000000000017",
+      "name": "Atualizar Supabase FU",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1400, 800],
+      "credentials": { "supabaseApi": { "id": "NeuU5JBhqto8WxIv", "name": "Teste" } }
+    },
+
+    {
+      "parameters": {
+        "schema": { "__rl": true, "mode": "list", "value": "public" },
+        "table": { "__rl": true, "value": "n8n_chat_histories", "mode": "list", "cachedResultName": "n8n_chat_histories" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $json.phone_destino }}",
+            "message": "={\"type\": \"ai\", \"content\": \"[FOLLOW-UP AUTOMÁTICO]: {{ $json.mensagem_followup.replace(/\\n/g, ' ') }}\", \"additional_kwargs\": {}, \"response_metadata\": {}}"
+          },
+          "matchingColumns": ["id"],
+          "schema": [
+            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "number", "canBeUsedToMatch": true, "removed": true },
+            { "id": "session_id", "displayName": "session_id", "required": true, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "message", "displayName": "message", "required": true, "defaultMatch": false, "display": true, "type": "object", "canBeUsedToMatch": true }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "fb000018-0000-0000-0000-000000000018",
+      "name": "Salvar FU no Histórico",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1400, 1000],
+      "credentials": { "postgres": { "id": "PxezC0eQEFEiP69i", "name": "TEste" } }
+    },
+
+    {
+      "parameters": { "amount": 10 },
+      "id": "fb000019-0000-0000-0000-000000000019",
+      "name": "Wait 10s Entre Contatos",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1640, 800],
+      "webhookId": "nutri-fu-wait"
+    }
+
+  ],
+
+  "connections": {
+    "Cron 6h": { "main": [[{ "node": "Buscar Elegíveis Followup", "type": "main", "index": 0 }]] },
+    "Buscar Elegíveis Followup": { "main": [[{ "node": "Filtrar Elegíveis", "type": "main", "index": 0 }]] },
+    "Filtrar Elegíveis": { "main": [[{ "node": "Loop Contatos", "type": "main", "index": 0 }]] },
+    "Loop Contatos": {
+      "main": [
+        [{ "node": "Switch Qual FollowUp", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Switch Qual FollowUp": {
+      "main": [
+        [{ "node": "Gerar FU1", "type": "main", "index": 0 }],
+        [{ "node": "Gerar FU2", "type": "main", "index": 0 }],
+        [{ "node": "Gerar FU3 Final", "type": "main", "index": 0 }]
+      ]
+    },
+    "OpenAI FU1": { "ai_languageModel": [[{ "node": "Gerar FU1", "type": "ai_languageModel", "index": 0 }]] },
+    "OpenAI FU2": { "ai_languageModel": [[{ "node": "Gerar FU2", "type": "ai_languageModel", "index": 0 }]] },
+    "OpenAI FU3": { "ai_languageModel": [[{ "node": "Gerar FU3 Final", "type": "ai_languageModel", "index": 0 }]] },
+    "Gerar FU1": { "main": [[{ "node": "Merge FU1", "type": "main", "index": 0 }]] },
+    "Gerar FU2": { "main": [[{ "node": "Merge FU2", "type": "main", "index": 0 }]] },
+    "Gerar FU3 Final": { "main": [[{ "node": "Merge FU3", "type": "main", "index": 0 }]] },
+    "Merge FU1": { "main": [[{ "node": "Enviar FollowUp", "type": "main", "index": 0 }]] },
+    "Merge FU2": { "main": [[{ "node": "Enviar FollowUp", "type": "main", "index": 0 }]] },
+    "Merge FU3": { "main": [[{ "node": "Enviar FollowUp", "type": "main", "index": 0 }]] },
+    "Enviar FollowUp": { "main": [[{ "node": "Calcular Proximo FU", "type": "main", "index": 0 }]] },
+    "Calcular Proximo FU": {
+      "main": [[
+        { "node": "Atualizar Supabase FU", "type": "main", "index": 0 },
+        { "node": "Salvar FU no Histórico", "type": "main", "index": 0 }
+      ]]
+    },
+    "Atualizar Supabase FU": { "main": [[{ "node": "Wait 10s Entre Contatos", "type": "main", "index": 0 }]] },
+    "Wait 10s Entre Contatos": { "main": [[{ "node": "Loop Contatos", "type": "main", "index": 0 }]] }
+  },
+
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "meta": {
+    "instanceId": "nutri-juliana-followup"
+  }
+}
