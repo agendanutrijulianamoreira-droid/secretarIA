@@ -1,0 +1,371 @@
+{
+  "name": "SecretarIA Nutri Juliana — Reengajamento de Inativos",
+  "nodes": [
+
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 9 * * *" }] }
+      },
+      "id": "re000001-0000-0000-0000-000000000001",
+      "name": "Cron Diário 9h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-800, 600]
+    },
+
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/profiles",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+        ]},
+        "sendQuery": true,
+        "queryParameters": { "parameters": [
+          { "name": "onboarding_completo", "value": "eq.true" },
+          { "name": "wa_conectado",        "value": "eq.true" },
+          { "name": "plano_ativo",         "value": "eq.true" },
+          { "name": "select",              "value": "id,wa_phone_number_id,wa_access_token" }
+        ]},
+        "options": {}
+      },
+      "id": "re000002-0000-0000-0000-000000000002",
+      "name": "Buscar Tenants Ativos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-560, 600]
+    },
+
+    {
+      "parameters": { "options": {} },
+      "id": "re000003-0000-0000-0000-000000000003",
+      "name": "Loop Tenants",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [-320, 600]
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/get_tenant_config",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Content-Type",  "value": "application/json" }
+        ]},
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ p_user_id: $json.id }) }}",
+        "options": {}
+      },
+      "id": "re000004-0000-0000-0000-000000000004",
+      "name": "Buscar Config Tenant",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-80, 600]
+    },
+
+    {
+      "parameters": {
+        "jsCode": "const cfg = $input.first().json;\nconst tenant = $('Loop Tenants').item.json;\n\nif (cfg.reengajamento_ativo !== 'true') return [];\n\nconst dias = parseInt(cfg.reengajamento_dias || '30', 10);\nconst corte = new Date(Date.now() - dias * 86400 * 1000);\n\nreturn [{\n  json: {\n    user_id: tenant.id,\n    wa_phone_number_id: tenant.wa_phone_number_id,\n    wa_access_token: tenant.wa_access_token,\n    nome_assistente: cfg.nome_assistente || 'Lívia',\n    dias: dias,\n    corte: corte.toISOString()\n  }\n}];"
+      },
+      "id": "re000005-0000-0000-0000-000000000005",
+      "name": "Verificar Config Reengajamento",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [160, 600]
+    },
+
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/contatos",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+        ]},
+        "sendQuery": true,
+        "queryParameters": { "parameters": [
+          { "name": "user_id",     "value": "=eq.{{ $json.user_id }}" },
+          { "name": "etiqueta",    "value": "in.(PACIENTE_ATIVO,INATIVO_30D)" },
+          { "name": "ia_pausada",  "value": "eq.false" },
+          { "name": "lgpd_consent","value": "eq.true" },
+          { "name": "select",      "value": "*" },
+          { "name": "limit",       "value": "100" }
+        ]},
+        "options": {}
+      },
+      "id": "re000006-0000-0000-0000-000000000006",
+      "name": "Buscar Candidatos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [400, 600]
+    },
+
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Verificar Config Reengajamento').item.json;\nconst corte = new Date(ctx.corte);\nconst agora = new Date();\n\nconst elegiveis = $input.all().filter(item => {\n  const c = item.json;\n  const ref = c.ultima_mensagem || c.updated_at;\n  if (!ref) return false;\n  if (new Date(ref) >= corte) return false;\n\n  // Anti-spam: não reenviar se reengajamento foi há menos de 30 dias\n  if (c.reengajamento_enviado_em) {\n    const diasDesde = (agora - new Date(c.reengajamento_enviado_em)) / 86400000;\n    if (diasDesde < 30) return false;\n  }\n  return true;\n});\n\nreturn elegiveis.map(item => ({\n  json: {\n    ...item.json,\n    wa_phone_number_id: ctx.wa_phone_number_id,\n    wa_access_token: ctx.wa_access_token,\n    nome_assistente: ctx.nome_assistente\n  }\n}));"
+      },
+      "id": "re000007-0000-0000-0000-000000000007",
+      "name": "Filtrar Inativos Elegíveis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [640, 600]
+    },
+
+    {
+      "parameters": { "options": {} },
+      "id": "re000008-0000-0000-0000-000000000008",
+      "name": "Loop Inativos",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [880, 600]
+    },
+
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [{ "id": "rc1", "leftValue": "={{ $json.etiqueta }}", "rightValue": "PACIENTE_ATIVO", "operator": { "type": "string", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "renameOutput": true, "outputKey": "PACIENTE"
+            },
+            {
+              "conditions": {
+                "conditions": [{ "id": "rc2", "leftValue": "={{ $json.etiqueta }}", "rightValue": "INATIVO_30D", "operator": { "type": "string", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "renameOutput": true, "outputKey": "INATIVO"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "re000009-0000-0000-0000-000000000009",
+      "name": "Switch Tipo Contato",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [1120, 600]
+    },
+
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Gere mensagem de reengajamento para paciente ativa que sumiu:\n- Nome: {{ $json.nome || 'paciente' }}\n- Foco de saúde: {{ $json.principal_queixa || 'saúde e bem-estar' }}\n- Plano: {{ $json.plano_ativo || 'não informado' }}",
+        "options": {
+          "systemMessage": "Você é a REINO IA, assistente de acompanhamento do consultório de nutrição.\n\nGere mensagem de reengajamento para PACIENTE ATIVA que não interage há algum tempo.\n\nDiretrizes:\n- Tom de cuidado genuíno, como quem sentiu falta\n- Pergunte como ela está e se está mantendo os hábitos\n- Ofereça suporte sem cobrar\n- Máximo 3 parágrafos curtos\n- Use 1 emoji (💛 ou 🌿)\n- NUNCA mencione preços\n\nRetorne APENAS o texto da mensagem, sem aspas."
+        }
+      },
+      "id": "re000010-0000-0000-0000-000000000010",
+      "name": "Gerar Msg Paciente Ativo",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [1360, 480]
+    },
+
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Gere mensagem de reengajamento para lead/ex-paciente inativa:\n- Nome: {{ $json.nome || 'pessoa' }}\n- Queixa original: {{ $json.principal_queixa || 'saúde e bem-estar' }}",
+        "options": {
+          "systemMessage": "Você é a Lívia, assistente do consultório de nutrição.\n\nGere mensagem de reengajamento para alguém inativa há 30+ dias.\n\nDiretrizes:\n- Tom gentil, sem pressão\n- Mencione sutilmente a queixa original\n- Convide para retomar o cuidado com saúde\n- Deixe claro que a porta está aberta\n- Máximo 3 parágrafos curtos\n- Use 1 emoji (💛)\n- NUNCA mencione preços\n\nRetorne APENAS o texto da mensagem, sem aspas."
+        }
+      },
+      "id": "re000011-0000-0000-0000-000000000011",
+      "name": "Gerar Msg Inativo 30D",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [1360, 720]
+    },
+
+    {
+      "parameters": { "model": "gpt-4.1-mini", "options": {} },
+      "id": "re000012-0000-0000-0000-000000000012",
+      "name": "OpenAI Paciente",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [1360, 320],
+      "credentials": { "openAiApi": { "id": "OPENAI_CREDENTIAL_ID", "name": "OpenAI API" } }
+    },
+
+    {
+      "parameters": { "model": "gpt-4.1-mini", "options": {} },
+      "id": "re000013-0000-0000-0000-000000000013",
+      "name": "OpenAI Inativo",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [1360, 560],
+      "credentials": { "openAiApi": { "id": "OPENAI_CREDENTIAL_ID", "name": "OpenAI API" } }
+    },
+
+    {
+      "parameters": {
+        "assignments": { "assignments": [
+          { "id": "rm1", "name": "mensagem",          "value": "={{ $json.text }}",                                           "type": "string" },
+          { "id": "rm2", "name": "phone_destino",     "value": "={{ $('Loop Inativos').item.json.phone }}",                  "type": "string" },
+          { "id": "rm3", "name": "wa_phone_number_id","value": "={{ $('Loop Inativos').item.json.wa_phone_number_id }}",     "type": "string" },
+          { "id": "rm4", "name": "wa_access_token",   "value": "={{ $('Loop Inativos').item.json.wa_access_token }}",        "type": "string" }
+        ]},
+        "options": {}
+      },
+      "id": "re000014-0000-0000-0000-000000000014",
+      "name": "Merge Paciente",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1600, 480]
+    },
+
+    {
+      "parameters": {
+        "assignments": { "assignments": [
+          { "id": "rm5", "name": "mensagem",          "value": "={{ $json.text }}",                                           "type": "string" },
+          { "id": "rm6", "name": "phone_destino",     "value": "={{ $('Loop Inativos').item.json.phone }}",                  "type": "string" },
+          { "id": "rm7", "name": "wa_phone_number_id","value": "={{ $('Loop Inativos').item.json.wa_phone_number_id }}",     "type": "string" },
+          { "id": "rm8", "name": "wa_access_token",   "value": "={{ $('Loop Inativos').item.json.wa_access_token }}",        "type": "string" }
+        ]},
+        "options": {}
+      },
+      "id": "re000015-0000-0000-0000-000000000015",
+      "name": "Merge Inativo",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1600, 720]
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v18.0/{{ $json.wa_phone_number_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "Authorization", "value": "=Bearer {{ $json.wa_access_token }}" },
+          { "name": "Content-Type",  "value": "application/json" }
+        ]},
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: $json.phone_destino, type: 'text', text: { preview_url: false, body: $json.mensagem } }) }}",
+        "options": {}
+      },
+      "id": "re000016-0000-0000-0000-000000000016",
+      "name": "Enviar via Cloud API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1840, 600]
+    },
+
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/contatos",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Content-Type",  "value": "application/json" }
+        ]},
+        "sendQuery": true,
+        "queryParameters": { "parameters": [
+          { "name": "phone", "value": "=eq.{{ $json.phone_destino }}" }
+        ]},
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ reengajamento_enviado_em: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "re000017-0000-0000-0000-000000000017",
+      "name": "Registrar Reengajamento",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2080, 480]
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/n8n_chat_histories",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Content-Type",  "value": "application/json" }
+        ]},
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ session_id: $json.phone_destino, message: { type: 'ai', content: '[REENGAJAMENTO AUTOMÁTICO]: ' + $json.mensagem.replace(/\\n/g, ' ') }, created_at: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "re000018-0000-0000-0000-000000000018",
+      "name": "Salvar Histórico",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2080, 720]
+    },
+
+    {
+      "parameters": { "amount": 1, "unit": "seconds" },
+      "id": "re000019-0000-0000-0000-000000000019",
+      "name": "Delay 1s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [2320, 600],
+      "webhookId": "nutri-reeng-wait"
+    }
+
+  ],
+
+  "connections": {
+    "Cron Diário 9h":        { "main": [[{ "node": "Buscar Tenants Ativos",          "type": "main", "index": 0 }]] },
+    "Buscar Tenants Ativos": { "main": [[{ "node": "Loop Tenants",                   "type": "main", "index": 0 }]] },
+    "Loop Tenants": {
+      "main": [
+        [{ "node": "Buscar Config Tenant", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Buscar Config Tenant":            { "main": [[{ "node": "Verificar Config Reengajamento", "type": "main", "index": 0 }]] },
+    "Verificar Config Reengajamento":  { "main": [[{ "node": "Buscar Candidatos",              "type": "main", "index": 0 }]] },
+    "Buscar Candidatos":               { "main": [[{ "node": "Filtrar Inativos Elegíveis",     "type": "main", "index": 0 }]] },
+    "Filtrar Inativos Elegíveis":      { "main": [[{ "node": "Loop Inativos",                  "type": "main", "index": 0 }]] },
+    "Loop Inativos": {
+      "main": [
+        [{ "node": "Switch Tipo Contato", "type": "main", "index": 0 }],
+        [{ "node": "Loop Tenants",        "type": "main", "index": 0 }]
+      ]
+    },
+    "Switch Tipo Contato": {
+      "main": [
+        [{ "node": "Gerar Msg Paciente Ativo", "type": "main", "index": 0 }],
+        [{ "node": "Gerar Msg Inativo 30D",    "type": "main", "index": 0 }]
+      ]
+    },
+    "OpenAI Paciente": { "ai_languageModel": [[{ "node": "Gerar Msg Paciente Ativo", "type": "ai_languageModel", "index": 0 }]] },
+    "OpenAI Inativo":  { "ai_languageModel": [[{ "node": "Gerar Msg Inativo 30D",    "type": "ai_languageModel", "index": 0 }]] },
+    "Gerar Msg Paciente Ativo": { "main": [[{ "node": "Merge Paciente", "type": "main", "index": 0 }]] },
+    "Gerar Msg Inativo 30D":    { "main": [[{ "node": "Merge Inativo",  "type": "main", "index": 0 }]] },
+    "Merge Paciente":  { "main": [[{ "node": "Enviar via Cloud API", "type": "main", "index": 0 }]] },
+    "Merge Inativo":   { "main": [[{ "node": "Enviar via Cloud API", "type": "main", "index": 0 }]] },
+    "Enviar via Cloud API": {
+      "main": [[
+        { "node": "Registrar Reengajamento", "type": "main", "index": 0 },
+        { "node": "Salvar Histórico",        "type": "main", "index": 0 }
+      ]]
+    },
+    "Registrar Reengajamento": { "main": [[{ "node": "Delay 1s",      "type": "main", "index": 0 }]] },
+    "Delay 1s":                { "main": [[{ "node": "Loop Inativos",  "type": "main", "index": 0 }]] }
+  },
+
+  "pinData": {},
+  "settings": { "executionOrder": "v1", "saveManualExecutions": true },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "meta": { "instanceId": "nutri-juliana-reengajamento" }
+}

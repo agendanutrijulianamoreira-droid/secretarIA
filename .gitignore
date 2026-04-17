@@ -1,6 +1,27 @@
-node_modules
-dist
+# Dependencies
+node_modules/
+app/node_modules/
+
+# Build output
+app/dist/
+app/.vite/
+
+# Environment variables (NEVER commit)
 .env
-.env.local
+app/.env
+*.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
 .DS_Store
-.env.local
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp
+
+# Claude
+.claude/settings.local.json

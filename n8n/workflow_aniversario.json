@@ -1,0 +1,290 @@
+{
+  "name": "SecretarIA Nutri Juliana — Mensagem de Aniversário",
+  "nodes": [
+
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "cronExpression", "expression": "0 8 * * *" }] }
+      },
+      "id": "an000001-0000-0000-0000-000000000001",
+      "name": "Cron Diário 8h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-800, 600]
+    },
+
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/profiles",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+        ]},
+        "sendQuery": true,
+        "queryParameters": { "parameters": [
+          { "name": "onboarding_completo", "value": "eq.true" },
+          { "name": "wa_conectado",        "value": "eq.true" },
+          { "name": "plano_ativo",         "value": "eq.true" },
+          { "name": "select",              "value": "id,wa_phone_number_id,wa_access_token" }
+        ]},
+        "options": {}
+      },
+      "id": "an000002-0000-0000-0000-000000000002",
+      "name": "Buscar Tenants Ativos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-560, 600]
+    },
+
+    {
+      "parameters": { "options": {} },
+      "id": "an000003-0000-0000-0000-000000000003",
+      "name": "Loop Tenants",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [-320, 600]
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/get_tenant_config",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Content-Type",  "value": "application/json" }
+        ]},
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ p_user_id: $json.id }) }}",
+        "options": {}
+      },
+      "id": "an000004-0000-0000-0000-000000000004",
+      "name": "Buscar Config Tenant",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-80, 600]
+    },
+
+    {
+      "parameters": {
+        "jsCode": "const cfg = $input.first().json;\nconst tenant = $('Loop Tenants').item.json;\nif (cfg.aniversario_ativo !== 'true') return [];\nreturn [{\n  json: {\n    user_id: tenant.id,\n    wa_phone_number_id: tenant.wa_phone_number_id,\n    wa_access_token: tenant.wa_access_token\n  }\n}];"
+      },
+      "id": "an000005-0000-0000-0000-000000000005",
+      "name": "Verificar Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [160, 600]
+    },
+
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/contatos",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+        ]},
+        "sendQuery": true,
+        "queryParameters": { "parameters": [
+          { "name": "user_id",        "value": "=eq.{{ $json.user_id }}" },
+          { "name": "lgpd_consent",   "value": "eq.true" },
+          { "name": "ia_pausada",     "value": "eq.false" },
+          { "name": "select",         "value": "*" },
+          { "name": "limit",          "value": "200" }
+        ]},
+        "options": {}
+      },
+      "id": "an000006-0000-0000-0000-000000000006",
+      "name": "Buscar Todos Contatos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [400, 600]
+    },
+
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Verificar Config').item.json;\nconst hoje = new Date();\nconst mesHoje = hoje.getMonth() + 1;  // 1-12\nconst diaHoje = hoje.getDate();\nconst anoHoje = hoje.getFullYear();\n\nconst aniversariantes = $input.all().filter(item => {\n  const c = item.json;\n  if (!c.data_nascimento) return false;\n  const [ano, mes, dia] = c.data_nascimento.split('-').map(Number);\n  if (mes !== mesHoje || dia !== diaHoje) return false;\n\n  // Evita reenvio no mesmo ano\n  if (c.aniversario_enviado_em) {\n    const enviado = new Date(c.aniversario_enviado_em);\n    if (enviado.getFullYear() >= anoHoje) return false;\n  }\n  return true;\n});\n\nreturn aniversariantes.map(item => ({\n  json: {\n    ...item.json,\n    wa_phone_number_id: ctx.wa_phone_number_id,\n    wa_access_token: ctx.wa_access_token\n  }\n}));"
+      },
+      "id": "an000007-0000-0000-0000-000000000007",
+      "name": "Filtrar Aniversariantes Hoje",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [640, 600]
+    },
+
+    {
+      "parameters": { "options": {} },
+      "id": "an000008-0000-0000-0000-000000000008",
+      "name": "Loop Aniversariantes",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [880, 600]
+    },
+
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Gere uma mensagem de aniversário para:\n- Nome: {{ $json.nome || 'paciente' }}\n- Foco de saúde: {{ $json.principal_queixa || 'saúde e bem-estar' }}\n- Status: {{ $json.etiqueta || 'PACIENTE_ATIVO' }}",
+        "options": {
+          "systemMessage": "Você é a REINO IA, assistente de acompanhamento do consultório de nutrição.\n\nGere uma mensagem CURTA, CALOROSA e PERSONALIZADA de aniversário.\n\nDiretrizes:\n- Deseje feliz aniversário pelo nome\n- Faça uma referência sutil ao cuidado com a saúde\n- Tom íntimo, feminino, de quem genuinamente se importa\n- Máximo 3 parágrafos curtos\n- Use apenas 1 emoji (🎂 ou 🎉 ou 💛)\n- NUNCA mencione preços ou diagnósticos\n\nRetorne APENAS o texto da mensagem, sem aspas ou prefixos."
+        }
+      },
+      "id": "an000009-0000-0000-0000-000000000009",
+      "name": "Gerar Mensagem Aniversário",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [1120, 600]
+    },
+
+    {
+      "parameters": { "model": "gpt-4.1-mini", "options": {} },
+      "id": "an000010-0000-0000-0000-000000000010",
+      "name": "OpenAI Aniversário",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [1120, 400],
+      "credentials": { "openAiApi": { "id": "OPENAI_CREDENTIAL_ID", "name": "OpenAI API" } }
+    },
+
+    {
+      "parameters": {
+        "assignments": { "assignments": [
+          { "id": "am1", "name": "mensagem",          "value": "={{ $json.text }}",                                              "type": "string" },
+          { "id": "am2", "name": "phone_destino",     "value": "={{ $('Loop Aniversariantes').item.json.phone }}",              "type": "string" },
+          { "id": "am3", "name": "wa_phone_number_id","value": "={{ $('Loop Aniversariantes').item.json.wa_phone_number_id }}", "type": "string" },
+          { "id": "am4", "name": "wa_access_token",   "value": "={{ $('Loop Aniversariantes').item.json.wa_access_token }}",    "type": "string" }
+        ]},
+        "options": {}
+      },
+      "id": "an000011-0000-0000-0000-000000000011",
+      "name": "Montar Dados Aniversário",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1360, 600]
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v18.0/{{ $json.wa_phone_number_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "Authorization", "value": "=Bearer {{ $json.wa_access_token }}" },
+          { "name": "Content-Type",  "value": "application/json" }
+        ]},
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: $json.phone_destino, type: 'text', text: { preview_url: false, body: $json.mensagem } }) }}",
+        "options": {}
+      },
+      "id": "an000012-0000-0000-0000-000000000012",
+      "name": "Enviar Aniversário via Cloud API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1600, 600]
+    },
+
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/contatos",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Content-Type",  "value": "application/json" }
+        ]},
+        "sendQuery": true,
+        "queryParameters": { "parameters": [
+          { "name": "phone", "value": "=eq.{{ $json.phone_destino }}" }
+        ]},
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ aniversario_enviado_em: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "an000013-0000-0000-0000-000000000013",
+      "name": "Registrar Envio Aniversário",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1840, 480]
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/n8n_chat_histories",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Content-Type",  "value": "application/json" }
+        ]},
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ session_id: $json.phone_destino, message: { type: 'ai', content: '[ANIVERSÁRIO AUTOMÁTICO]: ' + $json.mensagem.replace(/\\n/g, ' ') }, created_at: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "an000014-0000-0000-0000-000000000014",
+      "name": "Salvar Histórico Aniversário",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1840, 720]
+    },
+
+    {
+      "parameters": { "amount": 1, "unit": "seconds" },
+      "id": "an000015-0000-0000-0000-000000000015",
+      "name": "Delay 1s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [2080, 600],
+      "webhookId": "nutri-aniv-wait"
+    }
+
+  ],
+
+  "connections": {
+    "Cron Diário 8h":        { "main": [[{ "node": "Buscar Tenants Ativos",      "type": "main", "index": 0 }]] },
+    "Buscar Tenants Ativos": { "main": [[{ "node": "Loop Tenants",               "type": "main", "index": 0 }]] },
+    "Loop Tenants": {
+      "main": [
+        [{ "node": "Buscar Config Tenant", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Buscar Config Tenant":  { "main": [[{ "node": "Verificar Config",             "type": "main", "index": 0 }]] },
+    "Verificar Config":      { "main": [[{ "node": "Buscar Todos Contatos",        "type": "main", "index": 0 }]] },
+    "Buscar Todos Contatos": { "main": [[{ "node": "Filtrar Aniversariantes Hoje", "type": "main", "index": 0 }]] },
+    "Filtrar Aniversariantes Hoje": { "main": [[{ "node": "Loop Aniversariantes", "type": "main", "index": 0 }]] },
+    "Loop Aniversariantes": {
+      "main": [
+        [{ "node": "Gerar Mensagem Aniversário", "type": "main", "index": 0 }],
+        [{ "node": "Loop Tenants",               "type": "main", "index": 0 }]
+      ]
+    },
+    "OpenAI Aniversário":    { "ai_languageModel": [[{ "node": "Gerar Mensagem Aniversário", "type": "ai_languageModel", "index": 0 }]] },
+    "Gerar Mensagem Aniversário": { "main": [[{ "node": "Montar Dados Aniversário",          "type": "main", "index": 0 }]] },
+    "Montar Dados Aniversário":   { "main": [[{ "node": "Enviar Aniversário via Cloud API",  "type": "main", "index": 0 }]] },
+    "Enviar Aniversário via Cloud API": {
+      "main": [[
+        { "node": "Registrar Envio Aniversário",  "type": "main", "index": 0 },
+        { "node": "Salvar Histórico Aniversário", "type": "main", "index": 0 }
+      ]]
+    },
+    "Registrar Envio Aniversário": { "main": [[{ "node": "Delay 1s",             "type": "main", "index": 0 }]] },
+    "Delay 1s":              { "main": [[{ "node": "Loop Aniversariantes",        "type": "main", "index": 0 }]] }
+  },
+
+  "pinData": {},
+  "settings": { "executionOrder": "v1", "saveManualExecutions": true },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "meta": { "instanceId": "nutri-juliana-aniversario" }
+}

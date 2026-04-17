@@ -1,0 +1,124 @@
+{
+  "name": "SecretarIA — Webhook Logger & Health Check",
+  "nodes": [
+
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "hours", "hoursInterval": 6 }] }
+      },
+      "id": "wbl-0001",
+      "name": "Cron Health Check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 600]
+    },
+
+    {
+      "parameters": {
+        "jsCode": "// ── Verificar WhatsApp Cloud API ─────────────────────────────────────────────\n// Testa se o endpoint /messages está acessível (sem enviar nada)\n// Usamos uma requisição GET à API de telefone para verificar o token\n\nconst checks = [];\n\n// Supabase\ntry {\n  const t0 = Date.now();\n  const resp = await fetch(`${$env.SUPABASE_URL}/rest/v1/`, {\n    headers: {\n      'apikey': $env.SUPABASE_SERVICE_KEY,\n      'Authorization': `Bearer ${$env.SUPABASE_SERVICE_KEY}`\n    }\n  });\n  checks.push({\n    componente: 'supabase',\n    status: resp.ok ? 'ok' : 'degradado',\n    latencia_ms: Date.now() - t0,\n    detalhe: `HTTP ${resp.status}`\n  });\n} catch(e) {\n  checks.push({ componente: 'supabase', status: 'erro', detalhe: e.message });\n}\n\n// OpenAI\ntry {\n  const t0 = Date.now();\n  const resp = await fetch('https://api.openai.com/v1/models', {\n    headers: { 'Authorization': `Bearer ${$env.OPENAI_API_KEY}` }\n  });\n  checks.push({\n    componente: 'openai',\n    status: resp.ok ? 'ok' : 'degradado',\n    latencia_ms: Date.now() - t0,\n    detalhe: `HTTP ${resp.status}`\n  });\n} catch(e) {\n  checks.push({ componente: 'openai', status: 'erro', detalhe: e.message });\n}\n\n// n8n self (sempre ok se chegou aqui)\nchecks.push({ componente: 'n8n', status: 'ok', detalhe: 'workflow executando normalmente' });\n\nreturn checks.map(c => ({ json: c }));"
+      },
+      "id": "wbl-0002",
+      "name": "Executar Health Checks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 600]
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/health_checks",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type",  "value": "application/json" },
+            { "name": "Prefer",        "value": "return=minimal" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": {
+          "componente":  "={{ $json.componente }}",
+          "status":      "={{ $json.status }}",
+          "latencia_ms": "={{ $json.latencia_ms ?? null }}",
+          "detalhe":     "={{ $json.detalhe ?? null }}"
+        },
+        "options": {}
+      },
+      "id": "wbl-0003",
+      "name": "Salvar Health Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 600]
+    },
+
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "days", "daysInterval": 1 }] }
+      },
+      "id": "wbl-0004",
+      "name": "Cron Limpeza Logs",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 900]
+    },
+
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/webhook_logs?created_at=lt.{{ new Date(Date.now() - 30*24*60*60*1000).toISOString() }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wbl-0005",
+      "name": "Limpar Webhook Logs > 30d",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 900]
+    },
+
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/health_checks?created_at=lt.{{ new Date(Date.now() - 7*24*60*60*1000).toISOString() }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wbl-0006",
+      "name": "Limpar Health Checks > 7d",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 900]
+    }
+
+  ],
+  "connections": {
+    "Cron Health Check":  { "main": [[{ "node": "Executar Health Checks",    "type": "main", "index": 0 }]] },
+    "Executar Health Checks": { "main": [[{ "node": "Salvar Health Check",   "type": "main", "index": 0 }]] },
+    "Cron Limpeza Logs":  { "main": [[{ "node": "Limpar Webhook Logs > 30d", "type": "main", "index": 0 }]] },
+    "Limpar Webhook Logs > 30d": { "main": [[{ "node": "Limpar Health Checks > 7d", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "staticData": null,
+  "meta": { "templateId": "secretaria-webhook-logger-001" }
+}

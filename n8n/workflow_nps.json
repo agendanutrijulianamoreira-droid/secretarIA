@@ -1,0 +1,292 @@
+{
+  "name": "SecretarIA Nutri Juliana — NPS Pós-Consulta",
+  "nodes": [
+
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "hours", "hoursInterval": 2 }] }
+      },
+      "id": "np000001-0000-0000-0000-000000000001",
+      "name": "Cron 2h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-800, 600]
+    },
+
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/profiles",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+        ]},
+        "sendQuery": true,
+        "queryParameters": { "parameters": [
+          { "name": "onboarding_completo", "value": "eq.true" },
+          { "name": "wa_conectado",        "value": "eq.true" },
+          { "name": "plano_ativo",         "value": "eq.true" },
+          { "name": "select",              "value": "id,wa_phone_number_id,wa_access_token" }
+        ]},
+        "options": {}
+      },
+      "id": "np000002-0000-0000-0000-000000000002",
+      "name": "Buscar Tenants Ativos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-560, 600]
+    },
+
+    {
+      "parameters": { "options": {} },
+      "id": "np000003-0000-0000-0000-000000000003",
+      "name": "Loop Tenants",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [-320, 600]
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/get_tenant_config",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Content-Type",  "value": "application/json" }
+        ]},
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ p_user_id: $json.id }) }}",
+        "options": {}
+      },
+      "id": "np000004-0000-0000-0000-000000000004",
+      "name": "Buscar Config Tenant",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-80, 600]
+    },
+
+    {
+      "parameters": {
+        "jsCode": "const cfg = $input.first().json;\nconst tenant = $('Loop Tenants').item.json;\n\nif (cfg.nps_ativo !== 'true') return [];\n\nconst horas = parseInt(cfg.nps_horas_apos_consulta || '48', 10);\nconst agora = new Date();\n// Janela: consulta ocorreu entre (agora - horas - 2h) e (agora - horas)\nconst janela_inicio = new Date(agora.getTime() - (horas + 2) * 3600 * 1000);\nconst janela_fim    = new Date(agora.getTime() - horas * 3600 * 1000);\n\nreturn [{\n  json: {\n    user_id: tenant.id,\n    wa_phone_number_id: tenant.wa_phone_number_id,\n    wa_access_token: tenant.wa_access_token,\n    nome_assistente: cfg.nome_assistente || 'REINO IA',\n    janela_inicio: janela_inicio.toISOString(),\n    janela_fim: janela_fim.toISOString()\n  }\n}];"
+      },
+      "id": "np000005-0000-0000-0000-000000000005",
+      "name": "Verificar Config NPS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [160, 600]
+    },
+
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/contatos",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
+        ]},
+        "sendQuery": true,
+        "queryParameters": { "parameters": [
+          { "name": "user_id",     "value": "=eq.{{ $json.user_id }}" },
+          { "name": "etiqueta",    "value": "eq.PACIENTE_ATIVO" },
+          { "name": "nps_enviado", "value": "eq.false" },
+          { "name": "ia_pausada",  "value": "eq.false" },
+          { "name": "lgpd_consent","value": "eq.true" },
+          { "name": "select",      "value": "*" },
+          { "name": "limit",       "value": "50" }
+        ]},
+        "options": {}
+      },
+      "id": "np000006-0000-0000-0000-000000000006",
+      "name": "Buscar Pacientes Sem NPS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [400, 600]
+    },
+
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Verificar Config NPS').item.json;\nconst inicio = new Date(ctx.janela_inicio);\nconst fim    = new Date(ctx.janela_fim);\n\nconst elegiveis = $input.all().filter(item => {\n  const ref = item.json.consulta_agendada_em || item.json.updated_at;\n  if (!ref) return false;\n  const data = new Date(ref);\n  return data >= inicio && data <= fim;\n});\n\nreturn elegiveis.map(item => ({\n  json: {\n    ...item.json,\n    wa_phone_number_id: ctx.wa_phone_number_id,\n    wa_access_token: ctx.wa_access_token,\n    nome_assistente: ctx.nome_assistente\n  }\n}));"
+      },
+      "id": "np000007-0000-0000-0000-000000000007",
+      "name": "Filtrar Janela NPS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [640, 600]
+    },
+
+    {
+      "parameters": { "options": {} },
+      "id": "np000008-0000-0000-0000-000000000008",
+      "name": "Loop Contatos NPS",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [880, 600]
+    },
+
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Gere uma mensagem de NPS para:\n- Nome: {{ $json.nome || 'paciente' }}\n- Queixa / foco de saúde: {{ $json.principal_queixa || 'não informada' }}",
+        "options": {
+          "systemMessage": "Você é a REINO IA, assistente de acompanhamento do consultório de nutrição.\n\nGere uma mensagem CURTA e CALOROSA pedindo avaliação da consulta.\n\nDiretrizes:\n- Reconheça a consulta que aconteceu\n- Peça uma nota de 0 a 10 de forma simples (0 = péssimo, 10 = excelente)\n- Tom íntimo e encorajador\n- Máximo 3 parágrafos curtos\n- Use 1 emoji (💛 ou ✨)\n- NUNCA mencione preços ou planos\n\nRetorne APENAS o texto da mensagem, sem aspas ou prefixos."
+        }
+      },
+      "id": "np000009-0000-0000-0000-000000000009",
+      "name": "Gerar Mensagem NPS",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [1120, 600]
+    },
+
+    {
+      "parameters": { "model": "gpt-4.1-mini", "options": {} },
+      "id": "np000010-0000-0000-0000-000000000010",
+      "name": "OpenAI NPS",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [1120, 400],
+      "credentials": { "openAiApi": { "id": "OPENAI_CREDENTIAL_ID", "name": "OpenAI API" } }
+    },
+
+    {
+      "parameters": {
+        "assignments": { "assignments": [
+          { "id": "nm1", "name": "mensagem",          "value": "={{ $json.text }}",                                          "type": "string" },
+          { "id": "nm2", "name": "phone_destino",     "value": "={{ $('Loop Contatos NPS').item.json.phone }}",             "type": "string" },
+          { "id": "nm3", "name": "wa_phone_number_id","value": "={{ $('Loop Contatos NPS').item.json.wa_phone_number_id }}","type": "string" },
+          { "id": "nm4", "name": "wa_access_token",   "value": "={{ $('Loop Contatos NPS').item.json.wa_access_token }}",   "type": "string" }
+        ]},
+        "options": {}
+      },
+      "id": "np000011-0000-0000-0000-000000000011",
+      "name": "Montar Dados NPS",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1360, 600]
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v18.0/{{ $json.wa_phone_number_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "Authorization", "value": "=Bearer {{ $json.wa_access_token }}" },
+          { "name": "Content-Type",  "value": "application/json" }
+        ]},
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: $json.phone_destino, type: 'text', text: { preview_url: false, body: $json.mensagem } }) }}",
+        "options": {}
+      },
+      "id": "np000012-0000-0000-0000-000000000012",
+      "name": "Enviar NPS via Cloud API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1600, 600]
+    },
+
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/contatos",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Content-Type",  "value": "application/json" }
+        ]},
+        "sendQuery": true,
+        "queryParameters": { "parameters": [
+          { "name": "phone", "value": "=eq.{{ $json.phone_destino }}" }
+        ]},
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ nps_enviado: true, nps_enviado_em: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "np000013-0000-0000-0000-000000000013",
+      "name": "Marcar NPS Enviado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1840, 480]
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/n8n_chat_histories",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+          { "name": "Content-Type",  "value": "application/json" }
+        ]},
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ session_id: $json.phone_destino, message: { type: 'ai', content: '[NPS AUTOMÁTICO]: ' + $json.mensagem.replace(/\\n/g, ' ') }, created_at: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "id": "np000014-0000-0000-0000-000000000014",
+      "name": "Salvar Histórico NPS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1840, 720]
+    },
+
+    {
+      "parameters": { "amount": 1, "unit": "seconds" },
+      "id": "np000015-0000-0000-0000-000000000015",
+      "name": "Delay 1s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [2080, 600],
+      "webhookId": "nutri-nps-wait"
+    }
+
+  ],
+
+  "connections": {
+    "Cron 2h":               { "main": [[{ "node": "Buscar Tenants Ativos",   "type": "main", "index": 0 }]] },
+    "Buscar Tenants Ativos": { "main": [[{ "node": "Loop Tenants",            "type": "main", "index": 0 }]] },
+    "Loop Tenants": {
+      "main": [
+        [{ "node": "Buscar Config Tenant", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Buscar Config Tenant":  { "main": [[{ "node": "Verificar Config NPS",     "type": "main", "index": 0 }]] },
+    "Verificar Config NPS":  { "main": [[{ "node": "Buscar Pacientes Sem NPS", "type": "main", "index": 0 }]] },
+    "Buscar Pacientes Sem NPS": { "main": [[{ "node": "Filtrar Janela NPS",    "type": "main", "index": 0 }]] },
+    "Filtrar Janela NPS":    { "main": [[{ "node": "Loop Contatos NPS",        "type": "main", "index": 0 }]] },
+    "Loop Contatos NPS": {
+      "main": [
+        [{ "node": "Gerar Mensagem NPS", "type": "main", "index": 0 }],
+        [{ "node": "Loop Tenants",       "type": "main", "index": 0 }]
+      ]
+    },
+    "OpenAI NPS":            { "ai_languageModel": [[{ "node": "Gerar Mensagem NPS", "type": "ai_languageModel", "index": 0 }]] },
+    "Gerar Mensagem NPS":    { "main": [[{ "node": "Montar Dados NPS",           "type": "main", "index": 0 }]] },
+    "Montar Dados NPS":      { "main": [[{ "node": "Enviar NPS via Cloud API",   "type": "main", "index": 0 }]] },
+    "Enviar NPS via Cloud API": {
+      "main": [[
+        { "node": "Marcar NPS Enviado",   "type": "main", "index": 0 },
+        { "node": "Salvar Histórico NPS", "type": "main", "index": 0 }
+      ]]
+    },
+    "Marcar NPS Enviado":    { "main": [[{ "node": "Delay 1s",          "type": "main", "index": 0 }]] },
+    "Delay 1s":              { "main": [[{ "node": "Loop Contatos NPS", "type": "main", "index": 0 }]] }
+  },
+
+  "pinData": {},
+  "settings": { "executionOrder": "v1", "saveManualExecutions": true },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "meta": { "instanceId": "nutri-juliana-nps" }
+}
