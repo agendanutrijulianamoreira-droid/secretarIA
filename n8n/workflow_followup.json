@@ -10,42 +10,116 @@
           ]
         }
       },
-      "id": "fb000001-0000-0000-0000-000000000001",
+      "id": "node-trigger-cron",
       "name": "Cron 6h",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [-800, 800]
+      "position": [-1200, 800]
     },
-
     {
       "parameters": {
-        "operation": "getAll",
-        "tableId": "contatos",
-        "filters": {
-          "conditions": [
-            { "keyName": "ia_pausada", "condition": "eq", "keyValue": "false" },
-            { "keyName": "lgpd_consent", "condition": "eq", "keyValue": "true" }
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/profiles",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" }
           ]
         },
-        "options": { "limit": 50 }
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "wa_conectado", "value": "eq.true" },
+            { "name": "onboarding_completo", "value": "eq.true" }
+          ]
+        },
+        "options": {}
       },
-      "id": "fb000002-0000-0000-0000-000000000002",
-      "name": "Buscar Elegíveis Followup",
-      "type": "n8n-nodes-base.supabase",
-      "typeVersion": 1,
-      "position": [-560, 800],
-      "credentials": { "supabaseApi": { "id": "NeuU5JBhqto8WxIv", "name": "Teste" } }
+      "id": "node-list-profiles",
+      "name": "Listar Perfis Ativos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-1000, 800]
     },
-
     {
       "parameters": {
-        "jsCode": "const agora = new Date();\nconst itens = $input.all();\n\n// Filtra apenas contatos elegíveis para follow-up:\n// - proximo_followup <= agora\n// - status em LEAD ou AGENDADO\n// - followup_count < 3\nconst elegiveis = itens.filter(item => {\n  const c = item.json;\n  if (!c.proximo_followup) return false;\n  const proximo = new Date(c.proximo_followup);\n  return (\n    proximo <= agora &&\n    ['LEAD', 'AGENDADO'].includes(c.status) &&\n    (c.followup_count || 0) < 3\n  );\n});\n\nreturn elegiveis;"
+        "options": {
+          "batchSize": 1
+        }
       },
-      "id": "fb000003-0000-0000-0000-000000000003",
-      "name": "Filtrar Elegíveis",
-      "type": "n8n-nodes-base.code",
+      "id": "node-loop-profiles",
+      "name": "Loop de Perfis",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [-800, 800]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/get_tenant_config",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ p_user_id: $json.id }) }}",
+        "options": {}
+      },
+      "id": "node-get-tenant-config",
+      "name": "Buscar Config Tenant",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-600, 800]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/get_eligible_followups",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ p_user_id: $('Loop de Perfis').item.json.id, p_limit: 20 }) }}",
+        "options": {}
+      },
+      "id": "node-get-eligible-contacts",
+      "name": "Buscar Contatos Followup",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-400, 800]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "cond-has-contacts",
+              "leftValue": "={{ $json.length }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "greater" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-if-has-contacts",
+      "name": "Tem Contatos?",
+      "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [-320, 800]
+      "position": [-200, 800]
     },
 
     {
@@ -99,12 +173,12 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Gere uma mensagem de follow-up personalizada para: Nome: {{ $json.nome || 'nossa lead' }}, Queixa principal: {{ $json.principal_queixa || 'não informada' }}, Número do follow-up: 1 (D+3 após primeiro contato).",
+        "text": "=Gere uma mensagem de follow-up personalizada para: Nome: {{ $json.nome || 'nossa lead' }}, Queixa principal: {{ $json.principal_queixa || 'não informada' }}, Número do follow-up: 1 (D+3 após primeiro contato). Template base: {{ $('Buscar Config Tenant').first().json.followup_template_1 }}",
         "options": {
-          "systemMessage": "Você é a Lívia, assistente do consultório da Nutri Juliana.\n\nGere uma mensagem de follow-up CURTA e NATURAL (máximo 3 parágrafos curtos) para uma lead que não respondeu após o primeiro contato.\n\nDiretrizes:\n- Tom acolhedor, feminino, sem pressão\n- Mencione a queixa da pessoa de forma natural se disponível\n- Convide para agendar uma avaliação\n- Sem emojis excessivos\n- Nunca mencione preços\n- Use o nome da pessoa\n- Máximo 200 caracteres por parágrafo\n\nRetorne apenas o texto da mensagem, sem aspas, sem prefixos."
+          "systemMessage": "=Você é a {{ $('Buscar Config Tenant').first().json.nome_assistente }}, assistente do consultório da {{ $('Buscar Config Tenant').first().json.nome_profissional }}.\n\nGere uma mensagem de follow-up CURTA e NATURAL para uma lead que não respondeu.\n\nDiretrizes:\n- Tom {{ $('Buscar Config Tenant').first().json.tom_voz }}, feminino, sem pressão\n- Mencione a queixa se disponível\n- Use o nome da pessoa\n- Siga o estilo do template base\n- Máximo 3 parágrafos curtos\n\nRetorne apenas o texto da mensagem."
         }
       },
-      "id": "fb000006-0000-0000-0000-000000000006",
+      "id": "node-ai-fu1",
       "name": "Gerar FU1",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.4,
@@ -114,12 +188,12 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Gere uma mensagem de follow-up personalizada para: Nome: {{ $json.nome || 'nossa lead' }}, Queixa principal: {{ $json.principal_queixa || 'não informada' }}, Número do follow-up: 2 (D+7).",
+        "text": "=Gere uma mensagem de follow-up personalizada para: Nome: {{ $json.nome || 'nossa lead' }}, Queixa principal: {{ $json.principal_queixa || 'não informada' }}, Número do follow-up: 2. Template base: {{ $('Buscar Config Tenant').first().json.followup_template_2 }}",
         "options": {
-          "systemMessage": "Você é a Lívia, assistente do consultório da Nutri Juliana.\n\nGere uma mensagem de follow-up CURTA e NATURAL (máximo 3 parágrafos curtos) para uma lead que não respondeu no 2º contato.\n\nDiretrizes:\n- Tom mais suave, sem insistência\n- Reforce que a porta está aberta\n- Mencione brevemente o impacto do acompanhamento nutricional no dia a dia\n- Sem emojis excessivos\n- Nunca mencione preços\n- Use o nome da pessoa\n- Máximo 200 caracteres por parágrafo\n\nRetorne apenas o texto da mensagem, sem aspas."
+          "systemMessage": "=Você é a {{ $('Buscar Config Tenant').first().json.nome_assistente }}, assistente do consultório da {{ $('Buscar Config Tenant').first().json.nome_profissional }}.\n\nGere uma mensagem de follow-up CURTA e NATURAL.\n\nDiretrizes:\n- Tom {{ $('Buscar Config Tenant').first().json.tom_voz }}, feminino, sem pressão\n- Use o nome da pessoa\n- Siga o estilo do template base\n\nRetorne apenas o texto da mensagem."
         }
       },
-      "id": "fb000007-0000-0000-0000-000000000007",
+      "id": "node-ai-fu2",
       "name": "Gerar FU2",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.4,
@@ -129,12 +203,12 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Gere uma mensagem de follow-up personalizada para: Nome: {{ $json.nome || 'nossa lead' }}, Queixa principal: {{ $json.principal_queixa || 'não informada' }}, Número do follow-up: 3 (FINAL — D+14).",
+        "text": "=Gere uma mensagem de follow-up FINAL personalizada para: Nome: {{ $json.nome || 'nossa lead' }}, Queixa principal: {{ $json.principal_queixa || 'não informada' }}, Número do follow-up: 3. Template base: {{ $('Buscar Config Tenant').first().json.followup_template_3 }}",
         "options": {
-          "systemMessage": "Você é a Lívia, assistente do consultório da Nutri Juliana.\n\nGere uma mensagem de follow-up FINAL e GENTIL para uma lead que não respondeu após 2 tentativas. Este é o último contato.\n\nDiretrizes:\n- Tom de cuidado genuíno, sem mágoa ou pressão\n- Informe que este é o último contato por enquanto\n- Deixe a porta aberta para quando ela estiver pronta\n- Use 💛 no final (único emoji permitido)\n- Nunca mencione preços\n- Use o nome da pessoa\n- Máximo 200 caracteres por parágrafo\n\nRetorne apenas o texto da mensagem, sem aspas."
+          "systemMessage": "=Você é a {{ $('Buscar Config Tenant').first().json.nome_assistente }}, assistente do consultório da {{ $('Buscar Config Tenant').first().json.nome_profissional }}.\n\nEsta é a ÚLTIMA mensagem de contato.\n\nDiretrizes:\n- Tom {{ $('Buscar Config Tenant').first().json.tom_voz }}, feminino, sem pressão\n- Use o nome da pessoa\n- Deixe claro que é o último contato por enquanto\n- Siga o estilo do template base\n\nRetorne apenas o texto da mensagem."
         }
       },
-      "id": "fb000008-0000-0000-0000-000000000008",
+      "id": "node-ai-fu3",
       "name": "Gerar FU3 Final",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.4,
@@ -256,18 +330,25 @@
 
     {
       "parameters": {
-        "resource": "messages-api",
-        "instanceName": "NOME_DA_SUA_INSTANCIA_EVO",
-        "remoteJid": "={{ $json.phone_destino }}",
-        "messageText": "={{ $json.mensagem_followup }}",
-        "options_message": { "delay": 3000, "linkPreview": false }
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v18.0/{{ $('Buscar Config Tenant').first().json.wa_phone_number_id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $('Buscar Config Tenant').first().json.wa_access_token }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: $json.phone_destino, type: 'text', text: { preview_url: false, body: $json.mensagem_followup } }) }}",
+        "options": {}
       },
-      "id": "fb000015-0000-0000-0000-000000000015",
-      "name": "Enviar FollowUp",
-      "type": "n8n-nodes-evolution-api.evolutionApi",
-      "typeVersion": 1,
-      "position": [920, 800],
-      "credentials": { "evolutionApi": { "id": "KHvWRbASZNRfzD3a", "name": "EVOLUTION API" } }
+      "id": "node-send-whatsapp",
+      "name": "Enviar FollowUp (Meta)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [920, 800]
     },
 
     {
@@ -283,54 +364,57 @@
 
     {
       "parameters": {
-        "operation": "update",
-        "tableId": "contatos",
-        "filters": { "conditions": [{ "keyName": "phone", "condition": "eq", "keyValue": "={{ $json.phone_destino }}" }] },
-        "fieldsUi": {
-          "fieldValues": [
-            { "fieldId": "followup_count", "fieldValue": "={{ $json.novo_followup_count }}" },
-            { "fieldId": "ultimo_followup", "fieldValue": "={{ $now }}" },
-            { "fieldId": "proximo_followup", "fieldValue": "={{ $json.novo_proximo_followup }}" },
-            { "fieldId": "status", "fieldValue": "={{ $json.novo_status }}" },
-            { "fieldId": "etiqueta", "fieldValue": "={{ $json.novo_status === 'INATIVO' ? 'INATIVO_30D' : 'FOLLOW_UP_PENDENTE' }}" }
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/contatos",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
           ]
-        }
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "user_id", "value": "=eq.{{ $('Loop de Perfis').item.json.id }}" },
+            { "name": "phone", "value": "=eq.{{ $json.phone_destino }}" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ followup_count: $json.novo_followup_count, ultimo_followup: new Date().toISOString(), proximo_followup: $json.novo_proximo_followup, status: $json.novo_status, etiqueta: ($json.novo_status === 'INATIVO' ? 'INATIVO_30D' : 'FOLLOW_UP_PENDENTE') }) }}",
+        "options": {}
       },
-      "id": "fb000017-0000-0000-0000-000000000017",
+      "id": "node-update-supabase-fu",
       "name": "Atualizar Supabase FU",
-      "type": "n8n-nodes-base.supabase",
-      "typeVersion": 1,
-      "position": [1400, 800],
-      "credentials": { "supabaseApi": { "id": "NeuU5JBhqto8WxIv", "name": "Teste" } }
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 800]
     },
 
     {
       "parameters": {
-        "schema": { "__rl": true, "mode": "list", "value": "public" },
-        "table": { "__rl": true, "value": "n8n_chat_histories", "mode": "list", "cachedResultName": "n8n_chat_histories" },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "session_id": "={{ $json.phone_destino }}",
-            "message": "={\"type\": \"ai\", \"content\": \"[FOLLOW-UP AUTOMÁTICO]: {{ $json.mensagem_followup.replace(/\\n/g, ' ') }}\", \"additional_kwargs\": {}, \"response_metadata\": {}}"
-          },
-          "matchingColumns": ["id"],
-          "schema": [
-            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "number", "canBeUsedToMatch": true, "removed": true },
-            { "id": "session_id", "displayName": "session_id", "required": true, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "message", "displayName": "message", "required": true, "defaultMatch": false, "display": true, "type": "object", "canBeUsedToMatch": true }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/historico_conversas",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
         },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ phone: $json.phone_destino, role: 'assistant', content: $json.mensagem_followup, tipo_midia: 'texto', agente: 'followup' }) }}",
         "options": {}
       },
-      "id": "fb000018-0000-0000-0000-000000000018",
+      "id": "node-save-fu-history",
       "name": "Salvar FU no Histórico",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.5,
-      "position": [1400, 1000],
-      "credentials": { "postgres": { "id": "PxezC0eQEFEiP69i", "name": "TEste" } }
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1320, 800]
     },
 
     {
@@ -346,40 +430,22 @@
   ],
 
   "connections": {
-    "Cron 6h": { "main": [[{ "node": "Buscar Elegíveis Followup", "type": "main", "index": 0 }]] },
-    "Buscar Elegíveis Followup": { "main": [[{ "node": "Filtrar Elegíveis", "type": "main", "index": 0 }]] },
-    "Filtrar Elegíveis": { "main": [[{ "node": "Loop Contatos", "type": "main", "index": 0 }]] },
-    "Loop Contatos": {
-      "main": [
-        [{ "node": "Switch Qual FollowUp", "type": "main", "index": 0 }],
-        []
-      ]
-    },
-    "Switch Qual FollowUp": {
-      "main": [
-        [{ "node": "Gerar FU1", "type": "main", "index": 0 }],
-        [{ "node": "Gerar FU2", "type": "main", "index": 0 }],
-        [{ "node": "Gerar FU3 Final", "type": "main", "index": 0 }]
-      ]
-    },
-    "OpenAI FU1": { "ai_languageModel": [[{ "node": "Gerar FU1", "type": "ai_languageModel", "index": 0 }]] },
-    "OpenAI FU2": { "ai_languageModel": [[{ "node": "Gerar FU2", "type": "ai_languageModel", "index": 0 }]] },
-    "OpenAI FU3": { "ai_languageModel": [[{ "node": "Gerar FU3 Final", "type": "ai_languageModel", "index": 0 }]] },
-    "Gerar FU1": { "main": [[{ "node": "Merge FU1", "type": "main", "index": 0 }]] },
-    "Gerar FU2": { "main": [[{ "node": "Merge FU2", "type": "main", "index": 0 }]] },
-    "Gerar FU3 Final": { "main": [[{ "node": "Merge FU3", "type": "main", "index": 0 }]] },
-    "Merge FU1": { "main": [[{ "node": "Enviar FollowUp", "type": "main", "index": 0 }]] },
-    "Merge FU2": { "main": [[{ "node": "Enviar FollowUp", "type": "main", "index": 0 }]] },
-    "Merge FU3": { "main": [[{ "node": "Enviar FollowUp", "type": "main", "index": 0 }]] },
-    "Enviar FollowUp": { "main": [[{ "node": "Calcular Proximo FU", "type": "main", "index": 0 }]] },
-    "Calcular Proximo FU": {
-      "main": [[
-        { "node": "Atualizar Supabase FU", "type": "main", "index": 0 },
-        { "node": "Salvar FU no Histórico", "type": "main", "index": 0 }
-      ]]
-    },
-    "Atualizar Supabase FU": { "main": [[{ "node": "Wait 10s Entre Contatos", "type": "main", "index": 0 }]] },
-    "Wait 10s Entre Contatos": { "main": [[{ "node": "Loop Contatos", "type": "main", "index": 0 }]] }
+    "Cron 6h": { "main": [[{ "node": "Listar Perfis Ativos", "type": "main", "index": 0 }]] },
+    "Listar Perfis Ativos": { "main": [[{ "node": "Loop de Perfis", "type": "main", "index": 0 }]] },
+    "Loop de Perfis": { "main": [[{ "node": "Buscar Config Tenant", "type": "main", "index": 0 }], []] },
+    "Buscar Config Tenant": { "main": [[{ "node": "Buscar Contatos Followup", "type": "main", "index": 0 }]] },
+    "Buscar Contatos Followup": { "main": [[{ "node": "Tem Contatos?", "type": "main", "index": 0 }]] },
+    "Tem Contatos?": { "main": [[{ "node": "Loop Contatos", "type": "main", "index": 0 }], [{ "node": "Loop de Perfis", "type": "main", "index": 0 }]] },
+    "Loop Contatos": { "main": [[{ "node": "Switch Qual FollowUp", "type": "main", "index": 0 }], [{ "node": "Loop de Perfis", "type": "main", "index": 0 }]] },
+    "Switch Qual FollowUp": { "main": [[{ "node": "Gerar FU1", "type": "main", "index": 0 }], [{ "node": "Gerar FU2", "type": "main", "index": 0 }], [{ "node": "Gerar FU3 Final", "type": "main", "index": 0 }]] },
+    "Gerar FU1": { "main": [[{ "node": "Normalizar FU", "type": "main", "index": 0 }]] },
+    "Gerar FU2": { "main": [[{ "node": "Normalizar FU", "type": "main", "index": 0 }]] },
+    "Gerar FU3 Final": { "main": [[{ "node": "Normalizar FU", "type": "main", "index": 0 }]] },
+    "Normalizar FU": { "main": [[{ "node": "Enviar FollowUp (Meta)", "type": "main", "index": 0 }]] },
+    "Enviar FollowUp (Meta)": { "main": [[{ "node": "Calcular Próximo Followup", "type": "main", "index": 0 }]] },
+    "Calcular Próximo Followup": { "main": [[{ "node": "Atualizar Supabase FU", "type": "main", "index": 0 }]] },
+    "Atualizar Supabase FU": { "main": [[{ "node": "Salvar FU no Histórico", "type": "main", "index": 0 }]] },
+    "Salvar FU no Histórico": { "main": [[{ "node": "Loop Contatos", "type": "main", "index": 0 }]] }
   },
 
   "pinData": {},
