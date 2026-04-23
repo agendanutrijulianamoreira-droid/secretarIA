@@ -1,5 +1,6 @@
 import { db } from "./_lib/firebase.js";
-import { handleCors } from "./_lib/cors.js";
+import { handleCors, sendError } from "./_lib/cors.js";
+import { requireAdmin } from "./_lib/auth.js";
 import { createN8nWorkflow, activateN8nWorkflow } from "./_lib/n8n.js";
 import fs from "fs";
 import path from "path";
@@ -12,11 +13,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { clientId, adminEmail } = req.body;
-    // Autenticação simples baseada no e-mail do admin no payload (Na vida real, verificar Token)
-    if (adminEmail !== "agendanutrijulianamoreira@gmail.com") {
-      return res.status(403).json({ error: "Forbidden" });
-    }
+    await requireAdmin(req);
+
+    const { clientId } = req.body;
 
     // 1. Pegar dados do cliente
     const clientDoc = await db.collection("clients").doc(clientId).get();
