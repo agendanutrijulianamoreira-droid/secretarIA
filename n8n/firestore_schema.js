@@ -99,7 +99,7 @@ const exemploMensagem = {
   created_at:  "Timestamp",
 };
 
-// ── EXEMPLO: clientes/{id}/invoices/{invoiceId} ───────────────────────────────
+// ── EXEMPLO: clients/{id}/invoices/{invoiceId} ───────────────────────────────
 const exemploInvoice = {
   asaas_id:     "pay_xxxxx",
   descricao:    "Mensalidade Abril/2026",
@@ -111,7 +111,7 @@ const exemploInvoice = {
   created_at:   "Timestamp",
 };
 
-// ── EXEMPLO: clientes/{id}/portal_messages/{msgId} ────────────────────────────
+// ── EXEMPLO: clients/{id}/portal_messages/{msgId} ────────────────────────────
 const exemploPortalMsg = {
   from_role:  "client",             // client | admin
   text:       "Preciso adicionar um número de transferência novo.",
@@ -129,7 +129,7 @@ service cloud.firestore {
     // Autenticação via Firebase Admin SDK bypassa estas regras
 
     // Clientes — leitura/escrita só para admins autenticados
-    match /clientes/{clienteId} {
+    match /clients/{clienteId} {
       allow read, write: if request.auth != null && request.auth.token.admin == true;
 
       // Sub-coleções — cliente autenticado acessa só os próprios dados
