@@ -3,7 +3,8 @@ import {
   LayoutDashboard, MessageSquare, Users, Wallet, Settings,
   Phone, Brain, FileText, ChevronRight, Power, Zap,
   Bell, BarChart2, Plus, X, CheckCircle, AlertCircle,
-  Pause, Play, Edit2, Send, Bot, Star
+  Pause, Play, Edit2, Send, Bot, Star,
+  Sparkles, TrendingUp, Smartphone, MessageCircle
 } from "lucide-react";
 import {
   Contatos, Pacientes, WhatsAppNumbers, Servicos, Vendas,
@@ -119,12 +120,12 @@ function ClientDashboardView({ client, leads, pacientes, whatsappNums }) {
   const numAtivos   = whatsappNums.filter(n => n.status === "ativo").length;
 
   const cards = [
-    { l: "Leads Hoje",         v: leadsNovos,           c: T.cyan,   i: "✨" },
-    { l: "IAs Ativas",         v: leadsAtivos,          c: T.green,  i: "🤖" },
-    { l: "Conversões",         v: convertidos,          c: T.purple, i: "🏆" },
-    { l: "Pacientes Ativos",   v: pacientes.length,     c: T.amber,  i: "👥" },
-    { l: "WhatsApp Conectado", v: numAtivos,            c: T.green,  i: "📱" },
-    { l: "Msgs Hoje",          v: client.msgs_today||0, c: T.inkSec, i: "💬" },
+    { l: "Leads Hoje",         v: leadsNovos,           c: T.cyan,   Icon: Sparkles },
+    { l: "IAs Ativas",         v: leadsAtivos,          c: T.green,  Icon: Bot },
+    { l: "Conversões",         v: convertidos,          c: T.purple, Icon: TrendingUp },
+    { l: "Pacientes Ativos",   v: pacientes.length,     c: T.amber,  Icon: Users },
+    { l: "WhatsApp Conectado", v: numAtivos,            c: T.green,  Icon: Smartphone },
+    { l: "Msgs Hoje",          v: client.msgs_today||0, c: T.inkSec, Icon: MessageCircle },
   ];
 
   const briefing = client.briefing || {};
@@ -153,11 +154,15 @@ function ClientDashboardView({ client, leads, pacientes, whatsappNums }) {
       )}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
-        {cards.map(c => (
-          <Card key={c.l} style={{ padding: "18px 20px" }}>
-            <div style={{ fontSize: 22, marginBottom: 8 }}>{c.i}</div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: c.c, lineHeight: 1 }}>{c.v}</div>
-            <div style={{ fontSize: 11, color: T.inkTert, marginTop: 5, textTransform: "uppercase", letterSpacing: 0.5 }}>{c.l}</div>
+        {cards.map(({ l, v, c, Icon }) => (
+          <Card key={l} style={{ padding: "20px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: c + "1a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Icon size={18} color={c} />
+            </div>
+            <div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: T.ink, lineHeight: 1 }}>{v}</div>
+              <div style={{ fontSize: 12, color: T.inkSec, marginTop: 5, fontWeight: 500 }}>{l}</div>
+            </div>
           </Card>
         ))}
       </div>
