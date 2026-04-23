@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { CheckCircle, XCircle, Edit2, X } from "lucide-react";
+import { CheckCircle, XCircle, Edit2, X, Brain } from "lucide-react";
 import { IAAprendizados } from "../../lib/db";
-import { T, Btn, Inp, Card, CardHeader, EmptyState, Pill } from "../../pages/ClientPortal";
+import { T, Btn, Inp, Card, CardHeader, EmptyState, PageTitle, Pill } from "../../pages/ClientPortal";
 
 const STATUS_COLORS = {
   pendente:  { c: T.amber,  b: T.amberDim,  label: "⏳ Pendente" },
@@ -32,10 +32,7 @@ export default function IAAprendizadosView({ client, aprendizados }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, animation: "fadeIn 300ms ease" }}>
-      <div>
-        <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 800, color: T.ink }}>🧠 IA Aprendizados</h1>
-        <p style={{ margin: 0, fontSize: 13, color: T.inkTert }}>Revise e aprove o que sua IA está aprendendo nas conversas.</p>
-      </div>
+      <PageTitle icon={Brain} iconColor={T.purple} title="IA Aprendizados" subtitle="Revise e aprove o que sua IA está aprendendo nas conversas." />
 
       {pendentes > 0 && (
         <div style={{ background: T.amberDim, border: `1px solid ${T.amber}44`, borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>

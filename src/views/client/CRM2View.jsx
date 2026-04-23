@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Plus, X, Edit2, Check } from "lucide-react";
+import { Plus, X, Edit2, Check, Users } from "lucide-react";
 import { Pacientes, Campanhas } from "../../lib/db";
-import { T, Btn, Inp, Card, CardHeader, EmptyState, Pill } from "../../pages/ClientPortal";
+import { T, Btn, Inp, Card, CardHeader, EmptyState, PageTitle, Pill } from "../../pages/ClientPortal";
 
 const CAMP_TIPOS = Campanhas.TIPOS;
 
@@ -120,10 +120,7 @@ export default function CRM2View({ client, pacientes, campanhas }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, animation: "fadeIn 300ms ease" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div>
-          <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 800, color: T.ink }}>👥 CRM — Pacientes</h1>
-          <p style={{ margin: 0, fontSize: 13, color: T.inkTert }}>Gerencie seus pacientes e campanhas de acompanhamento.</p>
-        </div>
+        <PageTitle icon={Users} iconColor={T.purple} title="CRM — Pacientes" subtitle="Gerencie seus pacientes e campanhas de acompanhamento." />
         <div style={{ display: "flex", gap: 10 }}>
           <Btn variant="ghost" size="sm" onClick={() => setShowCamp(true)}>📣 Nova Campanha</Btn>
           <Btn size="sm" onClick={() => setEditPac({})}>+ Paciente</Btn>

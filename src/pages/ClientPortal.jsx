@@ -85,6 +85,21 @@ function EmptyState({ icon, title, subtitle }) {
   );
 }
 
+function PageTitle({ icon: Icon, iconColor, title, subtitle }) {
+  const color = iconColor || T.cyan;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <div style={{ width: 38, height: 38, borderRadius: 10, background: color + "1a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <Icon size={18} color={color} />
+      </div>
+      <div>
+        <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: T.ink, letterSpacing: "-0.02em" }}>{title}</h1>
+        {subtitle && <p style={{ margin: 0, fontSize: 12, color: T.inkSec, marginTop: 2 }}>{subtitle}</p>}
+      </div>
+    </div>
+  );
+}
+
 // ── Sidebar Nav ───────────────────────────────────────────────────────────
 const NAV = [
   { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -136,12 +151,12 @@ function ClientDashboardView({ client, leads, pacientes, whatsappNums }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24, animation: "fadeIn 300ms ease" }}>
-      <div>
-        <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 800, color: T.ink }}>
-          Olá, {client.name?.split(" ")[0]} 👋
-        </h1>
-        <p style={{ margin: 0, fontSize: 13, color: T.inkTert }}>Aqui está o resumo de hoje da sua SecretarIA.</p>
-      </div>
+      <PageTitle
+        icon={LayoutDashboard}
+        iconColor={T.cyan}
+        title={`Olá, ${client.name?.split(" ")[0]}`}
+        subtitle="Aqui está o resumo de hoje da sua SecretarIA."
+      />
 
       {pct < 80 && (
         <div style={{ background: `${T.amber}10`, border: `1px solid ${T.amber}44`, borderRadius: 14, padding: "14px 18px", display: "flex", alignItems: "center", gap: 14 }}>
@@ -249,10 +264,12 @@ function WhatsAppView({ client, numbers, reload }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, animation: "fadeIn 300ms ease" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div>
-          <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 800, color: T.ink }}>📱 WhatsApp</h1>
-          <p style={{ margin: 0, fontSize: 13, color: T.inkTert }}>Gerencie seus números da API Oficial. Plano {client.plan}: até {limit} número(s).</p>
-        </div>
+        <PageTitle
+          icon={Smartphone}
+          iconColor={T.green}
+          title="WhatsApp"
+          subtitle={`Gerencie seus números da API Oficial. Plano ${client.plan}: até ${limit} número(s).`}
+        />
         <Btn onClick={() => { setEditing(null); setForm({ nome_display: "", ia_nome: "", ia_funcao: "", waba_id: "", phone_number_id: "" }); setShowAdd(true); }} disabled={!canAdd} style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <Plus size={14} /> Adicionar Número
         </Btn>
@@ -342,4 +359,4 @@ function WhatsAppView({ client, numbers, reload }) {
   );
 }
 
-export { ClientDashboardView, WhatsAppView, T, Btn, Inp, Card, CardHeader, EmptyState, Pill, Pulse, NAV, NavItem, COLORS };
+export { ClientDashboardView, WhatsAppView, T, Btn, Inp, Card, CardHeader, EmptyState, PageTitle, Pill, Pulse, NAV, NavItem, COLORS };

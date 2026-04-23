@@ -7,7 +7,7 @@ import {
 } from "../lib/db";
 import {
   ClientDashboardView, WhatsAppView,
-  T, Btn, Card, NAV, NavItem
+  T, Btn, Card, NAV, NavItem, PageTitle
 } from "./ClientPortal";
 import CRM1View from "../views/client/CRM1View";
 import CRM2View from "../views/client/CRM2View";
@@ -32,10 +32,7 @@ function PlanoView({ client, invoices }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24, animation: "fadeIn 300ms ease" }}>
-      <div>
-        <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 800, color: T.ink }}>⭐ Meu Plano</h1>
-        <p style={{ margin: 0, fontSize: 13, color: T.inkTert }}>Gerencie sua assinatura e veja os recursos disponíveis.</p>
-      </div>
+      <PageTitle icon={Star} iconColor={T.amber} title="Meu Plano" subtitle="Gerencie sua assinatura e veja os recursos disponíveis." />
 
       <Card style={{ padding: "20px 24px", background: pm.bg, borderColor: pm.color + "44" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>

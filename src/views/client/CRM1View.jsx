@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Pause, Play, MessageSquare, ChevronDown, ChevronUp, Send } from "lucide-react";
 import { Contatos, ChatMessages } from "../../lib/db";
-import { T, Btn, Inp, Card, CardHeader, EmptyState, Pill, Pulse, COLORS } from "../../pages/ClientPortal";
+import { T, Btn, Inp, Card, CardHeader, EmptyState, PageTitle, Pill, Pulse, COLORS } from "../../pages/ClientPortal";
 
 const CRM_STATUS = {
   novo:        { label: "Novo Lead",     color: T.cyan,   bg: T.cyanDim,   icon: "✨" },
@@ -148,10 +148,7 @@ export default function CRM1View({ client, leads }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, animation: "fadeIn 300ms ease" }}>
-      <div>
-        <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 800, color: T.ink }}>🎯 CRM — Leads</h1>
-        <p style={{ margin: 0, fontSize: 13, color: T.inkTert }}>Veja as IAs trabalhando em tempo real.</p>
-      </div>
+      <PageTitle icon={MessageSquare} iconColor={T.cyan} title="CRM — Leads" subtitle="Veja as IAs trabalhando em tempo real." />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
         {[

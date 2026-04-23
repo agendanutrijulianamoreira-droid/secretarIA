@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Plus, X, Edit2, DollarSign, TrendingUp } from "lucide-react";
+import { Plus, X, Edit2, DollarSign, TrendingUp, Wallet } from "lucide-react";
 import { Servicos, Vendas, Invoices } from "../../lib/db";
-import { T, Btn, Inp, Card, CardHeader, EmptyState, Pill } from "../../pages/ClientPortal";
+import { T, Btn, Inp, Card, CardHeader, EmptyState, PageTitle, Pill } from "../../pages/ClientPortal";
 
 const PAGAMENTOS = ["PIX", "Cartão de Crédito", "Cartão de Débito", "Dinheiro", "Boleto", "Convênio"];
 const PLAN_META = { Starter: { color: T.inkSec, bg: "rgba(156,163,176,0.1)" }, Pro: { color: T.green, bg: T.greenDim }, Enterprise: { color: T.amber, bg: T.amberDim } };
@@ -112,10 +112,7 @@ export default function FinanceiroClienteView({ client, servicos, vendas, invoic
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, animation: "fadeIn 300ms ease" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div>
-          <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 800, color: T.ink }}>💰 Financeiro</h1>
-          <p style={{ margin: 0, fontSize: 13, color: T.inkTert }}>Serviços, vendas e cobranças do seu plano.</p>
-        </div>
+        <PageTitle icon={Wallet} iconColor={T.green} title="Financeiro" subtitle="Serviços, vendas e cobranças do seu plano." />
         <div style={{ display: "flex", gap: 10 }}>
           <Btn size="sm" variant="ghost" onClick={() => setShowVenda(true)}>+ Registrar Venda</Btn>
           <Btn size="sm" onClick={() => setEditServ({})}>+ Serviço</Btn>
