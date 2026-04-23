@@ -2,7 +2,26 @@ import { useState, useEffect } from "react";
 import { Tokens } from "../../lib/db";
 import { Eye, EyeOff, Save } from "lucide-react";
 
-const T = { bg:"#0A0B10",surface:"#161B22",up:"#1F2630",border:"#30363D",green:"#2EB67D",greenDim:"rgba(46,182,125,0.1)",amber:"#E3B341",amberDim:"rgba(227,179,65,0.1)",red:"#F85149",redDim:"rgba(248,81,73,0.1)",cyan:"#00D1FF",cyanDim:"rgba(0,209,255,0.08)",ink:"#F0F6FC",inkSec:"#8B949E",inkTert:"#484F58" };
+const T = {
+  bg: "var(--color-bg)",
+  surface: "var(--color-surface)",
+  up: "var(--color-surface-up)",
+  border: "var(--color-border)",
+  green: "var(--color-cta)",
+  greenDim: "var(--color-surface-soft)",
+  amber: "#B67A62", // Terracota
+  amberDim: "rgba(182, 122, 98, 0.1)",
+  red: "#EF4444",
+  redDim: "rgba(239, 68, 68, 0.1)",
+  cyan: "#3B82F6",
+  cyanDim: "rgba(59, 130, 246, 0.1)",
+  ink: "var(--color-text)",
+  inkSec: "var(--color-text-sec)",
+  inkTert: "var(--color-text-sec)",
+  n8n: "var(--color-cta)",
+  n8nDim: "var(--color-surface-soft)",
+  borderSt: "var(--color-border)",
+};
 
 function TokenField({ label, hint, value, onChange }) {
   const [show, setShow] = useState(false);

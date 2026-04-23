@@ -14,16 +14,32 @@ import ClientPortalMain from "./pages/ClientPortalMain";
 import FluxosView from "./views/admin/FluxosView";
 import TokensView from "./views/admin/TokensView";
 import FinanceiroAdminView from "./views/admin/FinanceiroAdmin";
+import DashboardView from "./views/admin/DashboardView";
 import { Bot, Zap } from "lucide-react";
+import { Logo } from "./components/UI";
 
 
 // ── Tokens ──────────────────────────────────────────────────────────────────
 const T = {
-  bg:"#0A0B10",surface:"#161B22",up:"#1F2630",border:"#30363D",borderSt:"#484F58",
-  green:"#2EB67D",greenDim:"rgba(46,182,125,0.1)",amber:"#E3B341",amberDim:"rgba(227,179,65,0.1)",
-  red:"#F85149",redDim:"rgba(248,81,73,0.1)",cyan:"#00D1FF",cyanDim:"rgba(0,209,255,0.1)",
-  ink:"#F0F6FC",inkSec:"#8B949E",inkTert:"#484F58",inkMuted:"#30363D",
-  asaas:"#00D1FF",
+  bg: "var(--color-bg)",
+  surface: "var(--color-surface)",
+  up: "var(--color-surface-up)",
+  border: "var(--color-border)",
+  green: "var(--color-cta)",
+  greenDim: "var(--color-surface-soft)",
+  amber: "#B67A62", // Terracota
+  amberDim: "rgba(182, 122, 98, 0.1)",
+  red: "#EF4444",
+  redDim: "rgba(239, 68, 68, 0.1)",
+  cyan: "#3B82F6",
+  cyanDim: "rgba(59, 130, 246, 0.1)",
+  ink: "var(--color-text)",
+  inkSec: "var(--color-text-sec)",
+  inkTert: "var(--color-text-sec)",
+  asaas: "#3B82F6",
+  n8n: "var(--color-cta)",
+  n8nDim: "var(--color-surface-soft)",
+  borderSt: "var(--color-border)",
 };
 
 
@@ -288,12 +304,7 @@ function LoginView({ onLogin }) {
     <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-6 font-sans">
       <div className="bg-white border border-gray-100 shadow-xl rounded-[32px] p-10 w-full max-w-md animate-in fade-in zoom-in duration-500">
         <div className="text-center mb-10">
-          <div className="bg-[#7A8B82] w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-[#7A8B82]/20">
-            <Bot size={32} className="text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-800">
-            Secretar<span className="text-[#7A8B82]">IA</span>
-          </h1>
+          <Logo size={48} className="justify-center flex-col gap-4" />
           <p className="text-gray-500 mt-3">Gestão inteligente para sua clínica</p>
         </div>
 
@@ -531,7 +542,7 @@ function Portal({client,onBack}){
 
         {tab==="crm" && (
           <div style={{display:"flex",flexDirection:"column",gap:16}}>
-            <div style={{background:"linear-gradient(135deg, #1A1D26 0%, #13161D 100%)",borderRadius:16,padding:20,border:`1px solid ${T.borderSt}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{background:"linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-up) 100%)",borderRadius:16,padding:20,border:`1px solid var(--color-border)`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div>
                 <div style={{fontSize:16,fontWeight:700,color:T.ink}}>Pipeline de Leads</div>
                 <div style={{fontSize:12,color:T.inkTert,marginTop:4}}>Gerencie os contatos vindos do WhatsApp</div>
@@ -565,7 +576,7 @@ function Portal({client,onBack}){
                     </div>
                     
                     {isEd && (
-                      <div style={{padding:"0 20px 20px",borderTop:`1px solid ${T.border}`,background:"rgba(255,255,255,0.01)",animation:"fadeIn 150ms ease"}}>
+                      <div style={{padding:"0 20px 20px",borderTop:`1px solid ${T.border}`,background:"var(--color-surface-soft)",animation:"fadeIn 150ms ease"}}>
                         <div style={{paddingTop:16,display:"flex",flexDirection:"column",gap:14}}>
                           <div>
                             <label style={{fontSize:11,color:T.inkTert,display:"block",marginBottom:8}}>Mudar Status</label>
@@ -648,7 +659,7 @@ function AdminCard({client,onPortal,onBriefing}){
         <div style={{height:4,background:T.bg,borderRadius:2}}><div style={{height:4,borderRadius:2,width:`${pct}%`,background:pct>=80?T.green:pct>=40?T.amber:T.red,transition:"width 600ms"}}/></div>
       </div>
       <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-        {(client.capabilities||["text"]).map(c=>{const m=CAP_META[c];return<span key={c} style={{fontSize:10,padding:"2px 7px",borderRadius:6,background:"rgba(255,255,255,0.05)",border:`1px solid ${T.border}`,color:T.inkSec}}>{m?.icon} {m?.label}</span>;})}
+        {(client.capabilities||["text"]).map(c=>{const m=CAP_META[c];return<span key={c} style={{fontSize:10,padding:"2px 7px",borderRadius:6,background:"var(--color-surface-soft)",border:`1px solid ${T.border}`,color:T.inkSec}}>{m?.icon} {m?.label}</span>;})}
         {client.calendar_email&&<span style={{fontSize:10,padding:"2px 7px",borderRadius:6,background:T.blueDim,border:"1px solid rgba(66,133,244,0.2)",color:T.blue}}>📅 Agenda</span>}
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,paddingTop:10,borderTop:`1px solid ${T.border}`}}>
@@ -764,10 +775,10 @@ function ClientsView({clients, onPortal, onBriefing}){
       <h1 style={{margin:"0 0 4px",fontSize:22,fontWeight:700,color:T.ink}}>👥 Gestão de Clientes</h1>
       <p style={{margin:"0 0 24px",fontSize:13,color:T.inkTert}}>Lista completa e controle de acessos</p>
       
-      <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,overflow:"hidden"}}>
+      <div style={{background:"var(--color-surface)",border:`1px solid var(--color-border)`,borderRadius:16,overflow:"hidden"}}>
         <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
           <thead>
-            <tr style={{background:"rgba(255,255,255,0.02)",borderBottom:`1px solid ${T.border}`}}>
+            <tr style={{background:"var(--color-surface-soft)",borderBottom:`1px solid ${T.border}`}}>
               <th style={{textAlign:"left",padding:16,color:T.inkTert,fontWeight:600}}>Cliente</th>
               <th style={{textAlign:"left",padding:16,color:T.inkTert,fontWeight:600}}>WhatsApp</th>
               <th style={{textAlign:"left",padding:16,color:T.inkTert,fontWeight:600}}>Plano</th>
@@ -777,7 +788,7 @@ function ClientsView({clients, onPortal, onBriefing}){
           </thead>
           <tbody>
             {clients.map(c=>(
-              <tr key={c.id} style={{borderBottom:`1px solid ${T.border}`,transition:"background 150ms"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.01)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+              <tr key={c.id} style={{borderBottom:`1px solid ${T.border}`,transition:"background 150ms"}} onMouseEnter={e=>e.currentTarget.style.background="var(--color-surface-soft)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                 <td style={{padding:16}}>
                   <div style={{display:"flex",alignItems:"center",gap:12}}>
                     <Av initials={c.avatar} color={c.color} size={32}/>
@@ -817,7 +828,7 @@ function StatsView({clients}){
           {l:"Média por Cliente",v:avgMsgs,i:"📈",c:T.blue},
           {l:"Taxa de Atividade",v:"94%",i:"⚡",c:T.amber},
         ].map(s=>(
-          <div key={s.l} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,padding:24}}>
+          <div key={s.l} style={{background:"var(--color-surface)",border:`1px solid var(--color-border)`,borderRadius:16,padding:24}}>
             <div style={{fontSize:24,marginBottom:8}}>{s.i}</div>
             <div style={{fontSize:32,fontWeight:700,color:s.c,marginBottom:4}}>{s.v}</div>
             <div style={{fontSize:12,color:T.inkTert,textTransform:"uppercase",letterSpacing:0.5}}>{s.l}</div>
@@ -852,7 +863,7 @@ function SettingsView({user}){
       <p style={{margin:"0 0 24px",fontSize:13,color:T.inkTert}}>Gerenciamento administrativo e conta</p>
       
       <div style={{maxWidth:600,display:"flex",flexDirection:"column",gap:20}}>
-        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,padding:24}}>
+        <div style={{background:"var(--color-surface)",border:`1px solid var(--color-border)`,borderRadius:16,padding:24}}>
           <div style={{fontWeight:600,marginBottom:16,fontSize:15}}>Perfil do Administrador</div>
           <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
             <div style={{width:64,height:64,borderRadius:16,background:T.greenDim,color:T.green,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,fontWeight:700}}>
@@ -866,7 +877,7 @@ function SettingsView({user}){
           <Btn variant="ghost">Editar Perfil</Btn>
         </div>
 
-        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,padding:24}}>
+        <div style={{background:"var(--color-surface)",border:`1px solid var(--color-border)`,borderRadius:16,padding:24}}>
           <div style={{fontWeight:600,marginBottom:16,fontSize:15}}>Infraestrutura</div>
           <div style={{display:"flex",flexDirection:"column",gap:12}}>
             <div style={{display:"flex",justifyContent:"space-between",fontSize:13}}>
@@ -906,7 +917,7 @@ function AlertsView({ alerts, markRead }) {
             <div style={{ fontSize: 32 }}>{a.type === "SALE" ? "🎉" : "🔔"}</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: a.read ? T.inkSec : T.ink, marginBottom: 4 }}>
-                {a.title} {a.read || <Tag color={T.asaas} bg="rgba(0,180,216,0.1)">NOVO</Tag>}
+                {a.title} {a.read || <Tag color="var(--color-cta)" bg="var(--color-surface-soft)">NOVO</Tag>}
               </div>
               <div style={{ fontSize: 13, color: T.inkSec, marginBottom: 8, whiteSpace: "pre-wrap" }}>{a.message}</div>
               <div style={{ fontSize: 11, color: T.inkTert }}>{new Date(a.created_at).toLocaleString('pt-BR')} • {a.data?.email}</div>
@@ -922,60 +933,7 @@ function AlertsView({ alerts, markRead }) {
 }
 
 // ── Admin Dashboard ────────────────────────────────────────────────────────────
-function AdminDashboardView({ clients, alerts, onPortal }) {
-  const activeN = clients.filter(c => c.status === "active").length;
-  const n8nN    = clients.filter(c => c.n8n_status === "online").length;
-  const totalMsgs = clients.reduce((a, c) => a + (c.msgs_today || 0), 0);
-  const unread  = alerts.filter(a => !a.read).length;
-  const PLAN_PRICES = { Starter:197, Pro:397, Enterprise:897 };
-  const mrr = clients.filter(c => c.status === "active").reduce((a, c) => a + (PLAN_PRICES[c.plan] || 0), 0);
-
-  return (
-    <div style={{ display:"flex", flexDirection:"column", gap:24, animation:"fadeIn 300ms ease" }}>
-      <div>
-        <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:800, color:T.ink }}>👋 Visão Geral</h1>
-        <p style={{ margin:0, fontSize:13, color:T.inkTert }}>Resumo operacional do sistema SecretarIA.</p>
-      </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14 }}>
-        {[
-          { l:"Clientes Ativos",     v:activeN,    c:T.green,  i:"👥" },
-          { l:"Fluxos n8n Online",   v:n8nN,       c:T.cyan,   i:"⚡" },
-          { l:"Mensagens Hoje",      v:totalMsgs,  c:T.amber,  i:"💬" },
-          { l:"MRR",                 v:`R$ ${mrr.toLocaleString("pt-BR")}`, c:T.green, i:"💰" },
-        ].map(s => (
-          <div key={s.l} style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:14, padding:"18px 20px" }}>
-            <div style={{ fontSize:22, marginBottom:8 }}>{s.i}</div>
-            <div style={{ fontSize:26, fontWeight:800, color:s.c }}>{s.v}</div>
-            <div style={{ fontSize:11, color:T.inkTert, textTransform:"uppercase", letterSpacing:0.5 }}>{s.l}</div>
-          </div>
-        ))}
-      </div>
-      {unread > 0 && (
-        <div style={{ background:"rgba(0,209,255,0.06)", border:`1px solid ${T.cyan}33`, borderRadius:14, padding:"14px 18px", display:"flex", alignItems:"center", gap:12 }}>
-          <span style={{ fontSize:20 }}>🔔</span>
-          <div style={{ flex:1 }}>
-            <div style={{ fontSize:13, fontWeight:600, color:T.cyan }}>{unread} novo(s) alerta(s) de venda</div>
-            <div style={{ fontSize:12, color:T.inkSec }}>Novos pagamentos ou cadastros recebidos.</div>
-          </div>
-        </div>
-      )}
-      <div style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:16, overflow:"hidden" }}>
-        <div style={{ padding:"14px 20px", borderBottom:`1px solid ${T.border}`, fontSize:14, fontWeight:700, color:T.ink }}>🏢 Clientes Recentes</div>
-        {clients.slice(0, 5).map(c => (
-          <div key={c.id} style={{ padding:"12px 20px", borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", gap:12 }}>
-            <Av initials={c.avatar} color={c.color} size={32} />
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:13, fontWeight:600, color:T.ink }}>{c.name}</div>
-              <div style={{ fontSize:11, color:T.inkTert }}>{c.plan}</div>
-            </div>
-            <StatusTag status={c.status} />
-            <button onClick={() => onPortal(c)} style={{ padding:"6px 12px", borderRadius:8, background:T.greenDim, border:`1px solid ${T.green}44`, color:T.green, fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Ver Portal</button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+// DashboardView agora está em arquivo separado
 
 // ── Vendas Admin ───────────────────────────────────────────────────────────────
 function VendasAdminView({ clients, alerts }) {
@@ -1016,6 +974,7 @@ function VendasAdminView({ clients, alerts }) {
 
 // ── App ────────────────────────────────────────────────────────────────────────
 export default function App(){
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [clients,setClients]=useState([]);
@@ -1030,6 +989,13 @@ export default function App(){
   const [addedClient, setAddedClient] = useState(null); // Para o ShareModal
   const [alerts, setAlerts] = useState([]);
   const ADMIN_EMAIL = "agendanutrijulianamoreira@gmail.com";
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === "dark" ? "light" : "dark");
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -1144,21 +1110,23 @@ export default function App(){
     return <SalesPage />;
   }
 
-  if(authLoading) return <div style={{ background: T.bg, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: T.inkTert }}>🤖 Carregando sistema...</div>;
+  if(authLoading) return <div style={{ background: "var(--color-bg)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-sec)" }}>🤖 Carregando sistema...</div>;
   if(!user) return <LoginView />;
   if(portal) return <ClientPortalMain client={portal} onBack={user?.email === ADMIN_EMAIL ? () => setPortal(null) : null} />;
 
   return (
-    <div style={{ background: T.bg, color: T.ink, minHeight: "100vh" }}>
+    <div style={{ background: "var(--color-bg)", color: "var(--color-text)", minHeight: "100vh" }}>
       <SecretariaDashboard 
         user={user} 
         logout={logout} 
         setView={setView} 
         activeView={view}
         alertCount={alerts.filter(a => !a.read).length}
+        theme={theme}
+        toggleTheme={toggleTheme}
       >
         <div style={{ padding: "0" }}>
-          {view === "dashboard" && <AdminDashboardView clients={clients} alerts={alerts} onPortal={setPortal} />}
+          {view === "dashboard" && <DashboardView clients={clients} alerts={alerts} onPortal={setPortal} />}
           {view === "clients" && <ClientsView clients={clients} onPortal={setPortal} onBriefing={setBriefCl}/>}
           {view === "fluxos" && <FluxosView clients={clients} />}
           {view === "tokens" && <TokensView clients={clients} />}

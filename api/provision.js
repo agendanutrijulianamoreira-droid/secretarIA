@@ -50,15 +50,29 @@ export default async function handler(req, res) {
       webhookNode.parameters.path = `asaas-${clientId}`;
     }
 
-    // 3C. Injetar o Prompt compilado do Briefing no Node de IA (se existir)
-    // Exemplo: O nó pode se chamar "AI Chat Model" ou algo parecido
+    // 3. Pegar serviços para injetar no prompt
+    const servicesSnap = await db.collection("clients").doc(clientId).collection("servicos").where("ativo", "==", true).get();
+    const servicesList = servicesSnap.docs.map(d => ({ nome: d.data().nome, preco: d.data().preco }));
+
     const briefing = client.briefing || {};
     const compiledPrompt = `
       Você é ${briefing.ai_name || "um assistente virtual"} da empresa ${client.name}.
       Seu tom é ${briefing.ai_tone || "profissional"}.
-      Segmento: ${briefing.segment || "Geral"}.
-      Serviços: ${briefing.services ? briefing.services.join(", ") : "Gerais"}.
-      Regras: ${briefing.restrictions || "Nenhuma regra específica"}.
+      Objetivo: ${briefing.ai_goal || "Atendimento ao cliente"}.
+      Segmento: ${briefing.segment || "Saúde/Bem-estar"}.
+      
+      SERVIÇOS E PREÇOS:
+      ${servicesList.length > 0 
+        ? servicesList.map(s => `- ${s.nome}: R$ ${s.preco}`).join("\n      ")
+        : "Nenhum serviço cadastrado ainda."}
+      
+      REGRAS IMPORTANTES:
+      1. ${briefing.restrictions || "Siga as orientações padrão de atendimento."}
+      2. NÃO revele preços de serviços logo no início da conversa, a menos que o cliente pergunte especificamente ou que você tenha construído valor antes.
+      3. Se o cliente perguntar algo que você não sabe, diga que vai verificar com o profissional responsável.
+      
+      HORÁRIO DE FUNCIONAMENTO:
+      ${briefing.business_hours || "Comercial padrão."}
     `;
 
     // Vamos varrer os nodes procurando campos de texto que costumem guardar o prompt do n8n Advanced AI

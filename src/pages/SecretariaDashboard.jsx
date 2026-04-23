@@ -1,12 +1,6 @@
 import React from 'react';
-import { LayoutDashboard, Users, Settings, Bell, Bot, Zap, Power, BarChart2, GitBranch, Key, DollarSign, ShoppingCart } from 'lucide-react';
-
-const T = {
-  bg: "#0A0B10", surface: "#161B22", up: "#1F2630",
-  border: "#30363D", borderSt: "#484F58",
-  green: "#2EB67D", cyan: "#00D1FF", red: "#F85149",
-  amber: "#E3B341", ink: "#F0F6FC", inkSec: "#8B949E", inkTert: "#484F58",
-};
+import { LayoutDashboard, Users, Settings, Bell, Bot, Zap, Power, BarChart2, GitBranch, Key, DollarSign, ShoppingCart, Moon, Sun } from 'lucide-react';
+import { Button, Badge, Logo } from '../components/UI';
 
 const NAV_ITEMS = [
   { id: "dashboard",  icon: LayoutDashboard, label: "Visão Geral" },
@@ -23,25 +17,23 @@ const NAV_ITEMS = [
 function NavItem({ icon: Icon, label, active, onClick, badge }) {
   return (
     <button onClick={onClick} style={{
-      width: "100%", padding: "11px 16px", borderRadius: 10,
-      background: active ? `${T.cyan}12` : "transparent",
-      border: "none", color: active ? T.cyan : T.inkSec,
-      display: "flex", alignItems: "center", gap: 10,
-      cursor: "pointer", transition: "all 0.15s", textAlign: "left",
+      width: "100%", padding: "12px 16px", borderRadius: 14,
+      background: active ? "rgba(34, 197, 94, 0.1)" : "transparent",
+      border: "none", color: active ? "var(--color-cta)" : "var(--color-text-sec)",
+      display: "flex", alignItems: "center", gap: 12,
+      cursor: "pointer", transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)", textAlign: "left",
       fontFamily: "inherit", position: "relative",
-    }}>
-      <Icon size={17} color={active ? T.cyan : T.inkSec} />
-      <span style={{ fontSize: 13, fontWeight: active ? 600 : 500, flex: 1 }}>{label}</span>
+    }} className="btn-hover">
+      <Icon size={18} color={active ? "var(--color-cta)" : "var(--color-text-sec)"} />
+      <span style={{ fontSize: 14, fontWeight: active ? 700 : 500, flex: 1 }}>{label}</span>
       {badge > 0 && (
-        <span style={{ width: 18, height: 18, borderRadius: "50%", background: T.amber, color: "#000", fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {badge}
-        </span>
+        <Badge color="amber">{badge}</Badge>
       )}
     </button>
   );
 }
 
-export default function SecretariaDashboard({ user, logout, setView, activeView, alertCount = 0, children }) {
+export default function SecretariaDashboard({ user, logout, setView, activeView, alertCount = 0, children, theme, toggleTheme }) {
   const VIEW_LABELS = {
     dashboard: "Visão Geral", clients: "Gestão de Clientes",
     fluxos: "Fluxos n8n", tokens: "Tokens / API",
@@ -50,31 +42,35 @@ export default function SecretariaDashboard({ user, logout, setView, activeView,
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: T.bg, color: T.ink, fontFamily: "Inter, -apple-system, sans-serif" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--color-bg)", color: "var(--color-text)" }}>
       <style>{`
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-        @keyframes pulse  { 0%,100% { transform: scale(1); opacity: 0.25; } 50% { transform: scale(1.5); opacity: 0.1; } }
         * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: ${T.border}; border-radius: 2px; }
+        ::-webkit-scrollbar { width: 5px; } 
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--color-surface-up); border-radius: 10px; }
       `}</style>
 
       {/* Sidebar */}
-      <aside style={{ width: 260, background: T.surface, borderRight: `1px solid ${T.border}`, display: "flex", flexDirection: "column", position: "fixed", height: "100vh", zIndex: 100 }}>
-        <div style={{ padding: "28px 20px 16px", display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ background: `${T.cyan}18`, padding: 8, borderRadius: 10, border: `1px solid ${T.cyan}33`, boxShadow: `0 0 20px ${T.cyan}22` }}>
-            <Zap size={18} color={T.cyan} />
-          </div>
-          <h1 style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.5, margin: 0 }}>
-            Secretar<span style={{ color: T.cyan }}>IA</span>
-          </h1>
+      <aside style={{ 
+        width: 280, 
+        background: "var(--color-surface)", 
+        borderRight: "1px solid var(--color-border)", 
+        display: "flex", 
+        flexDirection: "column", 
+        position: "fixed", 
+        height: "100vh", 
+        zIndex: 100 
+      }}>
+        <div style={{ padding: "32px 24px 10px" }}>
+          <Logo size={28} />
         </div>
 
-        <div style={{ margin: "0 12px 14px", padding: "8px 12px", background: `${T.amber}10`, borderRadius: 8, border: `1px solid ${T.amber}33`, fontSize: 11, color: T.amber, fontWeight: 600 }}>
-          ⚡ Painel Administrativo
+        <div style={{ padding: "0 24px 20px" }}>
+          <Badge color="amber" className="w-full justify-center">⚡ Painel Administrativo</Badge>
         </div>
 
-        <nav style={{ flex: 1, padding: "0 12px", display: "flex", flexDirection: "column", gap: 2, overflowY: "auto" }}>
+        <nav style={{ flex: 1, padding: "0 16px", display: "flex", flexDirection: "column", gap: 4, overflowY: "auto" }}>
           {NAV_ITEMS.map(item => (
             <NavItem
               key={item.id}
@@ -87,38 +83,90 @@ export default function SecretariaDashboard({ user, logout, setView, activeView,
           ))}
         </nav>
 
-        <div style={{ padding: "16px 12px", borderTop: `1px solid ${T.border}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, padding: "0 4px" }}>
-            <div style={{ width: 34, height: 34, borderRadius: "50%", background: `${T.cyan}18`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13, color: T.cyan, border: `1px solid ${T.cyan}33` }}>
-              {user?.email?.[0]?.toUpperCase()}
+        <div style={{ padding: "24px 16px", borderTop: "1px solid var(--color-border)" }}>
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: 12, 
+            marginBottom: 16, 
+            padding: "12px",
+            background: "var(--color-surface-soft)",
+            borderRadius: 16,
+            border: "1px solid var(--color-border)"
+          }}>
+            <div style={{ 
+              width: 40, 
+              height: 40, 
+              borderRadius: "50%", 
+              background: "rgba(34, 197, 94, 0.1)", 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center", 
+              fontWeight: 800, 
+              fontSize: 14, 
+              color: "var(--color-cta)", 
+              border: "1px solid rgba(34, 197, 94, 0.2)" 
+            }}>
+              {user?.email?.[0]?.toUpperCase() || 'J'}
             </div>
             <div style={{ overflow: "hidden" }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: T.ink, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Dra. Juliana</p>
-              <p style={{ fontSize: 10, color: T.inkSec, margin: 0 }}>Administradora</p>
+              <p style={{ fontSize: 14, fontWeight: 700, color: "var(--color-text)", margin: 0 }}>Dra. Juliana</p>
+              <p style={{ fontSize: 11, color: "var(--color-text-sec)", margin: 0 }}>Administradora</p>
             </div>
           </div>
-          <button onClick={logout} style={{ width: "100%", padding: "9px", borderRadius: 10, background: "transparent", border: `1px solid ${T.red}44`, color: T.red, fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit" }}>
-            <Power size={13} /> Sair do Sistema
-          </button>
+          <Button variant="danger" className="w-full" onClick={logout} icon={Power}>
+            Sair do Sistema
+          </Button>
         </div>
       </aside>
 
       {/* Main */}
-      <main style={{ flex: 1, marginLeft: 260, display: "flex", flexDirection: "column", height: "100vh" }}>
-        <header style={{ height: 64, background: `${T.bg}dd`, backdropFilter: "blur(10px)", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 32px", position: "sticky", top: 0, zIndex: 90 }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>{VIEW_LABELS[activeView] || activeView}</h2>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, background: T.surface, padding: "5px 12px", borderRadius: 20, fontSize: 11, border: `1px solid ${T.border}` }}>
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: T.green, boxShadow: `0 0 8px ${T.green}` }} />
+      <main style={{ flex: 1, marginLeft: 280, display: "flex", flexDirection: "column", height: "100vh" }}>
+        <header style={{ 
+          height: 80, 
+          background: "var(--glass-bg)", 
+          backdropFilter: "blur(12px)", 
+          borderBottom: "1px solid var(--color-border)", 
+          display: "flex", 
+          alignItems: "center", 
+          justifyContent: "space-between", 
+          padding: "0 40px", 
+          position: "sticky", 
+          top: 0, 
+          zIndex: 90 
+        }}>
+          <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0 }} className="text-gradient">
+            {VIEW_LABELS[activeView] || activeView}
+          </h2>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Button 
+              variant="ghost" 
+              onClick={toggleTheme} 
+              style={{ width: 40, height: 40, padding: 0, borderRadius: 12 }}
+              icon={theme === 'dark' ? Sun : Moon}
+            />
+            <div style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: 8, 
+              background: "var(--color-surface)", 
+              padding: "6px 14px", 
+              borderRadius: 100, 
+              fontSize: 12, 
+              fontWeight: 600,
+              border: "1px solid var(--color-border)" 
+            }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--color-cta)", boxShadow: "0 0 10px var(--color-cta)" }} />
               Sistema Online
             </div>
           </div>
         </header>
 
-        <div style={{ flex: 1, overflowY: "auto", padding: 32 }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "40px", animation: "fadeIn 0.4s ease-out" }}>
           {children}
         </div>
       </main>
     </div>
   );
 }
+

@@ -224,7 +224,7 @@ export default function SalesPage() {
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <img src="/logo-secretaria-ai.png?v=2" alt="SecretarIA Logo" style={{ height: 40, objectFit: "contain", animation: "float 6s ease-in-out infinite" }} />
-          <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-0.8px", color: T.ink }}>Secretar<span style={{color: T.green}}>IA</span></div>
+          <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-0.8px", color: T.ink }}>Secretár<span style={{color: T.green}}>IA</span></div>
         </div>
         
         {/* Links Centrais (Visíveis em Telas Maiores) */}
@@ -260,37 +260,31 @@ export default function SalesPage() {
           A primeira avaliação completa fica R$250. Posso reservar? 💚
         </div>
         
-        {/* Text Container com z-index maior que as bolhas */}
-        <div style={{ position: "relative", zIndex: 10 }}>
-          <div style={{ display: "inline-block", background: T.greenDim, color: T.green, padding: "8px 20px", borderRadius: 100, fontSize: 12, fontWeight: 800, marginBottom: 40, border: `1px solid rgba(0,230,118,0.2)`, letterSpacing: "1px", textTransform:"uppercase", boxShadow: "0 4px 20px rgba(0,230,118,0.1)" }}>
-            O CRM com IA número #1 do Brasil
+           <div style={{ position: "relative", zIndex: 10 }}>
+          <div style={{ display: "inline-block", background: "rgba(122, 139, 130, 0.1)", color: "var(--color-cta)", padding: "8px 20px", borderRadius: 100, fontSize: 12, fontWeight: 800, marginBottom: 40, border: `1px solid var(--color-cta)`, letterSpacing: "2px", textTransform:"uppercase" }}>
+            The Health-Tech Core #1
           </div>
-          <h1 className="text-gradient" style={{ fontSize: 64, fontWeight: 900, lineHeight: 1.1, marginBottom: 24, letterSpacing: "-2.5px" }}>
-            Não perca mais dinheiro no WhatsApp enquanto você foca na Consulta.
+          <h1 className="text-gradient" style={{ fontSize: 72, fontWeight: 900, lineHeight: 1, marginBottom: 24, letterSpacing: "-4px", fontFamily: "'Syncopate', sans-serif" }}>
+            A INTELIGÊNCIA QUE DOMINA SEU CONSULTÓRIO.
           </h1>
-          <p style={{ fontSize: 20, color: T.inkSec, lineHeight: 1.6, marginBottom: 48, maxWidth: 700, margin: "0 auto 48px", fontWeight: 400 }}>
-            Assuma o controle. Tenha uma <strong>Secretária com Inteligência Artificial</strong> que fala com a <em>sua personalidade</em>, acolhe pacientes e agenda 24h por dia, no automático.
+          <p style={{ fontSize: 20, color: "var(--color-text-sec)", lineHeight: 1.6, marginBottom: 48, maxWidth: 800, margin: "0 auto 48px", fontWeight: 500 }}>
+            Assuma o controle absoluto. A <strong>SecretárIA</strong> é o núcleo de inteligência que escala seu atendimento, agenda pacientes e converte leads 24h por dia, com a precisão de uma máquina e a empatia de uma especialista.
           </p>
           <div style={{display:"flex", gap: 20, justifyContent: "center", alignItems: "center", marginBottom: 60}}>
-            <a href="#planos" className="shimmer-btn" style={{ background: T.green, color: "#000", padding: "20px 48px", borderRadius: 100, fontSize: 17, fontWeight: 800, textDecoration: "none", transition: "all 300ms cubic-bezier(0.16, 1, 0.3, 1)", display: "inline-flex", alignItems: "center", gap: 12, animation: "pulseSonar 2s infinite" }} onMouseEnter={e=>e.currentTarget.style.transform="scale(1.05) translateY(-4px)"} onMouseLeave={e=>e.currentTarget.style.transform="none"}>
-              Revolucionar meu Consultório 👉
+            <a href="#planos" className="shimmer-btn" style={{ background: "var(--color-cta)", color: "#FFF", padding: "22px 54px", borderRadius: 100, fontSize: 18, fontWeight: 800, textDecoration: "none", transition: "all 300ms", display: "inline-flex", alignItems: "center", gap: 12, boxShadow: "0 10px 40px rgba(122, 139, 130, 0.3)" }}>
+              REVOLUCIONAR MEU CONSULTÓRIO
             </a>
           </div>
         </div>
 
-        {/* PRINT DO DASHBOARD / TELA PRINCIPAL (WAAI MANAGER) */}
-        <div className="anim-fade-up anim-delay-3" style={{ position: "relative", zIndex: 10, maxWidth: 1000, margin: "0 auto", padding: "0 20px" }}>
-          <div style={{ background: "rgba(20, 20, 20, 0.6)", borderRadius: 16, padding: 8, border: `1px solid ${T.border}`, boxShadow: "0 40px 100px -20px rgba(0,0,0,0.8), 0 20px 40px -20px rgba(0, 230, 118, 0.15)", backdropFilter: "blur(20px)", minHeight: 400 }}>
-            <div style={{ display:"flex", gap:6, padding:"8px 12px", borderBottom:`1px solid ${T.border}` }}>
-              <div style={{width:12, height:12, borderRadius:"50%", background:"#FF5F56"}}></div>
-              <div style={{width:12, height:12, borderRadius:"50%", background:"#FFBD2E"}}></div>
-              <div style={{width:12, height:12, borderRadius:"50%", background:"#27C93F"}}></div>
-            </div>
-            {/* Fallback de cor caso imagem demore pra carregar */}
-            <div style={{ background: "#111", width: "100%", height: "100%", borderRadius: "0 0 16px 16px" }}>
-              <img src="/print-sistema.png?v=3" alt="Dashboard SecretarIA CRM" style={{ width: "100%", height: "auto", borderRadius: "0 0 16px 16px", display: "block", border: "1px solid rgba(255,255,255,0.05)" }} onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
-              <div style={{ display: 'none', alignItems: 'center', justifyContent: 'center', padding: "100px 20px", color: T.inkSec, fontSize: 18, textAlign: "center" }}>Interface do CRM em carregamento...</div>
-            </div>
+        {/* IMAGEM DA MASCOTE CYBORG */}
+        <div className="anim-fade-up anim-delay-3" style={{ position: "relative", zIndex: 10, maxWidth: 900, margin: "0 auto", padding: "0 20px" }}>
+          <div style={{ background: "var(--color-surface)", borderRadius: 32, padding: 12, border: `1px solid var(--color-border)`, boxShadow: "0 40px 100px -20px rgba(0,0,0,0.2), 0 20px 40px -20px var(--color-cta)" }}>
+            <img 
+              src="file:///C:/Users/Nutri/.gemini/antigravity/brain/f6ec4d5a-ee10-40c0-8b7c-2429654c9d36/secretaria_ai_mascot_concept_1776957095223.png" 
+              alt="Mascote SecretárIA" 
+              style={{ width: "100%", height: "auto", borderRadius: 24, display: "block" }} 
+            />
           </div>
         </div>
       </header>
@@ -520,7 +514,7 @@ export default function SalesPage() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
               <img src="/logo-secretaria-ai.png?v=2" alt="SecretarIA Logo" style={{ height: 32, objectFit: "contain" }} />
-              <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: "-0.8px", color: T.ink }}>Secretar<span style={{color: T.green}}>IA</span></div>
+              <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: "-0.8px", color: T.ink }}>Secretár<span style={{color: T.green}}>IA</span></div>
             </div>
             <p style={{ color: T.inkSec, fontSize: 15, lineHeight: 1.6, maxWidth: 300, marginBottom: 32 }}>
               A maior plataforma de secretárias inteligentes com automação de neurovendas do Brasil.
@@ -556,7 +550,7 @@ export default function SalesPage() {
         </div>
         
         <div style={{ borderTop: `1px solid ${T.border}`, marginTop: 60, paddingTop: 32, textAlign: "center", color: T.inkTert, fontSize: 14 }}>
-          © 2026 SecretarIA. Todos os direitos reservados. CNPJ: 00.000.000/0000-00.
+          © 2026 SecretárIA. Todos os direitos reservados. CNPJ: 00.000.000/0000-00.
         </div>
       </footer>
     </div>

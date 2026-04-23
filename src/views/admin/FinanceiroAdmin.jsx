@@ -1,4 +1,23 @@
-const T = { bg:"#0A0B10",surface:"#161B22",up:"#1F2630",border:"#30363D",green:"#2EB67D",greenDim:"rgba(46,182,125,0.1)",amber:"#E3B341",amberDim:"rgba(227,179,65,0.1)",red:"#F85149",redDim:"rgba(248,81,73,0.1)",cyan:"#00D1FF",cyanDim:"rgba(0,209,255,0.08)",ink:"#F0F6FC",inkSec:"#8B949E",inkTert:"#484F58" };
+const T = {
+  bg: "var(--color-bg)",
+  surface: "var(--color-surface)",
+  up: "var(--color-surface-up)",
+  border: "var(--color-border)",
+  green: "var(--color-cta)",
+  greenDim: "var(--color-surface-soft)",
+  amber: "#B67A62", // Terracota
+  amberDim: "rgba(182, 122, 98, 0.1)",
+  red: "#EF4444",
+  redDim: "rgba(239, 68, 68, 0.1)",
+  cyan: "#3B82F6",
+  cyanDim: "rgba(59, 130, 246, 0.1)",
+  ink: "var(--color-text)",
+  inkSec: "var(--color-text-sec)",
+  inkTert: "var(--color-text-sec)",
+  n8n: "var(--color-cta)",
+  n8nDim: "var(--color-surface-soft)",
+  borderSt: "var(--color-border)",
+};
 
 const PLAN_PRICES = { Starter: 197, Pro: 397, Enterprise: 897 };
 
@@ -55,7 +74,7 @@ export default function FinanceiroAdminView({ clients }) {
         <div style={{ padding:"14px 20px", borderBottom:`1px solid ${T.border}`, fontSize:14, fontWeight:700, color:T.ink }}>📊 Receita por Plano</div>
         <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
           <thead>
-            <tr style={{ background:"rgba(255,255,255,0.02)" }}>
+            <tr style={{ background:"var(--color-surface-soft)" }}>
               {["Plano","Clientes","Mensalidade","MRR do Plano","% do Total"].map(h => (
                 <th key={h} style={{ textAlign:"left", padding:"11px 16px", color:T.inkTert, fontWeight:600, fontSize:12 }}>{h}</th>
               ))}
@@ -83,7 +102,7 @@ export default function FinanceiroAdminView({ clients }) {
         <div style={{ padding:"14px 20px", borderBottom:`1px solid ${T.border}`, fontSize:14, fontWeight:700, color:T.ink }}>🧾 Clientes & Receita</div>
         <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
           <thead>
-            <tr style={{ background:"rgba(255,255,255,0.02)" }}>
+            <tr style={{ background:"var(--color-surface-soft)" }}>
               {["Cliente","Plano","Status","Mensalidade","Msgs/Mês"].map(h => (
                 <th key={h} style={{ textAlign:"left", padding:"11px 16px", color:T.inkTert, fontWeight:600, fontSize:12 }}>{h}</th>
               ))}
@@ -95,7 +114,7 @@ export default function FinanceiroAdminView({ clients }) {
               const sc = { active:{ c:T.green,b:T.greenDim,l:"Ativo" }, setup:{ c:T.amber,b:T.amberDim,l:"Setup" }, paused:{ c:T.inkSec,b:T.up,l:"Pausado" } }[c.status] || { c:T.inkSec,b:T.up,l:c.status||"—" };
               return (
                 <tr key={c.id} style={{ borderTop:`1px solid ${T.border}` }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.01)"}
+                  onMouseEnter={e => e.currentTarget.style.background = "var(--color-surface-soft)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                   <td style={{ padding:"12px 16px" }}>
                     <div style={{ fontWeight:600, color:T.ink }}>{c.name}</div>

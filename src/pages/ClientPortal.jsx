@@ -197,20 +197,34 @@ function ClientDashboardView({ client, leads, pacientes, whatsappNums }) {
 // ── WhatsApp View ─────────────────────────────────────────────────────────
 function WhatsAppView({ client, numbers, reload }) {
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm]       = useState({ nome_display: "", ia_nome: "", ia_funcao: "", waba_id: "", phone_number_id: "" });
-  const [saving, setSaving]   = useState(false);
-  const limit = PLAN_LIMITS[client.plan] || 1;
-  const canAdd = numbers.length < limit;
+  const [editing, setEditing] = useState(null); // ID do número sendo editado
 
   const save = async () => {
     if (!form.nome_display.trim() || !form.phone_number_id.trim()) return;
     setSaving(true);
     try {
-      await WhatsAppNumbers.add(client.id, { ...form, status: "pendente" });
+      if (editing) {
+        await WhatsAppNumbers.update(client.id, editing, form);
+      } else {
+        await WhatsAppNumbers.add(client.id, { ...form, status: "pendente" });
+      }
       setForm({ nome_display: "", ia_nome: "", ia_funcao: "", waba_id: "", phone_number_id: "" });
       setShowAdd(false);
+      setEditing(null);
       reload();
     } finally { setSaving(false); }
+  };
+
+  const startEdit = (num) => {
+    setForm({
+      nome_display: num.nome_display || "",
+      ia_nome: num.ia_nome || "",
+      ia_funcao: num.ia_funcao || "",
+      waba_id: num.waba_id || "",
+      phone_number_id: num.phone_number_id || ""
+    });
+    setEditing(num.id);
+    setShowAdd(true);
   };
 
   const toggle = async (num) => {
@@ -231,7 +245,7 @@ function WhatsAppView({ client, numbers, reload }) {
           <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 800, color: T.ink }}>📱 WhatsApp</h1>
           <p style={{ margin: 0, fontSize: 13, color: T.inkTert }}>Gerencie seus números da API Oficial. Plano {client.plan}: até {limit} número(s).</p>
         </div>
-        <Btn onClick={() => setShowAdd(true)} disabled={!canAdd} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <Btn onClick={() => { setEditing(null); setForm({ nome_display: "", ia_nome: "", ia_funcao: "", waba_id: "", phone_number_id: "" }); setShowAdd(true); }} disabled={!canAdd} style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <Plus size={14} /> Adicionar Número
         </Btn>
       </div>
@@ -263,6 +277,7 @@ function WhatsAppView({ client, numbers, reload }) {
                 </div>
               </div>
               <div style={{ display: "flex", gap: 8 }}>
+                <Btn variant="ghost" size="sm" onClick={() => startEdit(num)}><Edit2 size={12} /></Btn>
                 <Btn variant="ghost" size="sm" onClick={() => toggle(num)}>
                   {num.status === "ativo" ? <><Pause size={12} /> Pausar</> : <><Play size={12} /> Ativar</>}
                 </Btn>
@@ -297,7 +312,7 @@ function WhatsAppView({ client, numbers, reload }) {
       {showAdd && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, backdropFilter: "blur(4px)" }}>
           <Card style={{ width: 480, overflow: "hidden" }}>
-            <CardHeader title="Adicionar Número WhatsApp" action={<button onClick={() => setShowAdd(false)} style={{ background: "none", border: "none", cursor: "pointer", color: T.inkTert, fontSize: 18 }}>✕</button>} />
+            <CardHeader title={editing ? "Editar Número WhatsApp" : "Adicionar Número WhatsApp"} action={<button onClick={() => setShowAdd(false)} style={{ background: "none", border: "none", cursor: "pointer", color: T.inkTert, fontSize: 18 }}>✕</button>} />
             <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 14 }}>
               <Inp label="Nome do Número *" value={form.nome_display} onChange={v => setForm(p => ({ ...p, nome_display: v }))} placeholder="Ex: Atendimento Principal" />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -305,11 +320,10 @@ function WhatsAppView({ client, numbers, reload }) {
                 <Inp label="Função da IA" value={form.ia_funcao} onChange={v => setForm(p => ({ ...p, ia_funcao: v }))} placeholder='Ex: Recepcionista' />
               </div>
               <Inp label="Phone Number ID *" value={form.phone_number_id} onChange={v => setForm(p => ({ ...p, phone_number_id: v }))} placeholder="ID do painel Meta" />
-              <Inp label="WABA ID" value={form.waba_id} onChange={v => setForm(p => ({ ...p, waba_id: v }))} placeholder="WhatsApp Business Account ID" />
               <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
                 <Btn variant="ghost" onClick={() => setShowAdd(false)} style={{ flex: 1 }}>Cancelar</Btn>
                 <Btn onClick={save} disabled={saving || !form.nome_display || !form.phone_number_id} style={{ flex: 1 }}>
-                  {saving ? "Salvando…" : "✅ Adicionar"}
+                  {saving ? "Salvando…" : editing ? "✅ Salvar" : "✅ Adicionar"}
                 </Btn>
               </div>
             </div>
