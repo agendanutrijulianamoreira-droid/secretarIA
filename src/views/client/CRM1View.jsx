@@ -47,7 +47,7 @@ function LeadCard({ lead, clientId }) {
   const setStatus = (status) => Contatos.updateCRM(clientId, lead.id, { crm_status: status });
 
   return (
-    <div style={{ background: T.surface, border: `1px solid ${open ? T.borderSt : T.border}`, borderRadius: 14, overflow: "hidden", transition: "all 200ms" }}>
+    <div style={{ background: T.surface, border: `1px solid ${open ? T.borderSt : T.border}`, borderRadius: 16, overflow: "hidden", transition: "all 200ms" }}>
       <div style={{ padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ width: 38, height: 38, borderRadius: 10, background: color + "22", border: `1px solid ${color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color, flexShrink: 0 }}>{initials}</div>
         <div style={{ flex: 1, minWidth: 0 }}>

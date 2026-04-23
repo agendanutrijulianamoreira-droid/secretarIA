@@ -159,7 +159,7 @@ function ClientDashboardView({ client, leads, pacientes, whatsappNums }) {
       />
 
       {pct < 80 && (
-        <div style={{ background: `${T.amber}0d`, border: `1px solid ${T.amber}33`, borderRadius: 14, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ background: `${T.amber}0d`, border: `1px solid ${T.amber}33`, borderRadius: 16, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 34, height: 34, borderRadius: 8, background: `${T.amber}1a`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <AlertCircle size={16} color={T.amber} />
@@ -281,7 +281,7 @@ function WhatsAppView({ client, numbers, reload }) {
       </div>
 
       {!canAdd && (
-        <div style={{ background: T.amberDim, border: `1px solid ${T.amber}44`, borderRadius: 12, padding: "12px 16px", fontSize: 13, color: T.amber }}>
+        <div style={{ background: T.amberDim, border: `1px solid ${T.amber}44`, borderRadius: 16, padding: "12px 16px", fontSize: 13, color: T.amber }}>
           ⚠️ Você atingiu o limite de {limit} número(s) do plano {client.plan}. Faça upgrade para adicionar mais.
         </div>
       )}

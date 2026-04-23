@@ -35,7 +35,7 @@ export default function IAAprendizadosView({ client, aprendizados }) {
       <PageTitle icon={Brain} iconColor={T.purple} title="IA Aprendizados" subtitle="Revise e aprove o que sua IA está aprendendo nas conversas." />
 
       {pendentes > 0 && (
-        <div style={{ background: T.amberDim, border: `1px solid ${T.amber}44`, borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ background: T.amberDim, border: `1px solid ${T.amber}44`, borderRadius: 16, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 18 }}>⏳</span>
           <div>
             <div style={{ fontSize: 13, fontWeight: 600, color: T.amber }}>{pendentes} aprendizado(s) aguardando sua revisão</div>
