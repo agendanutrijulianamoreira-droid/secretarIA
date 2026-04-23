@@ -1,32 +1,137 @@
 rules_version = '2';
+
+// ──────────────────────────────────────────────────────────────────────────────
+//  SecretarIA — Firestore Security Rules
+//  Projeto: gestaonutri-42938
+//
+//  Modelo de segurança:
+//   • Admin (ADMIN_EMAIL): lê e escreve em TUDO
+//   • Cliente autenticado: acessa APENAS a sua própria sub-coleção /clients/{id}
+//     (o id do cliente é resolvido via campo email no documento /clients/{id})
+//   • Usuários não autenticados: sem acesso a nada
+// ──────────────────────────────────────────────────────────────────────────────
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Função para verificar se é o administrador
+
+    // ── Funções auxiliares ──────────────────────────────────────────────────
+
+    // E-mail fixo da administradora do sistema
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == "agendanutrijulianamoreira@gmail.com";
+      return request.auth != null
+          && request.auth.token.email == "agendanutrijulianamoreira@gmail.com";
     }
 
-    // Função para verificar se o usuário é o próprio cliente
-    function isOwner(clientId) {
-      let client = get(/databases/$(database)/documents/clients/$(clientId)).data;
-      return request.auth != null && request.auth.token.email.lower() == client.email.lower();
+    // Usuário autenticado qualquer
+    function isAuth() {
+      return request.auth != null;
     }
+
+    // Verifica se o usuário autenticado é o dono do cliente informado.
+    // O documento /clients/{clientId} possui um campo "email" com o e-mail do profissional.
+    function isOwner(clientId) {
+      return isAuth()
+          && exists(/databases/$(database)/documents/clients/$(clientId))
+          && get(/databases/$(database)/documents/clients/$(clientId)).data.email
+             == request.auth.token.email;
+    }
+
+    // Admin OU dono do cliente
+    function isAdminOrOwner(clientId) {
+      return isAdmin() || isOwner(clientId);
+    }
+
+    // ── /clients ───────────────────────────────────────────────────────────
 
     match /clients/{clientId} {
-      // Admin pode tudo. Cliente pode ver e editar o seu próprio documento.
-      allow read, write: if isAdmin() || isOwner(clientId);
+      // Admin pode criar novos clientes.
+      // Cliente pode ler e atualizar o próprio documento (para atualizar briefing, etc.)
+      allow read:   if isAdminOrOwner(clientId);
+      allow create: if isAdmin();
+      allow update: if isAdminOrOwner(clientId);
+      allow delete: if isAdmin();
 
-      // Regras para subcoleções (mensagens, leads, faturas)
-      match /{allSubcollections=**} {
-        allow read, write: if isAdmin() || isOwner(clientId);
+      // ── Sub-coleções do cliente ──────────────────────────────────────────
+      // Todas seguem a mesma regra: admin ou dono do cliente pai
+
+      match /contatos/{docId} {
+        allow read, write: if isAdminOrOwner(clientId);
+      }
+
+      match /pacientes/{docId} {
+        allow read, write: if isAdminOrOwner(clientId);
+      }
+
+      match /whatsapp_numbers/{docId} {
+        allow read, write: if isAdminOrOwner(clientId);
+      }
+
+      match /servicos/{docId} {
+        allow read, write: if isAdminOrOwner(clientId);
+      }
+
+      match /vendas/{docId} {
+        allow read, write: if isAdminOrOwner(clientId);
+      }
+
+      match /campanhas/{docId} {
+        allow read, write: if isAdminOrOwner(clientId);
+      }
+
+      match /ia_aprendizados/{docId} {
+        allow read, write: if isAdminOrOwner(clientId);
+      }
+
+      match /chat_messages/{docId} {
+        allow read, write: if isAdminOrOwner(clientId);
+      }
+
+      match /invoices/{docId} {
+        // Cliente pode ler suas faturas; apenas admin pode criar/atualizar cobranças
+        allow read:   if isAdminOrOwner(clientId);
+        allow create, update, delete: if isAdmin();
+      }
+
+      match /portal_messages/{docId} {
+        // Ambos (admin e cliente) podem enviar e ler mensagens do canal
+        allow read, write: if isAdminOrOwner(clientId);
+      }
+
+      match /agendamentos/{docId} {
+        allow read, write: if isAdminOrOwner(clientId);
+      }
+
+      // Catch-all: qualquer outra sub-coleção futura do cliente
+      match /{subcollection}/{docId} {
+        allow read, write: if isAdminOrOwner(clientId);
       }
     }
+
+    // ── /tokens ────────────────────────────────────────────────────────────
+    // Tokens sensíveis (OpenAI, WhatsApp API)
+    // Admin gerencia; cliente lê apenas o seu próprio (para ver se está configurado)
+
+    match /tokens/{clientId} {
+      allow read:   if isAdminOrOwner(clientId);
+      allow write:  if isAdmin();
+    }
+
+    // ── /n8n_fluxos ────────────────────────────────────────────────────────
+    // Status dos fluxos n8n — admin gerencia, cliente lê o próprio
+
+    match /n8n_fluxos/{clientId} {
+      allow read:  if isAdminOrOwner(clientId);
+      allow write: if isAdmin();
+    }
+
+    // ── /alerts ────────────────────────────────────────────────────────────
+    // Alertas de venda e notificações — apenas admin acessa
+
     match /alerts/{alertId} {
       allow read, write: if isAdmin();
     }
-    
-    // Bloquear o restante por padrão
+
+    // ── Bloqueio total para tudo que não foi listado ───────────────────────
     match /{document=**} {
       allow read, write: if false;
     }

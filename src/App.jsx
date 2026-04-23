@@ -10,6 +10,10 @@ import {
 } from "firebase/auth";
 import SalesPage from "./pages/SalesPage";
 import SecretariaDashboard from "./pages/SecretariaDashboard";
+import ClientPortalMain from "./pages/ClientPortalMain";
+import FluxosView from "./views/admin/FluxosView";
+import TokensView from "./views/admin/TokensView";
+import FinanceiroAdminView from "./views/admin/FinanceiroAdmin";
 import { Bot, Zap } from "lucide-react";
 
 
@@ -917,6 +921,99 @@ function AlertsView({ alerts, markRead }) {
   );
 }
 
+// ── Admin Dashboard ────────────────────────────────────────────────────────────
+function AdminDashboardView({ clients, alerts, onPortal }) {
+  const activeN = clients.filter(c => c.status === "active").length;
+  const n8nN    = clients.filter(c => c.n8n_status === "online").length;
+  const totalMsgs = clients.reduce((a, c) => a + (c.msgs_today || 0), 0);
+  const unread  = alerts.filter(a => !a.read).length;
+  const PLAN_PRICES = { Starter:197, Pro:397, Enterprise:897 };
+  const mrr = clients.filter(c => c.status === "active").reduce((a, c) => a + (PLAN_PRICES[c.plan] || 0), 0);
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:24, animation:"fadeIn 300ms ease" }}>
+      <div>
+        <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:800, color:T.ink }}>👋 Visão Geral</h1>
+        <p style={{ margin:0, fontSize:13, color:T.inkTert }}>Resumo operacional do sistema SecretarIA.</p>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14 }}>
+        {[
+          { l:"Clientes Ativos",     v:activeN,    c:T.green,  i:"👥" },
+          { l:"Fluxos n8n Online",   v:n8nN,       c:T.cyan,   i:"⚡" },
+          { l:"Mensagens Hoje",      v:totalMsgs,  c:T.amber,  i:"💬" },
+          { l:"MRR",                 v:`R$ ${mrr.toLocaleString("pt-BR")}`, c:T.green, i:"💰" },
+        ].map(s => (
+          <div key={s.l} style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:14, padding:"18px 20px" }}>
+            <div style={{ fontSize:22, marginBottom:8 }}>{s.i}</div>
+            <div style={{ fontSize:26, fontWeight:800, color:s.c }}>{s.v}</div>
+            <div style={{ fontSize:11, color:T.inkTert, textTransform:"uppercase", letterSpacing:0.5 }}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+      {unread > 0 && (
+        <div style={{ background:"rgba(0,209,255,0.06)", border:`1px solid ${T.cyan}33`, borderRadius:14, padding:"14px 18px", display:"flex", alignItems:"center", gap:12 }}>
+          <span style={{ fontSize:20 }}>🔔</span>
+          <div style={{ flex:1 }}>
+            <div style={{ fontSize:13, fontWeight:600, color:T.cyan }}>{unread} novo(s) alerta(s) de venda</div>
+            <div style={{ fontSize:12, color:T.inkSec }}>Novos pagamentos ou cadastros recebidos.</div>
+          </div>
+        </div>
+      )}
+      <div style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:16, overflow:"hidden" }}>
+        <div style={{ padding:"14px 20px", borderBottom:`1px solid ${T.border}`, fontSize:14, fontWeight:700, color:T.ink }}>🏢 Clientes Recentes</div>
+        {clients.slice(0, 5).map(c => (
+          <div key={c.id} style={{ padding:"12px 20px", borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", gap:12 }}>
+            <Av initials={c.avatar} color={c.color} size={32} />
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:13, fontWeight:600, color:T.ink }}>{c.name}</div>
+              <div style={{ fontSize:11, color:T.inkTert }}>{c.plan}</div>
+            </div>
+            <StatusTag status={c.status} />
+            <button onClick={() => onPortal(c)} style={{ padding:"6px 12px", borderRadius:8, background:T.greenDim, border:`1px solid ${T.green}44`, color:T.green, fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Ver Portal</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Vendas Admin ───────────────────────────────────────────────────────────────
+function VendasAdminView({ clients, alerts }) {
+  const vendas = alerts.filter(a => a.type === "SALE");
+  const totalVendas = vendas.length;
+  const unread = vendas.filter(a => !a.read).length;
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:20, animation:"fadeIn 300ms ease" }}>
+      <div>
+        <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:800, color:T.ink }}>🛒 Vendas & Pipeline</h1>
+        <p style={{ margin:0, fontSize:13, color:T.inkTert }}>Novos cadastros e pagamentos recebidos.</p>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
+        {[["Total de Vendas", totalVendas, T.green],["Novas (não lidas)", unread, T.cyan],["Clientes", clients.length, T.amber]].map(([l,v,c]) => (
+          <div key={l} style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:14, padding:"18px 20px" }}>
+            <div style={{ fontSize:26, fontWeight:800, color:c }}>{v}</div>
+            <div style={{ fontSize:11, color:T.inkTert, textTransform:"uppercase", letterSpacing:0.5 }}>{l}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+        {alerts.length === 0 && <div style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:14, padding:32, textAlign:"center", color:T.inkTert }}>Nenhuma venda registrada ainda.</div>}
+        {alerts.map(a => (
+          <div key={a.id} style={{ background:T.surface, border:`1px solid ${a.read ? T.border : T.cyan}44`, borderRadius:14, padding:"16px 20px", display:"flex", gap:16, alignItems:"center", opacity: a.read ? 0.7 : 1 }}>
+            <div style={{ fontSize:28 }}>{a.type === "SALE" ? "🎉" : "🔔"}</div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:14, fontWeight:700, color:T.ink, marginBottom:4 }}>{a.title} {!a.read && <Tag color={T.cyan} bg="rgba(0,209,255,0.1)">NOVO</Tag>}</div>
+              <div style={{ fontSize:12, color:T.inkSec }}>{a.message}</div>
+              <div style={{ fontSize:11, color:T.inkTert, marginTop:4 }}>{new Date(a.created_at).toLocaleString("pt-BR")}</div>
+            </div>
+            {!a.read && <Btn onClick={() => Alerts.markRead(a.id)} variant="ghost" style={{ fontSize:11, padding:"7px 12px" }}>Marcar como lido</Btn>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── App ────────────────────────────────────────────────────────────────────────
 export default function App(){
   const [user, setUser] = useState(null);
@@ -1049,7 +1146,7 @@ export default function App(){
 
   if(authLoading) return <div style={{ background: T.bg, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: T.inkTert }}>🤖 Carregando sistema...</div>;
   if(!user) return <LoginView />;
-  if(portal) return <Portal client={portal} onBack={()=>setPortal(null)}/>;
+  if(portal) return <ClientPortalMain client={portal} onBack={user?.email === ADMIN_EMAIL ? () => setPortal(null) : null} />;
 
   return (
     <div style={{ background: T.bg, color: T.ink, minHeight: "100vh" }}>
@@ -1058,9 +1155,15 @@ export default function App(){
         logout={logout} 
         setView={setView} 
         activeView={view}
+        alertCount={alerts.filter(a => !a.read).length}
       >
-        <div style={{ padding: "20px" }}>
+        <div style={{ padding: "0" }}>
+          {view === "dashboard" && <AdminDashboardView clients={clients} alerts={alerts} onPortal={setPortal} />}
           {view === "clients" && <ClientsView clients={clients} onPortal={setPortal} onBriefing={setBriefCl}/>}
+          {view === "fluxos" && <FluxosView clients={clients} />}
+          {view === "tokens" && <TokensView clients={clients} />}
+          {view === "financeiro" && <FinanceiroAdminView clients={clients} />}
+          {view === "vendas" && <VendasAdminView clients={clients} alerts={alerts} />}
           {view === "stats" && <StatsView clients={clients}/>}
           {view === "alerts" && <AlertsView alerts={alerts} markRead={Alerts.markRead} />}
           {view === "settings" && <SettingsView user={user}/>}
