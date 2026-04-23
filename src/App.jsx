@@ -1112,7 +1112,9 @@ export default function App(){
 
   if(authLoading) return <div style={{ background: "var(--color-bg)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-sec)" }}>🤖 Carregando sistema...</div>;
   if(!user) return <LoginView />;
-  if(portal) return <ClientPortalMain client={portal} onBack={user?.email === ADMIN_EMAIL ? () => setPortal(null) : null} />;
+
+  // Cliente autenticado → vai direto para o portal do cliente
+  if(portal) return <ClientPortalMain client={portal} onBack={null} />;
 
   return (
     <div style={{ background: "var(--color-bg)", color: "var(--color-text)", minHeight: "100vh" }}>

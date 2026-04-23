@@ -13,6 +13,8 @@ import CRM1View from "../views/client/CRM1View";
 import CRM2View from "../views/client/CRM2View";
 import FinanceiroClienteView from "../views/client/FinanceiroCliente";
 import IAAprendizadosView from "../views/client/IAAprendizados";
+import OnboardingChat from "../views/client/OnboardingChat";
+import { Logo } from "../components/UI";
 import { Zap, Star, Settings, Power, ChevronRight } from "lucide-react";
 
 const PLAN_META = {
@@ -135,8 +137,18 @@ export default function ClientPortalMain({ client, onBack }) {
     crm2: "CRM — Pacientes", financeiro: "Financeiro", ia: "IA Aprendizados", plano: "Meu Plano",
   };
 
+  // Se o cliente está em onboarding, mostrar o chat de configuração
+  if (client.status === "onboarding" || client.status === "setup") {
+    return (
+      <OnboardingChat
+        client={client}
+        onComplete={() => window.location.reload()}
+      />
+    );
+  }
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: T.bg, color: T.ink, fontFamily: "Inter, -apple-system, sans-serif" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: T.bg, color: T.ink, fontFamily: "'Outfit', sans-serif" }}>
       <style>{`
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse  { 0%,100% { transform: scale(1); opacity: 0.25; } 50% { transform: scale(1.5); opacity: 0.1; } }
@@ -147,14 +159,8 @@ export default function ClientPortalMain({ client, onBack }) {
 
       {/* Sidebar */}
       <aside style={{ width: 260, background: T.surface, borderRight: `1px solid ${T.border}`, display: "flex", flexDirection: "column", position: "fixed", height: "100vh", zIndex: 100 }}>
-        {/* Logo */}
-        <div style={{ padding: "24px 20px 16px", display: "flex", alignItems: "center", gap: 9, borderBottom: `1px solid ${T.border}` }}>
-          <div style={{ width: 30, height: 30, background: T.cyan, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Zap size={16} color="#fff" strokeWidth={2.5} />
-          </div>
-          <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: -0.3, color: T.ink }}>
-            Secretar<span style={{ color: T.cyan }}>IA</span>
-          </span>
+        <div style={{ padding: "24px 20px 16px", borderBottom: `1px solid ${T.border}` }}>
+          <Logo size={24} />
         </div>
 
         {/* Cliente info */}
