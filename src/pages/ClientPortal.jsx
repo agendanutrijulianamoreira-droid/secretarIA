@@ -100,14 +100,17 @@ function NavItem({ item, active, onClick }) {
   const Icon = item.icon;
   return (
     <button onClick={onClick} style={{
-      width: "100%", padding: "11px 16px", borderRadius: 10,
-      background: active ? `${T.cyan}12` : "transparent",
-      border: "none", color: active ? T.cyan : T.inkSec,
+      width: "100%", padding: "10px 14px", borderRadius: 8,
+      background: active ? `${T.cyan}0f` : "transparent",
+      border: "none",
+      borderLeft: `3px solid ${active ? T.cyan : "transparent"}`,
+      color: active ? T.cyan : T.inkSec,
       display: "flex", alignItems: "center", gap: 10,
-      cursor: "pointer", transition: "all 0.15s", textAlign: "left", fontFamily: "inherit"
+      cursor: "pointer", transition: "all 0.15s", textAlign: "left", fontFamily: "inherit",
+      marginLeft: -3,
     }}>
-      <Icon size={17} color={active ? T.cyan : T.inkSec} />
-      <span style={{ fontSize: 13, fontWeight: active ? 600 : 500 }}>{item.label}</span>
+      <Icon size={16} color={active ? T.cyan : T.inkSec} strokeWidth={active ? 2.5 : 1.8} />
+      <span style={{ fontSize: 13, fontWeight: active ? 600 : 400, letterSpacing: active ? "-0.01em" : 0 }}>{item.label}</span>
     </button>
   );
 }

@@ -151,22 +151,24 @@ export default function ClientPortalMain({ client, onBack }) {
       {/* Sidebar */}
       <aside style={{ width: 260, background: T.surface, borderRight: `1px solid ${T.border}`, display: "flex", flexDirection: "column", position: "fixed", height: "100vh", zIndex: 100 }}>
         {/* Logo */}
-        <div style={{ padding: "28px 20px 20px", display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ background: T.cyanDim, padding: 8, borderRadius: 10, border: `1px solid ${T.cyan}33` }}>
-            <Zap size={18} color={T.cyan} />
+        <div style={{ padding: "24px 20px 16px", display: "flex", alignItems: "center", gap: 9, borderBottom: `1px solid ${T.border}` }}>
+          <div style={{ width: 30, height: 30, background: T.cyan, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Zap size={16} color="#fff" strokeWidth={2.5} />
           </div>
-          <h1 style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.5 }}>
+          <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: -0.3, color: T.ink }}>
             Secretar<span style={{ color: T.cyan }}>IA</span>
-          </h1>
+          </span>
         </div>
 
         {/* Cliente info */}
-        <div style={{ margin: "0 12px 16px", padding: "12px 14px", background: T.bg, borderRadius: 12, border: `1px solid ${T.border}` }}>
+        <div style={{ padding: "14px 16px", borderBottom: `1px solid ${T.border}` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: pm.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: pm.color, flexShrink: 0 }}>{initials}</div>
-            <div style={{ overflow: "hidden" }}>
+            <div style={{ width: 38, height: 38, borderRadius: 10, background: pm.bg, border: `1px solid ${pm.color}33`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: pm.color, flexShrink: 0 }}>{initials}</div>
+            <div style={{ overflow: "hidden", flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{client.name}</div>
-              <div style={{ fontSize: 11, color: pm.color, fontWeight: 600 }}>Plano {client.plan}</div>
+              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: pm.color, background: pm.bg, padding: "1px 6px", borderRadius: 4 }}>
+                {client.plan}
+              </span>
             </div>
           </div>
         </div>
