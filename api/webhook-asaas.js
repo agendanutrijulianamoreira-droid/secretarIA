@@ -1,12 +1,17 @@
 import { db } from "./_lib/firebase.js";
 import { handleCors } from "./_lib/cors.js";
 
-// Endpoint para receber webhooks do Asaas
 export default async function handler(req, res) {
   if (handleCors(req, res)) return;
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const expectedToken = process.env.ASAAS_WEBHOOK_TOKEN;
+  const receivedToken = req.headers["asaas-access-token"];
+  if (!expectedToken || !receivedToken || receivedToken !== expectedToken) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
   try {
