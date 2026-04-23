@@ -1,5 +1,5 @@
 const ALLOWED_ORIGINS = [
-  "http://localhost:5173",
+  "http://localhost:5180",
   "http://localhost:3000",
   "https://secretaria-wa-ai.vercel.app",
 ];

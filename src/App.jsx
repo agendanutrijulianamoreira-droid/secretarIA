@@ -1,14 +1,28 @@
 import { useState, useEffect, useCallback } from "react";
-import { Clientes, Invoices, PortalMessages, Contatos } from "./lib/db";
+import { Clientes, Invoices, PortalMessages, Contatos, Alerts } from "./lib/db";
+import { auth } from "./lib/firebase";
+import { 
+  signInWithEmailAndPassword, 
+  onAuthStateChanged, 
+  signOut, 
+  GoogleAuthProvider, 
+  signInWithPopup 
+} from "firebase/auth";
+import SalesPage from "./pages/SalesPage";
+import SecretariaDashboard from "./pages/SecretariaDashboard";
+import { Bot, Zap } from "lucide-react";
+
 
 // ── Tokens ──────────────────────────────────────────────────────────────────
 const T = {
-  bg:"#0D0F14",surface:"#13161D",up:"#1A1D26",border:"rgba(255,255,255,0.07)",borderSt:"rgba(255,255,255,0.13)",
-  green:"#25D366",greenDim:"rgba(37,211,102,0.12)",amber:"#F59E0B",amberDim:"rgba(245,158,11,0.12)",
-  red:"#EF4444",redDim:"rgba(239,68,68,0.1)",n8n:"#EA4B71",n8nDim:"rgba(234,75,113,0.12)",
-  blue:"#4285F4",blueDim:"rgba(66,133,244,0.1)",ink:"#F0F2F7",inkSec:"#9CA3B0",inkTert:"#5C6270",inkMuted:"#3A3F4A",
-  asaas:"#00B4D8",
+  bg:"#0A0B10",surface:"#161B22",up:"#1F2630",border:"#30363D",borderSt:"#484F58",
+  green:"#2EB67D",greenDim:"rgba(46,182,125,0.1)",amber:"#E3B341",amberDim:"rgba(227,179,65,0.1)",
+  red:"#F85149",redDim:"rgba(248,81,73,0.1)",cyan:"#00D1FF",cyanDim:"rgba(0,209,255,0.1)",
+  ink:"#F0F6FC",inkSec:"#8B949E",inkTert:"#484F58",inkMuted:"#30363D",
+  asaas:"#00D1FF",
 };
+
+
 
 const CAP_META={text:{label:"Texto",icon:"✍️"},audio:{label:"Áudio",icon:"🎙️"},image:{label:"Imagem",icon:"🖼️"},file:{label:"Arquivo",icon:"📎"}};
 const CRM_STATUSES = {
@@ -230,6 +244,120 @@ function BriefingWizard({initial,planInit,onSave,onCancel}){
     </div>
   );
 }
+
+// ── Login Page ───────────────────────────────────────────────────────────────
+function LoginView({ onLogin }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      console.error(err);
+      setError("Falha no login. Verifique suas credenciais.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      console.error(err);
+      setError("Falha no login com Google.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-6 font-sans">
+      <div className="bg-white border border-gray-100 shadow-xl rounded-[32px] p-10 w-full max-w-md animate-in fade-in zoom-in duration-500">
+        <div className="text-center mb-10">
+          <div className="bg-[#7A8B82] w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-[#7A8B82]/20">
+            <Bot size={32} className="text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-800">
+            Secretar<span className="text-[#7A8B82]">IA</span>
+          </h1>
+          <p className="text-gray-500 mt-3">Gestão inteligente para sua clínica</p>
+        </div>
+
+        <div className="space-y-4 mb-8">
+          <button 
+            onClick={handleGoogleLogin} 
+            disabled={loading}
+            className="w-full flex items-center justify-center space-x-3 bg-white border border-gray-200 py-3 rounded-xl hover:bg-gray-50 transition-all font-medium text-gray-700 disabled:opacity-50"
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google" />
+            <span>Continuar com Google</span>
+          </button>
+
+          <div className="flex items-center space-x-4">
+            <div className="flex-1 h-px bg-gray-100"></div>
+            <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">ou e-mail</span>
+            <div className="flex-1 h-px bg-gray-100"></div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2 text-left">
+            <label className="text-sm font-semibold text-gray-700 ml-1">E-mail</label>
+            <input 
+              type="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="seu@email.com"
+              className="w-full px-4 py-3 bg-[#FAFAF7] border-none rounded-xl focus:ring-2 focus:ring-[#7A8B82] outline-none transition-all"
+              required
+            />
+          </div>
+
+          <div className="space-y-2 text-left">
+            <label className="text-sm font-semibold text-gray-700 ml-1">Senha</label>
+            <input 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full px-4 py-3 bg-[#FAFAF7] border-none rounded-xl focus:ring-2 focus:ring-[#7A8B82] outline-none transition-all"
+              required
+            />
+          </div>
+
+          {error && (
+            <div className="bg-[#F5EBE6] text-[#B67A62] p-4 rounded-xl text-sm font-medium border border-[#B67A62]/20 animate-in shake duration-300">
+              {error}
+            </div>
+          )}
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-[#7A8B82] text-white py-4 rounded-xl font-bold shadow-lg shadow-[#7A8B82]/20 hover:bg-[#687970] transition-all transform hover:-translate-y-0.5 disabled:opacity-50"
+          >
+            {loading ? "Processando..." : "Entrar no Dashboard"}
+          </button>
+        </form>
+
+        <p className="text-center text-xs text-gray-400 mt-10 uppercase tracking-widest font-medium">
+          &copy; 2026 SecretarIA Systems
+        </p>
+      </div>
+    </div>
+  );
+}
+
 
 // ── Portal do Cliente ─────────────────────────────────────────────────────────
 function Portal({client,onBack}){
@@ -526,16 +654,22 @@ function AdminCard({client,onPortal,onBriefing}){
       <div style={{display:"flex",gap:8}}>
         <button onClick={()=>onPortal(client)} style={{flex:1,padding:"8px",borderRadius:9,background:"transparent",border:`1px solid ${T.border}`,color:T.inkSec,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Portal</button>
         <button onClick={()=>onBriefing(client)} style={{flex:1,padding:"8px",borderRadius:9,background:T.greenDim,border:`1px solid ${T.green}44`,color:T.green,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>✏️ Briefing</button>
+        {(client.n8n_status === "pending" || client.status === "setup") && (
+          <button onClick={(e)=>{e.stopPropagation(); if(window.provisionClient) window.provisionClient(client.id);}} style={{flex:1,padding:"8px",borderRadius:9,background:T.n8nDim,border:`1px solid ${T.n8n}44`,color:T.n8n,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>🚀 Provisionar n8n</button>
+        )}
       </div>
     </div>
   );
 }
 
 // ── New Client Modal ──────────────────────────────────────────────────────────
-function NewModal({onClose,onNext}){
-  const [f,setF]=useState({name:"",phone:"",plan:"Pro",capabilities:["text"]});
+function NewModal({onClose,onNext,onFinish}){
+  const [f,setF]=useState({name:"",phone:"",email:"",plan:"Pro",capabilities:["text"]});
   const upd=k=>v=>setF(p=>({...p,[k]:v}));
   const tc=c=>setF(p=>({...p,capabilities:p.capabilities.includes(c)?p.capabilities.filter(x=>x!==c):[...p.capabilities,c]}));
+  
+  const isValid = f.name.trim() && f.phone.trim() && f.email.trim();
+
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(4px)"}}>
       <div style={{background:T.surface,borderRadius:20,width:460,border:`1px solid ${T.borderSt}`,overflow:"hidden",animation:"fadeIn 150ms ease"}}>
@@ -543,9 +677,11 @@ function NewModal({onClose,onNext}){
           <div style={{fontSize:15,fontWeight:700,color:T.ink}}>Novo Cliente</div>
           <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",color:T.inkTert,fontSize:18}}>✕</button>
         </div>
-        <div style={{padding:22,display:"flex",flexDirection:"column",gap:14}}>
+        <div style={{padding:22,display:"flex",flexDirection:"column",gap:14,maxHeight:"70vh",overflowY:"auto"}}>
           <Inp label="Nome do cliente *" value={f.name} onChange={upd("name")} placeholder="Ex: Clínica Saúde Total"/>
           <Inp label="Número WhatsApp *" value={f.phone} onChange={upd("phone")} placeholder="+55 11 9 0000-0000"/>
+          <Inp label="E-mail de acesso *" value={f.email} onChange={upd("email")} placeholder="cliente@email.com"/>
+          
           <div><label style={{fontSize:11,color:T.inkTert,display:"block",marginBottom:8}}>Capacidades da IA</label>
             <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{Object.entries(CAP_META).map(([c,m])=><Chip key={c} active={f.capabilities.includes(c)} onClick={()=>tc(c)}>{m.icon} {m.label}</Chip>)}</div>
           </div>
@@ -553,10 +689,229 @@ function NewModal({onClose,onNext}){
             <div style={{display:"flex",gap:8}}>{["Starter","Pro","Enterprise"].map(p=><Chip key={p} active={f.plan===p} onClick={()=>upd("plan")(p)}>{p}</Chip>)}</div>
           </div>
         </div>
-        <div style={{padding:"14px 22px",borderTop:`1px solid ${T.border}`,display:"flex",gap:10}}>
-          <Btn variant="ghost" onClick={onClose} style={{flex:1,textAlign:"center"}}>Cancelar</Btn>
-          <button onClick={()=>{if(!f.name.trim()||!f.phone.trim())return;onNext(f);}} style={{flex:2,padding:10,borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer",background:T.green,border:"none",color:"#000",fontFamily:"inherit"}}>Próximo: Briefing →</button>
+        <div style={{padding:"14px 22px",borderTop:`1px solid ${T.border}`,display:"flex",flexDirection:"column",gap:10}}>
+          <div style={{display:"flex",gap:10}}>
+            <Btn variant="ghost" onClick={onClose} style={{flex:1}}>Cancelar</Btn>
+            <button 
+              onClick={()=>{if(isValid) onFinish(f);}} 
+              disabled={!isValid}
+              style={{flex:1.5,padding:10,borderRadius:10,fontSize:13,fontWeight:700,cursor:isValid?"pointer":"default",background:T.bg,border:`1px solid ${T.border}`,color:T.ink,opacity:isValid?1:0.5,fontFamily:"inherit"}}
+            >
+              🚀 Criar Direto
+            </button>
+          </div>
+          <button 
+            onClick={()=>{if(isValid) onNext(f);}} 
+            disabled={!isValid}
+            style={{padding:12,borderRadius:10,fontSize:13,fontWeight:700,cursor:isValid?"pointer":"default",background:T.green,border:"none",color:"#000",opacity:isValid?1:0.5,fontFamily:"inherit"}}
+          >
+            Avançar: Briefing →
+          </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Share Modal ───────────────────────────────────────────────────────────────
+function ShareModal({client, onClose}){
+  const portalUrl = `${window.location.origin}/?client=${client.id}`;
+  const msg = `Olá ${client.name}! 🚀\n\nSua SecretarIA já está configurada. Acesse seu portal agora para completar o seu briefing e acompanhar seus leads:\n\n🔗 *Link de Acesso:* ${portalUrl}\n📧 *E-mail:* ${client.email}\n🔑 *Senha:* (A mesma do seu cadastro ou sua conta Google)\n\nSeja bem-vindo(a)!`;
+  
+  const copy = () => {
+    navigator.clipboard.writeText(msg);
+    alert("Dados copiados para a área de transferência!");
+  };
+
+  const shareWa = () => {
+    const url = `https://wa.me/${client.phone.replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`;
+    window.open(url, "_blank");
+  };
+
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,backdropFilter:"blur(8px)"}}>
+      <div style={{background:T.surface,borderRadius:24,width:480,border:`1px solid ${T.green}33`,padding:32,animation:"fadeIn 200ms ease",textAlign:"center"}}>
+        <div style={{fontSize:48,marginBottom:16}}>🎉</div>
+        <h2 style={{margin:"0 0 8px",fontSize:20,fontWeight:700}}>Cliente Cadastrado!</h2>
+        <p style={{margin:"0 0 24px",fontSize:14,color:T.inkTert}}>O acesso de <b>{client.name}</b> foi gerado com sucesso.</p>
+        
+        <div style={{background:T.bg,borderRadius:16,padding:20,textAlign:"left",marginBottom:24,border:`1px solid ${T.border}`}}>
+          <div style={{fontSize:11,color:T.inkTert,marginBottom:8,textTransform:"uppercase"}}>Mensagem formatada:</div>
+          <div style={{fontSize:12,color:T.inkSec,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{msg}</div>
+        </div>
+
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <Btn onClick={shareWa} style={{background:T.green,color:"#000",padding:14}}>📱 Enviar via WhatsApp</Btn>
+          <div style={{display:"flex",gap:10}}>
+            <Btn variant="ghost" onClick={copy} style={{flex:1}}>📋 Copiar Dados</Btn>
+            <Btn variant="ghost" onClick={onClose} style={{flex:1}}>Fechar</Btn>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Visões Adicionais ─────────────────────────────────────────────────────────
+
+function ClientsView({clients, onPortal, onBriefing}){
+  return(
+    <div style={{animation:"fadeIn 300ms ease"}}>
+      <h1 style={{margin:"0 0 4px",fontSize:22,fontWeight:700,color:T.ink}}>👥 Gestão de Clientes</h1>
+      <p style={{margin:"0 0 24px",fontSize:13,color:T.inkTert}}>Lista completa e controle de acessos</p>
+      
+      <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,overflow:"hidden"}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+          <thead>
+            <tr style={{background:"rgba(255,255,255,0.02)",borderBottom:`1px solid ${T.border}`}}>
+              <th style={{textAlign:"left",padding:16,color:T.inkTert,fontWeight:600}}>Cliente</th>
+              <th style={{textAlign:"left",padding:16,color:T.inkTert,fontWeight:600}}>WhatsApp</th>
+              <th style={{textAlign:"left",padding:16,color:T.inkTert,fontWeight:600}}>Plano</th>
+              <th style={{textAlign:"left",padding:16,color:T.inkTert,fontWeight:600}}>Status</th>
+              <th style={{textAlign:"right",padding:16,color:T.inkTert,fontWeight:600}}>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {clients.map(c=>(
+              <tr key={c.id} style={{borderBottom:`1px solid ${T.border}`,transition:"background 150ms"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.01)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                <td style={{padding:16}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12}}>
+                    <Av initials={c.avatar} color={c.color} size={32}/>
+                    <span style={{fontWeight:600}}>{c.name}</span>
+                  </div>
+                </td>
+                <td style={{padding:16,color:T.inkSec}}>{c.phone}</td>
+                <td style={{padding:16}}><Tag color={PLAN_META[c.plan]?.color} bg={PLAN_META[c.plan]?.bg}>{c.plan}</Tag></td>
+                <td style={{padding:16}}><StatusTag status={c.status}/></td>
+                <td style={{padding:16,textAlign:"right"}}>
+                  <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+                    <Btn variant="ghost" onClick={()=>onBriefing(c)} style={{padding:"6px 12px",fontSize:11}}>Config</Btn>
+                    <Btn onClick={()=>onPortal(c)} style={{padding:"6px 12px",fontSize:11}}>Portal</Btn>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function StatsView({clients}){
+  const totalMsgs = clients.reduce((a,c)=>a+(c.msgs_month||0),0);
+  const avgMsgs = clients.length ? (totalMsgs/clients.length).toFixed(0) : 0;
+  
+  return(
+    <div style={{animation:"fadeIn 300ms ease"}}>
+      <h1 style={{margin:"0 0 4px",fontSize:22,fontWeight:700,color:T.ink}}>📊 Estatísticas de Performance</h1>
+      <p style={{margin:"0 0 24px",fontSize:13,color:T.inkTert}}>Métricas agregadas do sistema SecretarIA</p>
+      
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20,marginBottom:32}}>
+        {[
+          {l:"Total de Mensagens (Mês)",v:totalMsgs.toLocaleString(),i:"💬",c:T.green},
+          {l:"Média por Cliente",v:avgMsgs,i:"📈",c:T.blue},
+          {l:"Taxa de Atividade",v:"94%",i:"⚡",c:T.amber},
+        ].map(s=>(
+          <div key={s.l} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,padding:24}}>
+            <div style={{fontSize:24,marginBottom:8}}>{s.i}</div>
+            <div style={{fontSize:32,fontWeight:700,color:s.c,marginBottom:4}}>{s.v}</div>
+            <div style={{fontSize:12,color:T.inkTert,textTransform:"uppercase",letterSpacing:0.5}}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,padding:24}}>
+        <div style={{fontWeight:600,marginBottom:20,fontSize:15}}>Uso de Mensagens por Cliente</div>
+        <div style={{display:"flex",flexDirection:"column",gap:16}}>
+          {clients.slice(0,5).map(c=>(
+            <div key={c.id}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:6}}>
+                <span>{c.name}</span>
+                <span style={{color:T.inkTert}}>{c.msgs_month || 0} msgs</span>
+              </div>
+              <div style={{height:6,background:T.bg,borderRadius:3,overflow:"hidden"}}>
+                <div style={{height:6,background:c.color,width:`${Math.min(100,(c.msgs_month||0)/10)}%`,transition:"width 1s ease"}}/>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsView({user}){
+  return(
+    <div style={{animation:"fadeIn 300ms ease"}}>
+      <h1 style={{margin:"0 0 4px",fontSize:22,fontWeight:700,color:T.ink}}>⚙️ Configurações do Sistema</h1>
+      <p style={{margin:"0 0 24px",fontSize:13,color:T.inkTert}}>Gerenciamento administrativo e conta</p>
+      
+      <div style={{maxWidth:600,display:"flex",flexDirection:"column",gap:20}}>
+        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,padding:24}}>
+          <div style={{fontWeight:600,marginBottom:16,fontSize:15}}>Perfil do Administrador</div>
+          <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
+            <div style={{width:64,height:64,borderRadius:16,background:T.greenDim,color:T.green,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,fontWeight:700}}>
+              {user.email?.[0].toUpperCase()}
+            </div>
+            <div>
+              <div style={{fontSize:16,fontWeight:600}}>{user.email}</div>
+              <div style={{fontSize:12,color:T.inkTert}}>ID: {user.uid}</div>
+            </div>
+          </div>
+          <Btn variant="ghost">Editar Perfil</Btn>
+        </div>
+
+        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,padding:24}}>
+          <div style={{fontWeight:600,marginBottom:16,fontSize:15}}>Infraestrutura</div>
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:13}}>
+              <span style={{color:T.inkTert}}>Ambiente</span>
+              <span style={{color:T.green,fontWeight:600}}>Produção</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:13}}>
+              <span style={{color:T.inkTert}}>Banco de Dados</span>
+              <span style={{color:T.inkSec}}>Firestore (v2)</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:13}}>
+              <span style={{color:T.inkTert}}>Versão do Sistema</span>
+              <span style={{color:T.inkSec}}>v4.2.0-stable</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Visão de Vendas / Alertas ─────────────────────────────────────────────────
+function AlertsView({ alerts, markRead }) {
+  return (
+    <div style={{ animation: "fadeIn 300ms ease" }}>
+      <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 700, color: T.ink }}>🔔 Alertas de Venda</h1>
+      <p style={{ margin: "0 0 24px", fontSize: 13, color: T.inkTert }}>Notificações de novos pagamentos (Asaas) e provisionamentos</p>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 800 }}>
+        {alerts.length === 0 && (
+          <div style={{ background: T.surface, padding: 32, borderRadius: 16, border: `1px solid ${T.border}`, textAlign: "center", color: T.inkTert }}>
+            Nenhum alerta no momento.
+          </div>
+        )}
+        {alerts.map(a => (
+          <div key={a.id} style={{ background: T.surface, border: `1px solid ${a.read ? T.border : T.asaas}`, borderRadius: 16, padding: "20px 24px", display: "flex", gap: 20, alignItems: "center", opacity: a.read ? 0.7 : 1, transition:"all 200ms" }}>
+            <div style={{ fontSize: 32 }}>{a.type === "SALE" ? "🎉" : "🔔"}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: a.read ? T.inkSec : T.ink, marginBottom: 4 }}>
+                {a.title} {a.read || <Tag color={T.asaas} bg="rgba(0,180,216,0.1)">NOVO</Tag>}
+              </div>
+              <div style={{ fontSize: 13, color: T.inkSec, marginBottom: 8, whiteSpace: "pre-wrap" }}>{a.message}</div>
+              <div style={{ fontSize: 11, color: T.inkTert }}>{new Date(a.created_at).toLocaleString('pt-BR')} • {a.data?.email}</div>
+            </div>
+            {!a.read && (
+              <Btn onClick={() => markRead(a.id)} variant="ghost" style={{ fontSize: 11, padding: "8px 12px" }}>Marcar como lido</Btn>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -564,6 +919,8 @@ function NewModal({onClose,onNext}){
 
 // ── App ────────────────────────────────────────────────────────────────────────
 export default function App(){
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [clients,setClients]=useState([]);
   const [loading,setLoading]=useState(true);
   const [portal,setPortal]=useState(null);
@@ -572,9 +929,40 @@ export default function App(){
   const [pending,setPending]=useState(null);
   const [search,setSearch]=useState("");
   const [filter,setFilter]=useState("all");
+  const [view,setView]=useState("dashboard"); // dashboard, clients, stats, settings, alerts
+  const [addedClient, setAddedClient] = useState(null); // Para o ShareModal
+  const [alerts, setAlerts] = useState([]);
+  const ADMIN_EMAIL = "agendanutrijulianamoreira@gmail.com";
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setAuthLoading(false);
+      
+      // Detecção automática de portal para clientes
+      if(u && u.email !== ADMIN_EMAIL) {
+        Clientes.onList(data => {
+          const match = data.find(c => c.email?.toLowerCase() === u.email.toLowerCase());
+          if(match) setPortal(match);
+        });
+      }
+    });
+    return unsub;
+  }, []);
+
+  // Suporte a ?client=ID na URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const cid = params.get("client");
+    if(cid && clients.length > 0) {
+      const match = clients.find(c => c.id === cid);
+      if(match) setPortal(match);
+    }
+  }, [clients.length]);
 
   // Realtime listener do Firebase
   useEffect(()=>{
+    if (!user) return;
     const unsub = Clientes.onList(data=>{
       const enriched = data.map((c,i)=>({
         ...c,
@@ -584,20 +972,60 @@ export default function App(){
       setClients(enriched);
       setLoading(false);
     });
-    return unsub;
-  },[]);
+    
+    // Escutar alertas caso seja admin
+    let unsubAlerts = () => {};
+    if (user.email === ADMIN_EMAIL) {
+      unsubAlerts = Alerts.onList(data => setAlerts(data));
+    }
+
+    return () => { unsub(); unsubAlerts(); };
+  },[user]);
+
+  const provisionClient = useCallback(async (clientId) => {
+    try {
+      if(!confirm("Tem certeza que deseja montar o robô no n8n para este cliente?")) return;
+      const res = await fetch("http://localhost:5180/api/provision", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clientId, adminEmail: user?.email })
+      });
+      const data = await res.json();
+      if(data.success) {
+        alert("Provisionado com sucesso no n8n!");
+      } else {
+        alert("Erro no provisionamento: " + (data.error || "Desconhecido"));
+      }
+    } catch(err) {
+      alert("Falha de rede ao provisionar: " + err.message);
+    }
+  }, [user]);
+
+  // Hook global pro card enxergar a função
+  useEffect(() => {
+    window.provisionClient = provisionClient;
+  }, [provisionClient]);
 
   const addClient = useCallback(async(base, briefing, plan)=>{
     const av = base.name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();
     const color = COLORS[clients.length % COLORS.length];
-    await Clientes.create({
+    const cid = await Clientes.create({
       ...base, avatar:av, color,
       briefing, plan,
       capabilities: base.capabilities||["text"],
       n8n_status: "pending",
     });
+    
+    // Se não foi passado briefing, é a criação direta -> Abre o ShareModal
+    if(!briefing.description) {
+      setAddedClient({id:cid, ...base});
+    }
+
     setPending(null);
   },[clients.length]);
+
+  const logout = () => signOut(auth);
+
 
   const updateBriefing = useCallback(async(id, briefing, plan)=>{
     await Clientes.updateBriefing(id, briefing, plan);
@@ -614,57 +1042,34 @@ export default function App(){
   const activeN=clients.filter(c=>c.status==="active").length;
   const n8nN=clients.filter(c=>c.n8n_status==="online").length;
 
+  // ── Renderização da Página de Vendas (Pública)
+  if (window.location.search.includes("vendas=true")) {
+    return <SalesPage />;
+  }
+
+  if(authLoading) return <div style={{ background: T.bg, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: T.inkTert }}>🤖 Carregando sistema...</div>;
+  if(!user) return <LoginView />;
   if(portal) return <Portal client={portal} onBack={()=>setPortal(null)}/>;
 
-  return(
-    <div style={{fontFamily:"-apple-system,BlinkMacSystemFont,'Inter',sans-serif",background:T.bg,minHeight:"100vh",color:T.ink}}>
-      <style>{`@keyframes pulse{0%,100%{opacity:.25}50%{opacity:.5}}@keyframes fadeIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}*{box-sizing:border-box}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}`}</style>
-      <div style={{position:"fixed",top:0,left:0,bottom:0,width:64,background:T.surface,borderRight:`1px solid ${T.border}`,display:"flex",flexDirection:"column",alignItems:"center",paddingTop:20,paddingBottom:20,gap:8,zIndex:40}}>
-        <div style={{width:36,height:36,borderRadius:10,background:T.green,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,marginBottom:16}}>🤖</div>
-        {[{i:"⚡",a:true},{i:"👥"},{i:"📊"},{i:"⚙️"}].map((x,i)=><button key={i} style={{width:40,height:40,borderRadius:10,border:"none",cursor:"pointer",background:x.a?T.greenDim:"transparent",fontSize:17,color:x.a?T.green:T.inkTert}}>{x.i}</button>)}
-        <div style={{flex:1}}/>
-        <button style={{width:32,height:32,borderRadius:"50%",border:"none",cursor:"pointer",background:"#6366F122",color:"#6366F1",fontSize:13,fontWeight:700}}>JM</button>
-      </div>
-      <div style={{marginLeft:64,padding:32}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:32}}>
-          <div>
-            <h1 style={{margin:0,fontSize:22,fontWeight:700,color:T.ink}}>WA<span style={{color:T.green}}>AI</span> Manager</h1>
-            <p style={{margin:"4px 0 0",fontSize:13,color:T.inkTert}}>Implementações de IA para WhatsApp</p>
-          </div>
-          <Btn onClick={()=>setShowNew(true)}>+ Novo Cliente</Btn>
+  return (
+    <div style={{ background: T.bg, color: T.ink, minHeight: "100vh" }}>
+      <SecretariaDashboard 
+        user={user} 
+        logout={logout} 
+        setView={setView} 
+        activeView={view}
+      >
+        <div style={{ padding: "20px" }}>
+          {view === "clients" && <ClientsView clients={clients} onPortal={setPortal} onBriefing={setBriefCl}/>}
+          {view === "stats" && <StatsView clients={clients}/>}
+          {view === "alerts" && <AlertsView alerts={alerts} markRead={Alerts.markRead} />}
+          {view === "settings" && <SettingsView user={user}/>}
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16,marginBottom:28}}>
-          {[{icon:"👥",val:activeN,label:"Clientes ativos",sub:`de ${clients.length}`,accent:T.green},
-            {icon:"💬",val:totalMsgs.toLocaleString("pt-BR"),label:"Mensagens hoje"},
-            {icon:"⚡",val:n8nN,label:"n8n online",sub:`de ${clients.length}`,accent:T.n8n},
-            {icon:"🔥",val:"Firebase",label:"Banco de dados",accent:"#FFA000"}
-          ].map(s=>(
-            <div key={s.label} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,padding:"18px 22px",display:"flex",flexDirection:"column",gap:6}}>
-              <div style={{display:"flex",justifyContent:"space-between"}}><span style={{fontSize:20}}>{s.icon}</span>{s.sub&&<span style={{fontSize:11,color:T.inkTert}}>{s.sub}</span>}</div>
-              <div style={{fontSize:26,fontWeight:700,color:s.accent||T.ink,lineHeight:1}}>{s.val}</div>
-              <div style={{fontSize:12,color:T.inkSec}}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{display:"flex",gap:10,marginBottom:22,alignItems:"center"}}>
-          <div style={{flex:1,position:"relative"}}>
-            <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:T.inkTert}}>🔍</span>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar…" style={{width:"100%",padding:"9px 12px 9px 34px",borderRadius:10,background:T.surface,border:`1px solid ${T.border}`,color:T.ink,fontSize:13,outline:"none"}}/>
-          </div>
-          {["all","active","paused","setup"].map(f=>(
-            <Chip key={f} active={filter===f} onClick={()=>setFilter(f)}>{{all:"Todos",active:"Ativos",paused:"Pausados",setup:"Configurando"}[f]}</Chip>
-          ))}
-        </div>
-        {loading ? <Skeleton/> : (
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(310px,1fr))",gap:16}}>
-            {filtered.map(c=><AdminCard key={c.id} client={c} onPortal={setPortal} onBriefing={setBriefCl}/>)}
-            {filtered.length===0&&<div style={{gridColumn:"1/-1",padding:60,textAlign:"center",color:T.inkTert,fontSize:14}}>Nenhum cliente encontrado</div>}
-          </div>
-        )}
-      </div>
-      {showNew&&<NewModal onClose={()=>setShowNew(false)} onNext={f=>{setPending(f);setShowNew(false);}}/>}
-      {pending&&<BriefingWizard initial={EMPTY_B} planInit={pending.plan} onSave={(b,p)=>addClient(pending,b,p)} onCancel={()=>setPending(null)}/>}
-      {briefCl&&<BriefingWizard initial={briefCl.briefing||{}} planInit={briefCl.plan} onSave={(b,p)=>updateBriefing(briefCl.id,b,p)} onCancel={()=>setBriefCl(null)}/>}
+      </SecretariaDashboard>
+      {showNew && <NewModal onClose={() => setShowNew(false)} onNext={f => { setPending(f); setShowNew(false); }} />}
+      {pending && <BriefingWizard initial={EMPTY_B} planInit={pending.plan} onSave={(b, p) => addClient(pending, b, p)} onCancel={() => setPending(null)} />}
+      {briefCl && <BriefingWizard initial={briefCl.briefing || {}} planInit={briefCl.plan} onSave={(b, p) => updateBriefing(briefCl.id, b, p)} onCancel={() => setBriefCl(null)} />}
     </div>
   );
 }
+

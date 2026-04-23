@@ -1,4 +1,4 @@
-import { firebaseAuth } from "./firebase.js";
+import { auth } from "./firebase.js";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
@@ -15,7 +15,7 @@ async function request(path, options = {}) {
   };
 
   // Adicionar token se o usuário estiver logado
-  const user = firebaseAuth.currentUser;
+  const user = auth.currentUser;
   if (user) {
     const token = await user.getIdToken();
     headers["Authorization"] = `Bearer ${token}`;

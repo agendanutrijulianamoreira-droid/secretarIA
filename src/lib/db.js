@@ -3,12 +3,12 @@
  * Todas as operações de banco passam por aqui.
  *
  * Estrutura de coleções:
- *   /clientes/{clienteId}
- *   /clientes/{clienteId}/contatos/{telefone}
- *   /clientes/{clienteId}/chat_messages/{msgId}
- *   /clientes/{clienteId}/invoices/{invoiceId}
- *   /clientes/{clienteId}/portal_messages/{msgId}
- *   /clientes/{clienteId}/agendamentos/{agendId}
+ *   /clients/{clienteId}
+ *   /clients/{clienteId}/contatos/{telefone}
+ *   /clients/{clienteId}/chat_messages/{msgId}
+ *   /clients/{clienteId}/invoices/{invoiceId}
+ *   /clients/{clienteId}/portal_messages/{msgId}
+ *   /clients/{clienteId}/agendamentos/{agendId}
  */
 
 import {
@@ -28,42 +28,43 @@ const listToJS = (snap) => snap.docs.map(d => ({ id: d.id, ...d.data() }));
 // ── CLIENTES ───────────────────────────────────────────────────────────────
 export const Clientes = {
   async list() {
-    const snap = await getDocs(col("clientes"));
+    const snap = await getDocs(col("clients"));
     return listToJS(snap);
   },
 
   async get(id) {
-    return toJS(await getDoc(ref("clientes", id)));
+    return toJS(await getDoc(ref("clients", id)));
   },
 
   async create(data) {
-    const docRef = await addDoc(col("clientes"), {
+    const docRef = await addDoc(col("clients"), {
       ...data,
       status:     "setup",
       msgs_today:  0,
       msgs_month:  0,
       created_at:  now(),
       updated_at:  now(),
+      email:       data.email || "", // E-mail para acesso ao portal
     });
     return docRef.id;
   },
 
   async update(id, data) {
-    await updateDoc(ref("clientes", id), { ...data, updated_at: now() });
+    await updateDoc(ref("clients", id), { ...data, updated_at: now() });
   },
 
   async updateBriefing(id, briefing, plan) {
-    await updateDoc(ref("clientes", id), { briefing, plan, updated_at: now() });
+    await updateDoc(ref("clients", id), { briefing, plan, updated_at: now() });
   },
 
   onList(callback) {
-    return onSnapshot(col("clientes"), snap => callback(listToJS(snap)));
+    return onSnapshot(col("clients"), snap => callback(listToJS(snap)));
   },
 };
 
 // ── CONTATOS ───────────────────────────────────────────────────────────────
 export const Contatos = {
-  _col: (clienteId) => col("clientes", clienteId, "contatos"),
+  _col: (clienteId) => col("clients", clienteId, "contatos"),
 
   async get(clienteId, telefone) {
     const q = query(this._col(clienteId), where("telefone", "==", telefone));
@@ -89,14 +90,14 @@ export const Contatos = {
   async setPause(clienteId, telefone, paused) {
     const contato = await this.get(clienteId, telefone);
     if (contato) {
-      await updateDoc(ref("clientes", clienteId, "contatos", contato.id), {
+      await updateDoc(ref("clients", clienteId, "contatos", contato.id), {
         atendimento_ia: paused ? "pause" : "ativo",
       });
     }
   },
 
   async updateCRM(clienteId, contatoId, data) {
-    await updateDoc(ref("clientes", clienteId, "contatos", contatoId), {
+    await updateDoc(ref("clients", clienteId, "contatos", contatoId), {
       ...data,
       updated_at: now(),
     });
@@ -116,12 +117,12 @@ export const Contatos = {
 
 // ── CHAT MESSAGES ──────────────────────────────────────────────────────────
 export const ChatMessages = {
-  _col: (clienteId) => col("clientes", clienteId, "chat_messages"),
+  _col: (clienteId) => col("clients", clienteId, "chat_messages"),
 
   async add(clienteId, data) {
     await addDoc(this._col(clienteId), { ...data, created_at: now() });
     // incrementa contador no cliente
-    await updateDoc(ref("clientes", clienteId), {
+    await updateDoc(ref("clients", clienteId), {
       msgs_today: increment(1),
       msgs_month: increment(1),
     });
@@ -151,7 +152,7 @@ export const ChatMessages = {
 
 // ── INVOICES ───────────────────────────────────────────────────────────────
 export const Invoices = {
-  _col: (clienteId) => col("clientes", clienteId, "invoices"),
+  _col: (clienteId) => col("clients", clienteId, "invoices"),
 
   async list(clienteId) {
     const q = query(this._col(clienteId), orderBy("created_at", "desc"));
@@ -164,7 +165,7 @@ export const Invoices = {
   },
 
   async updateStatus(clienteId, invoiceId, status) {
-    await updateDoc(ref("clientes", clienteId, "invoices", invoiceId), {
+    await updateDoc(ref("clients", clienteId, "invoices", invoiceId), {
       status,
       paid_at: status === "pago" ? now() : null,
     });
@@ -173,7 +174,7 @@ export const Invoices = {
 
 // ── PORTAL MESSAGES ────────────────────────────────────────────────────────
 export const PortalMessages = {
-  _col: (clienteId) => col("clientes", clienteId, "portal_messages"),
+  _col: (clienteId) => col("clients", clienteId, "portal_messages"),
 
   async list(clienteId) {
     const q = query(this._col(clienteId), orderBy("created_at", "asc"));
@@ -193,13 +194,13 @@ export const PortalMessages = {
   },
 
   async markRead(clienteId, msgId) {
-    await updateDoc(ref("clientes", clienteId, "portal_messages", msgId), { read: true });
+    await updateDoc(ref("clients", clienteId, "portal_messages", msgId), { read: true });
   },
 };
 
 // ── AGENDAMENTOS ───────────────────────────────────────────────────────────
 export const Agendamentos = {
-  _col: (clienteId) => col("clientes", clienteId, "agendamentos"),
+  _col: (clienteId) => col("clients", clienteId, "agendamentos"),
 
   async list(clienteId) {
     const q = query(this._col(clienteId), orderBy("data_inicio", "asc"));
@@ -210,4 +211,18 @@ export const Agendamentos = {
   async add(clienteId, data) {
     return await addDoc(this._col(clienteId), { ...data, created_at: now() });
   },
+};
+
+// ── ALERTS (Notificações) ──────────────────────────────────────────────────
+export const Alerts = {
+  onList(cb) {
+    const q = query(col("alerts"), orderBy("created_at", "desc"), limit(20));
+    return onSnapshot(q, (snap) => cb(listToJS(snap)), err => {
+      console.error("Alerts onList error:", err);
+      cb([]);
+    });
+  },
+  async markRead(id) {
+    await updateDoc(ref("alerts", id), { read: true });
+  }
 };
