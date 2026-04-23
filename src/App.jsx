@@ -46,7 +46,7 @@ const T = {
 
 const CAP_META={text:{label:"Texto",icon:"✍️"},audio:{label:"Áudio",icon:"🎙️"},image:{label:"Imagem",icon:"🖼️"},file:{label:"Arquivo",icon:"📎"}};
 const CRM_STATUSES = {
-  novo: { label: "Novo", color: T.blue, bg: T.blueDim, icon: "✨" },
+  novo: { label: "Novo", color: T.cyan, bg: T.cyanDim, icon: "✨" },
   contatado: { label: "Em Contato", color: T.amber, bg: T.amberDim, icon: "💬" },
   qualificado: { label: "Qualificado", color: "#8B5CF6", bg: "rgba(139,92,246,0.12)", icon: "🔥" },
   convertido: { label: "Convertido", color: T.green, bg: T.greenDim, icon: "✅" },
@@ -660,7 +660,7 @@ function AdminCard({client,onPortal,onBriefing}){
       </div>
       <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
         {(client.capabilities||["text"]).map(c=>{const m=CAP_META[c];return<span key={c} style={{fontSize:10,padding:"2px 7px",borderRadius:6,background:"var(--color-surface-soft)",border:`1px solid ${T.border}`,color:T.inkSec}}>{m?.icon} {m?.label}</span>;})}
-        {client.calendar_email&&<span style={{fontSize:10,padding:"2px 7px",borderRadius:6,background:T.blueDim,border:"1px solid rgba(66,133,244,0.2)",color:T.blue}}>📅 Agenda</span>}
+        {client.calendar_email&&<span style={{fontSize:10,padding:"2px 7px",borderRadius:6,background:T.cyanDim,border:`1px solid ${T.cyan}33`,color:T.cyan}}>📅 Agenda</span>}
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,paddingTop:10,borderTop:`1px solid ${T.border}`}}>
         <div style={{textAlign:"center"}}><div style={{fontSize:20,fontWeight:700,color:T.ink}}>{client.msgs_today||0}</div><div style={{fontSize:10,color:T.inkTert}}>msgs hoje</div></div>
@@ -825,7 +825,7 @@ function StatsView({clients}){
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20,marginBottom:32}}>
         {[
           {l:"Total de Mensagens (Mês)",v:totalMsgs.toLocaleString(),i:"💬",c:T.green},
-          {l:"Média por Cliente",v:avgMsgs,i:"📈",c:T.blue},
+          {l:"Média por Cliente",v:avgMsgs,i:"📈",c:T.cyan},
           {l:"Taxa de Atividade",v:"94%",i:"⚡",c:T.amber},
         ].map(s=>(
           <div key={s.l} style={{background:"var(--color-surface)",border:`1px solid var(--color-border)`,borderRadius:16,padding:24}}>
