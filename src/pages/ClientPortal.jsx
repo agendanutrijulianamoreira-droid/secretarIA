@@ -159,14 +159,19 @@ function ClientDashboardView({ client, leads, pacientes, whatsappNums }) {
       />
 
       {pct < 80 && (
-        <div style={{ background: `${T.amber}10`, border: `1px solid ${T.amber}44`, borderRadius: 14, padding: "14px 18px", display: "flex", alignItems: "center", gap: 14 }}>
-          <AlertCircle size={20} color={T.amber} />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: T.amber }}>Configuração incompleta ({pct}%)</div>
-            <div style={{ fontSize: 12, color: T.inkSec }}>Complete o briefing para sua IA ficar mais precisa.</div>
+        <div style={{ background: `${T.amber}0d`, border: `1px solid ${T.amber}33`, borderRadius: 14, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 8, background: `${T.amber}1a`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <AlertCircle size={16} color={T.amber} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: T.amber }}>Configuração incompleta</div>
+              <div style={{ fontSize: 12, color: T.inkSec, marginTop: 2 }}>Complete o briefing para sua IA ficar mais precisa e personalizada.</div>
+            </div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: T.amber, letterSpacing: "-0.02em", flexShrink: 0 }}>{pct}%</div>
           </div>
-          <div style={{ height: 4, width: 100, background: T.bg, borderRadius: 2 }}>
-            <div style={{ height: 4, width: `${pct}%`, background: T.amber, borderRadius: 2 }} />
+          <div style={{ height: 6, width: "100%", background: `${T.amber}18`, borderRadius: 99, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${pct}%`, background: T.amber, borderRadius: 99, transition: "width 0.6s ease" }} />
           </div>
         </div>
       )}
