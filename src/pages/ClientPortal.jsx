@@ -18,7 +18,7 @@ const T = {
   green: "#2EB67D", greenDim: "rgba(46,182,125,0.1)",
   amber: "#E3B341", amberDim: "rgba(227,179,65,0.1)",
   red: "#F85149", redDim: "rgba(248,81,73,0.1)",
-  cyan: "#00D1FF", cyanDim: "rgba(0,209,255,0.08)",
+  cyan: "#0EA5E9", cyanDim: "rgba(14,165,233,0.10)",
   purple: "#8B5CF6", purpleDim: "rgba(139,92,246,0.1)",
   ink: "#F0F6FC", inkSec: "#8B949E", inkTert: "#484F58",
 };
