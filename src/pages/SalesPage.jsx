@@ -261,17 +261,17 @@ export default function SalesPage() {
         </div>
         
            <div style={{ position: "relative", zIndex: 10 }}>
-          <div style={{ display: "inline-block", background: "rgba(122, 139, 130, 0.1)", color: "var(--color-cta)", padding: "8px 20px", borderRadius: 100, fontSize: 12, fontWeight: 800, marginBottom: 40, border: `1px solid var(--color-cta)`, letterSpacing: "2px", textTransform:"uppercase" }}>
+          <div style={{ display: "inline-block", background: T.greenDim, color: T.green, padding: "8px 20px", borderRadius: 100, fontSize: 12, fontWeight: 800, marginBottom: 40, border: `1px solid ${T.green}66`, letterSpacing: "2px", textTransform:"uppercase" }}>
             The Health-Tech Core #1
           </div>
           <h1 className="text-gradient" style={{ fontSize: 72, fontWeight: 900, lineHeight: 1, marginBottom: 24, letterSpacing: "-4px", fontFamily: "'Syncopate', sans-serif" }}>
             A INTELIGÊNCIA QUE DOMINA SEU CONSULTÓRIO.
           </h1>
-          <p style={{ fontSize: 20, color: "var(--color-text-sec)", lineHeight: 1.6, marginBottom: 48, maxWidth: 800, margin: "0 auto 48px", fontWeight: 500 }}>
+          <p style={{ fontSize: 20, color: T.inkSec, lineHeight: 1.6, marginBottom: 48, maxWidth: 800, margin: "0 auto 48px", fontWeight: 500 }}>
             Assuma o controle absoluto. A <strong>SecretárIA</strong> é o núcleo de inteligência que escala seu atendimento, agenda pacientes e converte leads 24h por dia, com a precisão de uma máquina e a empatia de uma especialista.
           </p>
           <div style={{display:"flex", gap: 20, justifyContent: "center", alignItems: "center", marginBottom: 60}}>
-            <a href="#planos" className="shimmer-btn" style={{ background: "var(--color-cta)", color: "#FFF", padding: "22px 54px", borderRadius: 100, fontSize: 18, fontWeight: 800, textDecoration: "none", transition: "all 300ms", display: "inline-flex", alignItems: "center", gap: 12, boxShadow: "0 10px 40px rgba(122, 139, 130, 0.3)" }}>
+            <a href="#planos" className="shimmer-btn" style={{ background: T.green, color: "#000", padding: "22px 54px", borderRadius: 100, fontSize: 18, fontWeight: 800, textDecoration: "none", transition: "all 300ms", display: "inline-flex", alignItems: "center", gap: 12, boxShadow: `0 10px 40px ${T.greenDim}` }}>
               REVOLUCIONAR MEU CONSULTÓRIO
             </a>
           </div>
@@ -279,7 +279,7 @@ export default function SalesPage() {
 
         {/* IMAGEM DA MASCOTE CYBORG */}
         <div className="anim-fade-up anim-delay-3" style={{ position: "relative", zIndex: 10, maxWidth: 900, margin: "0 auto", padding: "0 20px" }}>
-          <div style={{ background: "var(--color-surface)", borderRadius: 32, padding: 12, border: `1px solid var(--color-border)`, boxShadow: "0 40px 100px -20px rgba(0,0,0,0.2), 0 20px 40px -20px var(--color-cta)" }}>
+          <div style={{ background: T.surface, borderRadius: 32, padding: 12, border: `1px solid ${T.border}`, boxShadow: `0 40px 100px -20px rgba(0,0,0,0.2), 0 20px 40px -20px ${T.greenDim}` }}>
             <img 
               src="file:///C:/Users/Nutri/.gemini/antigravity/brain/f6ec4d5a-ee10-40c0-8b7c-2429654c9d36/secretaria_ai_mascot_concept_1776957095223.png" 
               alt="Mascote SecretárIA" 
