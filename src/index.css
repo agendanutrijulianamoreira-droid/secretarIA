@@ -11,6 +11,7 @@
   --color-cta-hover: #16a34a;
   --color-text: #F8FAFC;
   --color-text-sec: #94A3B8;
+  --color-text-tert: #64748B;
   --color-border: rgba(255, 255, 255, 0.08);
   --color-surface-soft: rgba(255, 255, 255, 0.03);
   
@@ -28,6 +29,7 @@
   --color-cta-hover: #687970;
   --color-text: #2D3436; /* Carvão suave */
   --color-text-sec: #717171; /* Cinza quente */
+  --color-text-tert: #9CA3AF;
   --color-border: rgba(122, 139, 130, 0.12); /* Borda sálvia sutil */
   
   --color-surface-soft: rgba(122, 139, 130, 0.04);

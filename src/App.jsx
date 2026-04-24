@@ -25,21 +25,20 @@ const T = {
   surface: "var(--color-surface)",
   up: "var(--color-surface-up)",
   border: "var(--color-border)",
+  borderSt: "var(--color-border)",
   green: "var(--color-cta)",
   greenDim: "var(--color-surface-soft)",
-  amber: "#B67A62", // Terracota
+  amber: "#B67A62",
   amberDim: "rgba(182, 122, 98, 0.1)",
   red: "#EF4444",
   redDim: "rgba(239, 68, 68, 0.1)",
   cyan: "#3B82F6",
   cyanDim: "rgba(59, 130, 246, 0.1)",
+  purple: "#8B5CF6",
+  purpleDim: "rgba(139,92,246,0.1)",
   ink: "var(--color-text)",
   inkSec: "var(--color-text-sec)",
-  inkTert: "var(--color-text-sec)",
-  asaas: "#3B82F6",
-  n8n: "var(--color-cta)",
-  n8nDim: "var(--color-surface-soft)",
-  borderSt: "var(--color-border)",
+  inkTert: "var(--color-text-tert)",
 };
 
 
@@ -48,7 +47,7 @@ const CAP_META={text:{label:"Texto",icon:"✍️"},audio:{label:"Áudio",icon:"�
 const CRM_STATUSES = {
   novo: { label: "Novo", color: T.cyan, bg: T.cyanDim, icon: "✨" },
   contatado: { label: "Em Contato", color: T.amber, bg: T.amberDim, icon: "💬" },
-  qualificado: { label: "Qualificado", color: "#8B5CF6", bg: "rgba(139,92,246,0.12)", icon: "🔥" },
+  qualificado: { label: "Qualificado", color: T.purple, bg: T.purpleDim, icon: "🔥" },
   convertido: { label: "Convertido", color: T.green, bg: T.greenDim, icon: "✅" },
   perdido: { label: "Perdido", color: T.red, bg: T.redDim, icon: "✖️" },
 };
@@ -223,7 +222,7 @@ function BriefingWizard({initial,planInit,onSave,onCancel}){
           </div>);
         })}
       </div>
-      <div style={{background:T.n8nDim,borderRadius:12,padding:"14px 16px",border:`1px solid ${T.n8n}33`,display:"flex",alignItems:"center",gap:12}}>
+      <div style={{background:T.greenDim,borderRadius:12,padding:"14px 16px",border:`1px solid ${T.green}33`,display:"flex",alignItems:"center",gap:12}}>
         <span style={{fontSize:22}}>💳</span>
         <div><div style={{fontSize:13,fontWeight:600,color:T.ink}}>Cobrança via Asaas</div>
           <div style={{fontSize:12,color:T.inkSec}}>Link de pagamento gerado automaticamente após salvar.</div></div>
@@ -648,7 +647,7 @@ function AdminCard({client,onPortal,onBriefing}){
       </div>
       <div style={{background:T.bg,borderRadius:10,padding:"9px 12px",border:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:8}}>
         <Pulse status={client.n8n_status||"pending"}/>
-        <span style={{fontSize:11,color:T.n8n,fontWeight:600}}>n8n</span>
+        <span style={{fontSize:11,color:T.green,fontWeight:600}}>n8n</span>
         <span style={{fontSize:11,color:T.inkTert,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{client.n8n_url||"Webhook não configurado"}</span>
       </div>
       <div>
@@ -670,7 +669,7 @@ function AdminCard({client,onPortal,onBriefing}){
         <button onClick={()=>onPortal(client)} style={{flex:1,padding:"8px",borderRadius:9,background:"transparent",border:`1px solid ${T.border}`,color:T.inkSec,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Portal</button>
         <button onClick={()=>onBriefing(client)} style={{flex:1,padding:"8px",borderRadius:9,background:T.greenDim,border:`1px solid ${T.green}44`,color:T.green,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>✏️ Briefing</button>
         {(client.n8n_status === "pending" || client.status === "setup") && (
-          <button onClick={(e)=>{e.stopPropagation(); if(window.provisionClient) window.provisionClient(client.id);}} style={{flex:1,padding:"8px",borderRadius:9,background:T.n8nDim,border:`1px solid ${T.n8n}44`,color:T.n8n,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>🚀 Provisionar n8n</button>
+          <button onClick={(e)=>{e.stopPropagation(); if(window.provisionClient) window.provisionClient(client.id);}} style={{flex:1,padding:"8px",borderRadius:9,background:T.greenDim,border:`1px solid ${T.green}44`,color:T.green,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>🚀 Provisionar n8n</button>
         )}
       </div>
     </div>
@@ -913,7 +912,7 @@ function AlertsView({ alerts, markRead }) {
           </div>
         )}
         {alerts.map(a => (
-          <div key={a.id} style={{ background: T.surface, border: `1px solid ${a.read ? T.border : T.asaas}`, borderRadius: 16, padding: "20px 24px", display: "flex", gap: 20, alignItems: "center", opacity: a.read ? 0.7 : 1, transition:"all 200ms" }}>
+          <div key={a.id} style={{ background: T.surface, border: `1px solid ${a.read ? T.border : T.cyan}`, borderRadius: 16, padding: "20px 24px", display: "flex", gap: 20, alignItems: "center", opacity: a.read ? 0.7 : 1, transition:"all 200ms" }}>
             <div style={{ fontSize: 32 }}>{a.type === "SALE" ? "🎉" : "🔔"}</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: a.read ? T.inkSec : T.ink, marginBottom: 4 }}>
