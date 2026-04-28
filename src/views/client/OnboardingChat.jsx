@@ -7,7 +7,7 @@ import { Send, Sparkles, CheckCircle, Bot, User, ArrowRight, Brain, Zap } from "
 const STEPS = [
   {
     id: "welcome",
-    bot: (name) => `Olá, ${name.split(" ")[0]}! 🎉 Sou o motor de inteligência da SecretarIA. Vou configurar seu atendimento premium em poucos segundos. Preparado(a)?`,
+    bot: (name) => `Olá, ${(name || "Cliente").split(" ")[0]}! 🎉 Sou o motor de inteligência da SecretarIA. Vou configurar seu atendimento premium em poucos segundos. Preparado(a)?`,
     field: null, 
     options: ["Começar Configuração 🚀"],
   },
