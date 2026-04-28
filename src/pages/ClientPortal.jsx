@@ -4,7 +4,7 @@ import {
   Phone, Brain, Star, Zap,
   Bell, BarChart2, Plus, X, AlertCircle,
   Pause, Play, Edit2, ChevronRight, Smartphone, MessageCircle,
-  Bot, TrendingUp, Sparkles, Activity, Target, ShoppingCart, Calendar, Megaphone, Settings
+  Bot, TrendingUp, Sparkles, Activity, Target, ShoppingCart, Calendar, Megaphone, Settings, User, ShieldCheck, CheckCircle2
 } from "lucide-react";
 
 const T = {
