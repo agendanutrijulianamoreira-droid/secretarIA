@@ -16,7 +16,7 @@ import IAAprendizadosView from "../views/client/IAAprendizados";
 import EquipeView from "../views/client/EquipeView";
 import OnboardingChat from "../views/client/OnboardingChat";
 import { Logo } from "../components/UI";
-import { Zap, Star, Settings, Power, ChevronRight, Bell, Activity, Brain, Sun, Moon } from "lucide-react";
+import { Zap, Star, Settings, Power, ChevronRight, Bell, Activity, Brain, Sun, Moon, CheckCircle2 } from "lucide-react";
 
 /* Premium pill toggle */
 function ThemeToggle({ theme, toggleTheme }) {
@@ -109,8 +109,8 @@ function PlanoView({ client, invoices }) {
              <div className="divide-y divide-border-subtle/50">
                {invoices.map(inv => (
                  <div key={inv.id} className="p-6 flex items-center gap-6 group hover:bg-surface-soft transition-colors">
-                   <div className={`h-12 w-12 rounded-2xl flex items-center justify-center text-xl shadow-inner ${inv.status === 'pago' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
-                     {inv.status === "pago" ? "✓" : "⚡"}
+                   <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shadow-inner ${inv.status === 'pago' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                     {inv.status === "pago" ? <CheckCircle2 size={22} /> : <Zap size={22} />}
                    </div>
                    <div className="flex-1">
                      <p className="text-sm font-bold text-main">{inv.descricao}</p>

@@ -66,7 +66,7 @@ export default function IAAprendizadosView({ client, aprendizados }) {
 
             <div className="space-y-4">
               {filtered.length === 0 ? (
-                <EmptyState icon="🧠" title="Tudo revisado" subtitle="Aguardando novas interações para extrair insights." />
+                <EmptyState Icon={Brain} title="Tudo revisado" subtitle="Aguardando novas interações para extrair insights." />
               ) : (
                 filtered.map(a => {
                   const sc = STATUS_COLORS[a.status] || STATUS_COLORS.pendente;

@@ -188,7 +188,7 @@ export default function FinanceiroClienteView({ client, servicos, vendas, invoic
       <div className="space-y-6">
         {tab === "servicos" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {servicos.length === 0 && <EmptyState icon="💼" title="Nenhum serviço" subtitle='Cadastre seus atendimentos para a IA vender por você.' />}
+            {servicos.length === 0 && <EmptyState Icon={Briefcase} title="Nenhum serviço" subtitle='Cadastre seus atendimentos para a IA vender por você.' />}
             {servicos.map(s => (
               <div key={s.id} className="p-6 rounded-[32px] bg-surface border border-border-subtle flex items-center gap-6 group hover:border-primary/20 transition-all">
                 <div className="h-12 w-12 rounded-2xl bg-surface-up border border-border-subtle flex items-center justify-center text-primary shadow-inner">
@@ -213,7 +213,7 @@ export default function FinanceiroClienteView({ client, servicos, vendas, invoic
         {tab === "vendas" && (
           <div className="bg-surface border border-border-subtle rounded-[32px] overflow-hidden">
             {vendas.length === 0 ? (
-              <EmptyState icon="📊" title="Sem histórico" subtitle='Suas vendas aparecerão aqui após o registro.' />
+              <EmptyState Icon={PieChart} title="Sem histórico" subtitle='Suas vendas aparecerão aqui após o registro.' />
             ) : (
               <div className="divide-y divide-border-subtle/50">
                 {vendas.map(v => (

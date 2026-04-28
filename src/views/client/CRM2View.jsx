@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, X, Edit2, Check, Users, Megaphone, Calendar, Search, Trash2, Heart, Filter, UserPlus } from "lucide-react";
+import { Plus, X, Edit2, Check, Users, Megaphone, Calendar, Search, Trash2, Heart, Filter, UserPlus, Rocket } from "lucide-react";
 import { Pacientes, Campanhas } from "../../lib/db";
 import { T, Btn, Inp, Card, CardHeader, EmptyState, PageTitle, Pill } from "../../pages/ClientPortal";
 
@@ -86,7 +86,7 @@ function CampanhaModal({ clientId, pacientes, onClose }) {
           </div>
 
           <Inp label="Título Interno" value={f.titulo} onChange={up("titulo")} placeholder="Ex: Lembrete de Retorno — Maio" />
-          <Inp label="Texto da Mensagem *" value={f.mensagem} onChange={up("mensagem")} placeholder="Olá {nome}! 👋 Como está sua evolução?&#10;&#10;Dica: Use {nome} para personalizar o envio." rows={6} />
+          <Inp label="Texto da Mensagem *" value={f.mensagem} onChange={up("mensagem")} placeholder={"Olá {nome}! Como está sua evolução?\n\nDica: Use {nome} para personalizar o envio."} rows={6} />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
              <div>
@@ -106,7 +106,7 @@ function CampanhaModal({ clientId, pacientes, onClose }) {
         <div className="p-10 border-t border-border-subtle bg-surface-soft/50 flex gap-4">
            <button onClick={onClose} className="flex-1 py-5 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-black text-[11px] uppercase tracking-widest">Cancelar</button>
            <button onClick={save} disabled={saving || !f.tipo || !f.mensagem} className="flex-1 py-5 rounded-2xl bg-primary text-black font-black text-[11px] uppercase tracking-widest shadow-xl shadow-primary/20">
-              {saving ? "Preparando Motores..." : "🚀 Lançar Campanha"}
+              {saving ? "Preparando Motores..." : <><Rocket size={14} className="inline mr-1.5" />Lançar Campanha</>}
            </button>
         </div>
       </div>
@@ -176,7 +176,7 @@ export default function CRM2View({ client, pacientes, campanhas }) {
           </div>
 
           {filtered.length === 0 ? (
-            <EmptyState icon="👥" title="Base Vazia" subtitle='Inicie o cadastro dos seus pacientes para liberar o CRM.' />
+            <EmptyState Icon={Users} title="Base Vazia" subtitle='Inicie o cadastro dos seus pacientes para liberar o CRM.' />
           ) : (
             <div className="grid grid-cols-1 gap-4">
               {filtered.map(p => (

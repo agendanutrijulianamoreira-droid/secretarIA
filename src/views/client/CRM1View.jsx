@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
-import { Pause, Play, MessageSquare, ChevronDown, ChevronUp, Send, User, Bot, Clock, Edit3, Trash2, Search } from "lucide-react";
+import { Pause, Play, MessageSquare, ChevronDown, ChevronUp, Send, User, Bot, Clock, Edit3, Trash2, Search, Target, Activity, Sparkles, TrendingUp } from "lucide-react";
 import { Contatos, ChatMessages } from "../../lib/db";
 import { T, Btn, Inp, Card, CardHeader, EmptyState, PageTitle, Pill, Pulse, COLORS } from "../../pages/ClientPortal";
 
 const CRM_STATUS = {
-  novo:        { label: "Lead Novo",     color: "var(--color-cta)",     bg: "rgba(14,165,233,0.1)", icon: "✨" },
-  contatado:   { label: "Conversando",   color: "#E3B341",              bg: "rgba(227,179,65,0.1)", icon: "💬" },
-  qualificado: { label: "Interessado",   color: "#8B5CF6",              bg: "rgba(139,92,246,0.1)", icon: "🔥" },
-  convertido:  { label: "Agendado",      color: "var(--color-primary)", bg: "rgba(16,185,129,0.1)", icon: "✅" },
-  perdido:     { label: "Arquivado",     color: "#F85149",              bg: "rgba(248,81,73,0.1)", icon: "✖️" },
+  novo:        { label: "Lead Novo",   color: "var(--color-cta)",     bg: "rgba(14,165,233,0.1)"  },
+  contatado:   { label: "Conversando", color: "#E3B341",              bg: "rgba(227,179,65,0.1)"  },
+  qualificado: { label: "Interessado", color: "#8B5CF6",              bg: "rgba(139,92,246,0.1)"  },
+  convertido:  { label: "Agendado",    color: "var(--color-primary)", bg: "rgba(16,185,129,0.1)"  },
+  perdido:     { label: "Arquivado",   color: "#F85149",              bg: "rgba(248,81,73,0.1)"   },
 };
 
 function LeadCard({ lead, clientId }) {
@@ -61,7 +61,7 @@ function LeadCard({ lead, clientId }) {
              <Pulse status={ia ? "online" : "offline"} />
              <span className="text-[10px] font-black uppercase tracking-widest text-secondary">{ia ? "IA Ativa" : "IA Pausada"}</span>
           </div>
-          <Pill color={s.color} bg={s.bg}>{s.icon} {s.label}</Pill>
+          <Pill color={s.color} bg={s.bg}>{s.label}</Pill>
           <button onClick={() => setOpen(!open)} className="h-10 w-10 rounded-xl bg-surface-up border border-border-subtle flex items-center justify-center text-tertiary hover:text-primary transition-all">
             {open ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </button>
@@ -90,15 +90,19 @@ function LeadCard({ lead, clientId }) {
               </div>
             )}
 
-            <div className="ml-auto flex gap-2">
+            <div className="ml-auto flex items-center gap-1.5">
               {Object.entries(CRM_STATUS).map(([id, m]) => (
-                <button 
-                  key={id} 
+                <button
+                  key={id}
                   onClick={() => setStatus(id)}
-                  className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border ${lead.crm_status === id ? 'bg-surface border-primary/30 text-primary shadow-sm' : 'border-transparent text-tertiary hover:text-secondary'}`}
                   title={m.label}
+                  className={`h-7 w-7 rounded-full flex items-center justify-center transition-all border-2 ${lead.crm_status === id ? 'scale-110 shadow-sm' : 'border-transparent opacity-40 hover:opacity-70'}`}
+                  style={{
+                    borderColor: lead.crm_status === id ? m.color : 'transparent',
+                    backgroundColor: lead.crm_status === id ? m.bg : 'transparent',
+                  }}
                 >
-                  {m.icon}
+                  <span className="h-3 w-3 rounded-full block" style={{ backgroundColor: m.color }} />
                 </button>
               ))}
             </div>
@@ -122,7 +126,7 @@ function LeadCard({ lead, clientId }) {
               <div className="flex flex-col h-[400px] bg-surface rounded-[24px] border border-border-subtle overflow-hidden">
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                   {msgs.length === 0 ? (
-                    <EmptyState icon="💬" title="Sem mensagens" subtitle="Aguardando início de conversa..." />
+                    <EmptyState Icon={MessageSquare} title="Sem mensagens" subtitle="Aguardando início de conversa..." />
                   ) : (
                     msgs.map((m, i) => {
                       const isAI = m.role === "assistant";

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import {
-  LayoutDashboard, MessageSquare, Users, Wallet, 
+  LayoutDashboard, MessageSquare, Users, Wallet,
   Phone, Brain, Star, Zap,
   Bell, BarChart2, Plus, X, AlertCircle,
   Pause, Play, Edit2, ChevronRight, Smartphone, MessageCircle,
-  Bot, TrendingUp, Sparkles, Activity, Target, ShoppingCart, Calendar
+  Bot, TrendingUp, Sparkles, Activity, Target, ShoppingCart, Calendar,
+  Moon
 } from "lucide-react";
 
 const T = {
@@ -99,10 +100,12 @@ function CardHeader({ title, subtitle, action }) {
   );
 }
 
-function EmptyState({ icon, title, subtitle }) {
+function EmptyState({ Icon, title, subtitle }) {
   return (
     <div className="py-12 px-6 flex flex-col items-center text-center gap-3">
-      <div className="text-4xl filter grayscale opacity-40 grayscale-0 group-hover:grayscale-0 transition-all">{icon}</div>
+      <div className="h-14 w-14 rounded-2xl bg-surface-up border border-border-subtle flex items-center justify-center text-tertiary/50">
+        {Icon && <Icon size={26} />}
+      </div>
       <h5 className="text-sm font-bold text-secondary">{title}</h5>
       {subtitle && <p className="text-xs text-tertiary max-w-[200px]">{subtitle}</p>}
     </div>
@@ -211,7 +214,7 @@ function ClientDashboardView({ client, leads, pacientes, whatsappNums }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="lg:col-span-2">
-          <CardHeader title="🤖 Atendimento em Tempo Real" subtitle="Leads sendo processados pela sua IA agora." />
+          <CardHeader title="Atendimento em Tempo Real" subtitle="Leads sendo processados pela sua IA agora." />
           <div className="p-4 space-y-2">
             {leads.filter(l => l.atendimento_ia === "ativo").slice(0, 5).map(l => (
               <div key={l.id} className="flex items-center gap-4 p-4 rounded-2xl bg-surface-soft/50 border border-border-subtle group hover:border-primary/20 transition-all">
@@ -224,7 +227,7 @@ function ClientDashboardView({ client, leads, pacientes, whatsappNums }) {
               </div>
             ))}
             {leads.filter(l => l.atendimento_ia === "ativo").length === 0 && (
-              <EmptyState icon="🌙" title="Modo de espera" subtitle="Todas as conversas foram concluídas." />
+              <EmptyState Icon={Moon} title="Modo de espera" subtitle="Todas as conversas foram concluídas." />
             )}
           </div>
         </Card>
@@ -309,8 +312,8 @@ function WhatsAppView({ client, numbers, reload }) {
       <div className="grid grid-cols-1 gap-4">
         {numbers.map(num => (
           <div key={num.id} className="p-6 rounded-[28px] bg-surface border border-border-subtle flex flex-col md:flex-row items-center gap-6 group hover:border-primary/20 transition-all">
-            <div className={`h-16 w-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner ${num.status === 'ativo' ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-surface-up text-tertiary'}`}>
-              📱
+            <div className={`h-16 w-16 rounded-2xl flex items-center justify-center shadow-inner ${num.status === 'ativo' ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-surface-up text-tertiary border border-border-subtle'}`}>
+              <Smartphone size={28} />
             </div>
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-col md:flex-row md:items-center gap-3">
