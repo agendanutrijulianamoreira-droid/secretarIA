@@ -1500,7 +1500,7 @@ export default function App(){
   },[user]);
 
   const addClient = useCallback(async(base, briefing, plan)=>{
-    const av = base.name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();
+    const av = (base?.name || "CL").split(" ").filter(Boolean).map(w=>w[0]).slice(0,2).join("").toUpperCase();
     const color = COLORS[clients.length % COLORS.length];
     const newClientData = {
       ...base, avatar:av, color,
@@ -1523,7 +1523,10 @@ export default function App(){
     if(!briefing.description) {
       setAddedClient({id:cid, ...base});
     }
-    setClients(prev => [...prev, { id: cid, ...base, avatar: av, color, briefing, plan, status: "setup" }]);
+    // Injeção de estado local unificada (Zero Trust)
+    if (!clients.find(c => c.id === cid)) {
+      setClients(prev => [...prev, { ...newClientData, id: cid }]);
+    }
 
     setPending(null);
   },[clients.length]);
