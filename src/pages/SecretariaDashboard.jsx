@@ -52,9 +52,9 @@ export default function SecretariaDashboard({ user, logout, setView, activeView,
   };
 
   return (
-    <div className="flex min-h-screen bg-bg text-main selection:bg-primary/20 selection:text-primary font-sans overflow-hidden">
+    <div className="flex min-h-screen bg-background text-main selection:bg-primary/20 selection:text-primary font-sans overflow-hidden">
       {/* Sidebar Obsidian */}
-      <aside className="fixed left-0 top-0 z-50 h-screen w-[320px] flex flex-col bg-bg border-r border-border overflow-hidden">
+      <aside className="fixed left-0 top-0 z-50 h-screen w-[320px] flex flex-col bg-background border-r border-border overflow-hidden">
         <div className="absolute inset-0 opacity-10 pointer-events-none">
            <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(16,185,129,0.1),transparent)]" />
         </div>
@@ -83,7 +83,7 @@ export default function SecretariaDashboard({ user, logout, setView, activeView,
           ))}
         </nav>
 
-        <div className="p-10 border-t border-border bg-bg/80 backdrop-blur-xl relative z-10">
+        <div className="p-10 border-t border-border bg-background/80 backdrop-blur-xl relative z-10">
           <div className="flex items-center gap-5 p-5 rounded-[24px] bg-surface/50 border border-border-subtle mb-6 group hover:border-primary/20 transition-all duration-500">
             <div className="h-12 w-12 rounded-[14px] bg-primary/10 flex items-center justify-center text-primary font-black text-base border border-primary/20 shadow-2xl group-hover:rotate-6 transition-all duration-500">
               {user?.email?.[0]?.toUpperCase() || 'A'}
@@ -105,7 +105,7 @@ export default function SecretariaDashboard({ user, logout, setView, activeView,
 
       {/* Main Framework Area */}
       <main className="flex-1 ml-[320px] flex flex-col h-screen overflow-hidden relative">
-        <header className="sticky top-0 z-40 h-24 flex items-center justify-between px-16 bg-bg/80 backdrop-blur-2xl border-b border-border">
+        <header className="sticky top-0 z-40 h-24 flex items-center justify-between px-16 bg-background/80 backdrop-blur-2xl border-b border-border">
           <div className="flex items-center gap-10">
              <div className="flex flex-col">
                <h2 className="text-2xl font-black text-main tracking-tighter uppercase italic">

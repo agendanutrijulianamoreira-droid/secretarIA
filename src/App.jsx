@@ -311,7 +311,7 @@ function BriefingWizard({ initial, planInit, onSave, onCancel }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-bg/95 backdrop-blur-xl z-[400] flex items-center justify-center p-8">
+    <div className="fixed inset-0 bg-background/95 backdrop-blur-xl z-[400] flex items-center justify-center p-8">
       <Card className="w-full max-w-4xl animate-fade-in p-0 overflow-hidden shadow-2xl border-primary/20 flex flex-col max-h-[90vh]">
         <div className="px-10 py-10 border-b border-border-subtle bg-surface-up/30 flex items-center justify-between">
           <div>
@@ -387,8 +387,8 @@ function LoginView() {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-bg selection:bg-primary/20 selection:text-primary overflow-hidden font-sans">
-      <div className="hidden lg:flex w-1/2 relative flex-col justify-center p-20 overflow-hidden bg-bg border-r border-border">
+    <div className="flex min-h-screen w-full bg-background selection:bg-primary/20 selection:text-primary overflow-hidden font-sans">
+      <div className="hidden lg:flex w-1/2 relative flex-col justify-center p-20 overflow-hidden bg-background border-r border-border">
         <div className="absolute inset-0 z-0 opacity-40">
            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.1),transparent)] animate-pulse" />
            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px]" />
@@ -425,7 +425,7 @@ function LoginView() {
         </div>
       </div>
 
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-12 sm:p-24 relative bg-bg">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-12 sm:p-24 relative bg-background">
         <div className="absolute top-12 left-12 lg:hidden">
           <Logo size={36} />
         </div>
@@ -495,7 +495,7 @@ function LoginView() {
               <div className="w-full border-t border-border"></div>
             </div>
             <div className="relative flex justify-center text-[10px] uppercase font-black tracking-[0.4em]">
-              <span className="bg-bg px-6 text-tertiary">Cloud Auth</span>
+              <span className="bg-background px-6 text-tertiary">Cloud Auth</span>
             </div>
           </div>
 
@@ -882,7 +882,7 @@ function NewModal({ onClose, onNext, onFinish }) {
   const isValid = f.name.trim() && f.phone.trim() && f.email.trim();
 
   return (
-    <div className="fixed inset-0 bg-bg/95 backdrop-blur-xl z-[400] flex items-center justify-center p-8">
+    <div className="fixed inset-0 bg-background/95 backdrop-blur-xl z-[400] flex items-center justify-center p-8">
       <Card className="w-full max-w-xl animate-fade-in p-0 overflow-hidden shadow-2xl border-primary/20">
         <div className="px-10 py-10 border-b border-border-subtle bg-surface-up/30 flex items-center justify-between">
            <h4 className="text-2xl font-black text-main tracking-tighter uppercase italic">Nova Implementação</h4>
@@ -939,7 +939,7 @@ function ShareModal({ client, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-bg/98 backdrop-blur-2xl z-[500] flex items-center justify-center p-8">
+    <div className="fixed inset-0 bg-background/98 backdrop-blur-2xl z-[500] flex items-center justify-center p-8">
       <Card className="w-full max-w-lg animate-fade-in p-12 border-primary/30 text-center space-y-8 shadow-[0_0_100px_rgba(16,185,129,0.15)] relative overflow-hidden">
         <div className="premium-glow" />
         <div className="relative z-10 flex flex-col items-center">
@@ -1325,7 +1325,7 @@ function PaywallView({ user, onPlanSelected }) {
   ];
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-8 font-sans relative overflow-hidden text-main selection:bg-primary/20">
+    <div className="min-h-screen bg-background flex items-center justify-center p-8 font-sans relative overflow-hidden text-main selection:bg-primary/20">
       <div className="absolute top-0 left-1/4 w-[800px] h-[800px] bg-primary/10 blur-[160px] rounded-full pointer-events-none animate-pulse" />
       <div className="absolute bottom-0 right-1/4 w-[800px] h-[800px] bg-blue-500/5 blur-[160px] rounded-full pointer-events-none" />
       
