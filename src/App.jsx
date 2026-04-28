@@ -16,7 +16,7 @@ import FluxosView from "./views/admin/FluxosView";
 import TokensView from "./views/admin/TokensView";
 import FinanceiroAdminView from "./views/admin/FinanceiroAdmin";
 import DashboardView from "./views/admin/DashboardView";
-import { Bot, Zap, Activity, TrendingUp, Target, Smartphone, MessageSquare, Plus, ArrowRight, Shield, Settings, Bell, Sun, Moon } from "lucide-react";
+import { Bot, Zap, Activity, TrendingUp, Target, Smartphone, MessageSquare, Plus, ArrowRight, Shield, Settings, Bell, Sun, Moon, Building2, Layers, HelpCircle, Ban, CreditCard, CheckCircle2, XCircle, Sparkles, Flame, ShoppingBag, DollarSign } from "lucide-react";
 import { Logo, Badge } from "./components/UI";
 
 
@@ -48,11 +48,11 @@ const T = {
 
 const CAP_META={text:{label:"Texto",icon:"✍️"},audio:{label:"Áudio",icon:"🎙️"},image:{label:"Imagem",icon:"🖼️"},file:{label:"Arquivo",icon:"📎"}};
 const CRM_STATUSES = {
-  novo: { label: "Novo", color: T.cyan, bg: T.cyanDim, icon: "✨" },
-  contatado: { label: "Em Contato", color: T.amber, bg: T.amberDim, icon: "💬" },
-  qualificado: { label: "Qualificado", color: T.purple, bg: T.purpleDim, icon: "🔥" },
-  convertido: { label: "Convertido", color: T.green, bg: T.greenDim, icon: "✅" },
-  perdido: { label: "Perdido", color: T.red, bg: T.redDim, icon: "✖️" },
+  novo:        { label: "Novo",        color: T.cyan,   bg: T.cyanDim   },
+  contatado:   { label: "Em Contato",  color: T.amber,  bg: T.amberDim  },
+  qualificado: { label: "Qualificado", color: T.purple, bg: T.purpleDim },
+  convertido:  { label: "Convertido",  color: T.green,  bg: T.greenDim  },
+  perdido:     { label: "Perdido",     color: T.red,    bg: T.redDim    },
 };
 const PLAN_META={Starter:{color:T.inkSec,bg:"rgba(156,163,176,0.1)"},Pro:{color:T.green,bg:T.greenDim},Enterprise:{color:T.amber,bg:T.amberDim}};
 const SEGMENTS=["Saúde / Clínica","Saúde / Odontologia","Beleza / Salão","Educação","Imobiliária","Jurídico","Alimentação","Varejo","Serviços Gerais","Outro"];
@@ -60,7 +60,7 @@ const TONES=["Acolhedora e profissional","Formal e sério","Descontraído e amig
 const GOALS=["Agendamentos","Vendas / Captação","Suporte ao cliente","Tirar dúvidas (FAQ)","Tudo acima"];
 const EMPTY_B={segment:"",description:"",site:"",instagram:"",ai_name:"",ai_tone:"",ai_goal:"",business_hours:"",escalation_trigger:"",escalation_number:"",services:[],faqs:[],restrictions:"",promotions:""};
 const COLORS=["#6366F1","#EC4899","#F59E0B","#0EA5E9","#10B981","#8B5CF6","#F43F5E"];
-const STEPS=[{id:"negocio",icon:"🏢",label:"Negócio"},{id:"ia",icon:"🤖",label:"Persona da IA"},{id:"servicos",icon:"💼",label:"Serviços"},{id:"faqs",icon:"❓",label:"FAQ"},{id:"regras",icon:"🚫",label:"Regras"},{id:"plano",icon:"💳",label:"Plano"}];
+const STEPS=[{id:"negocio",Icon:Building2,label:"Negócio"},{id:"ia",Icon:Bot,label:"Persona da IA"},{id:"servicos",Icon:Layers,label:"Serviços"},{id:"faqs",Icon:HelpCircle,label:"FAQ"},{id:"regras",Icon:Ban,label:"Regras"},{id:"plano",Icon:CreditCard,label:"Plano"}];
 
 // ── Primitives ────────────────────────────────────────────────────────────────
 function Pulse({status}){
@@ -249,7 +249,7 @@ function BriefingWizard({initial,planInit,onSave,onCancel}){
         <div style={{display:"flex",padding:"0 28px",borderBottom:`1px solid ${T.border}`,overflowX:"auto",gap:2}}>
           {STEPS.map((s,i)=>(
             <button key={s.id} onClick={()=>setStep(i)} style={{padding:"11px 10px",border:"none",cursor:"pointer",background:"none",color:step===i?T.green:T.inkTert,fontSize:11,fontWeight:step===i?700:500,borderBottom:`2px solid ${step===i?T.green:"transparent"}`,whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4,fontFamily:"inherit"}}>
-              {s.icon} {s.label} {i<step&&<span style={{color:T.green,fontSize:10}}>✓</span>}
+              <s.Icon size={12} style={{flexShrink:0}} /> {s.label} {i<step&&<CheckCircle2 size={10} style={{color:T.green,flexShrink:0}} />}
             </button>
           ))}
         </div>
@@ -259,7 +259,7 @@ function BriefingWizard({initial,planInit,onSave,onCancel}){
           <div style={{display:"flex",gap:10}}>
             {step>0&&<Btn variant="ghost" onClick={()=>setStep(s=>s-1)}>← Anterior</Btn>}
             {step<STEPS.length-1&&<Btn onClick={()=>setStep(s=>s+1)}>Próximo →</Btn>}
-            {step===STEPS.length-1&&<Btn onClick={handleSave} style={{opacity:saving?.6:1}}>{saving?"Salvando…":"✅ Salvar"}</Btn>}
+            {step===STEPS.length-1&&<Btn onClick={handleSave} style={{opacity:saving?.6:1}}>{saving?"Salvando…":"Salvar Configuração"}</Btn>}
           </div>
         </div>
       </div>
@@ -650,7 +650,7 @@ function Portal({client,onBack}){
               {invoices.length===0&&<div style={{padding:32,textAlign:"center",color:T.inkTert,fontSize:13}}>Sem cobranças ainda.</div>}
               {invoices.map((inv,i)=>(
                 <div key={inv.id} style={{display:"flex",alignItems:"center",gap:14,padding:"13px 20px",borderBottom:i<invoices.length-1?`1px solid ${T.border}`:"none"}}>
-                  <div style={{fontSize:18}}>{inv.status==="pago"?"🟢":inv.status==="pendente"?"🟡":"🔴"}</div>
+                  <div style={{width:10,height:10,borderRadius:"50%",background:inv.status==="pago"?"#10B981":inv.status==="pendente"?"#F59E0B":"#EF4444",boxShadow:inv.status==="pago"?"0 0 6px rgba(16,185,129,0.6)":inv.status==="pendente"?"0 0 6px rgba(245,158,11,0.5)":"0 0 6px rgba(239,68,68,0.5)",flexShrink:0}} />
                   <div style={{flex:1}}><div style={{fontSize:13,color:T.ink}}>{inv.descricao}</div><div style={{fontSize:11,color:T.inkTert}}>{inv.id.slice(0,8)}… · {inv.due_date}</div></div>
                   <div style={{fontWeight:700,fontSize:14,color:T.ink}}>R$ {Number(inv.amount).toLocaleString("pt-BR",{minimumFractionDigits:2})}</div>
                   <InvTag status={inv.status}/>
@@ -689,7 +689,7 @@ function Portal({client,onBack}){
                         <div style={{fontSize:11,color:T.inkTert}}>{lead.telefone}</div>
                       </div>
                       <div style={{display:"flex",alignItems:"center",gap:12}}>
-                        <Tag color={s.color} bg={s.bg}>{s.icon} {s.label}</Tag>
+                        <Tag color={s.color} bg={s.bg}>{s.label}</Tag>
                         <Btn variant="ghost" onClick={() => setEditingLead(isEd ? null : lead)} style={{padding:"6px 12px",fontSize:11}}>
                           {isEd ? "Fechar" : "Gerenciar"}
                         </Btn>
@@ -761,7 +761,7 @@ function AdminCard({client,onPortal,onBriefing}){
           <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
             <span style={{fontSize:14,fontWeight:600,color:T.ink}}>{client.name}</span>
             <StatusTag status={client.status}/>
-            {hasPending&&<Tag color={T.amber} bg={T.amberDim}>💰 Pendente</Tag>}
+            {hasPending&&<Tag color={T.amber} bg={T.amberDim}>Pendente</Tag>}
           </div>
           <div style={{fontSize:11,color:T.inkTert,marginTop:2}}>{client.phone}</div>
         </div>
@@ -864,7 +864,7 @@ function ShareModal({client, onClose}){
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,backdropFilter:"blur(8px)"}}>
       <div style={{background:T.surface,borderRadius:24,width:480,border:`1px solid ${T.green}33`,padding:32,animation:"fadeIn 200ms ease",textAlign:"center"}}>
-        <div style={{fontSize:48,marginBottom:16}}>🎉</div>
+        <div style={{width:56,height:56,borderRadius:16,background:"rgba(16,185,129,0.1)",border:"1px solid rgba(16,185,129,0.2)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}><CheckCircle2 size={28} style={{color:"#10B981"}} /></div>
         <h2 style={{margin:"0 0 8px",fontSize:20,fontWeight:700}}>Cliente Cadastrado!</h2>
         <p style={{margin:"0 0 24px",fontSize:14,color:T.inkTert}}>O acesso de <b>{client.name}</b> foi gerado com sucesso.</p>
         
@@ -1087,8 +1087,12 @@ function AlertsView({ alerts, markRead }) {
         ) : (
           alerts.map(a => (
             <div key={a.id} className={`p-6 rounded-[28px] border transition-all duration-300 flex items-center gap-6 ${a.read ? 'bg-surface/50 border-border-subtle opacity-60' : 'bg-surface border-primary/20 shadow-lg shadow-primary/5'}`}>
-              <div className="h-14 w-14 rounded-2xl bg-surface-up flex items-center justify-center text-3xl shadow-inner">
-                {a.type === "SALE" ? "🎉" : "🔔"}
+              <div className={`h-14 w-14 rounded-2xl flex items-center justify-center border flex-shrink-0 ${
+                a.type === "SALE"
+                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                  : "bg-blue-500/10 border-blue-500/20 text-blue-400"
+              }`}>
+                {a.type === "SALE" ? <ShoppingBag size={22} /> : <Bell size={22} />}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
@@ -1432,7 +1436,13 @@ export default function App(){
     }
   };
 
-  if(authLoading) return <div style={{ background: "var(--color-bg)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-sec)" }}>🤖 Carregando sistema...</div>;
+  if(authLoading) return (
+    <div style={{ background: "var(--color-bg)", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
+      <div style={{ width: 40, height: 40, borderRadius: "50%", border: "2px solid #10B981", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+      <span style={{ color: "var(--color-text-sec)", fontSize: 12, fontFamily: "inherit", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em" }}>Carregando sistema…</span>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
   if(!user) return <LoginView theme={theme} toggleTheme={toggleTheme} />;
 
   if (showPaywall) return <PaywallView user={user} onPlanSelected={handlePlanSelection} />;
