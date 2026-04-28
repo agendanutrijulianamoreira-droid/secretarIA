@@ -4,7 +4,7 @@ import {
   Phone, Brain, Star, Zap,
   Bell, BarChart2, Plus, X, AlertCircle,
   Pause, Play, Edit2, ChevronRight, Smartphone, MessageCircle,
-  Bot, TrendingUp, Sparkles, Activity, Target, ShoppingCart, Calendar
+  Bot, TrendingUp, Sparkles, Activity, Target, ShoppingCart, Calendar, Megaphone, Settings
 } from "lucide-react";
 
 const T = {
@@ -47,44 +47,59 @@ function Pulse({ status }) {
   );
 }
 
-function Btn({ children, onClick, variant = "primary", size = "md", style: sx = {}, disabled }) {
+function Btn({ children, onClick, variant = "primary", size = "md", style: sx = {}, disabled, icon: Icon }) {
   const variants = {
-    primary: "bg-primary text-black shadow-lg shadow-primary/20",
-    ghost: "bg-transparent text-secondary border border-border-subtle hover:border-primary/30",
-    danger: "bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white",
-    cyan: "bg-cta text-white shadow-lg shadow-cta/20",
+    primary: "btn-premium btn-premium-primary",
+    ghost: "btn-premium btn-premium-ghost",
+    danger: "btn-premium bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white",
+    cyan: "btn-premium bg-cta text-white shadow-lg shadow-cta/20",
   };
   const sizes = {
-    sm: "px-3 py-1.5 text-[10px]",
-    md: "px-5 py-2.5 text-[11px]",
+    sm: "px-4 py-2 text-[10px]",
+    md: "px-6 py-3 text-[11px]",
   };
   
   return (
     <button 
       onClick={disabled ? undefined : onClick} 
       disabled={disabled}
-      className={`rounded-xl font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 ${variants[variant]} ${sizes[size]}`}
+      className={`${variants[variant]} ${sizes[size]}`}
       style={sx}
     >
-      {children}
+      <div className="flex items-center justify-center gap-2">
+        {Icon && <Icon size={14} strokeWidth={2.5} />}
+        {children}
+      </div>
     </button>
   );
 }
 
-function Inp({ label, value, onChange, placeholder, rows, type = "text" }) {
-  const baseClass = "w-full px-4 py-3 bg-surface border border-border-subtle rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-main placeholder:text-tertiary/30 text-sm";
+function Inp({ label, value, onChange, placeholder, rows, type = "text", icon: Icon }) {
+  const baseClass = "w-full pl-12 pr-5 py-4 bg-surface-up/20 border border-border-subtle rounded-2xl text-main placeholder:text-tertiary/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all duration-300 text-sm";
+  const noIconClass = "w-full px-5 py-4 bg-surface-up/20 border border-border-subtle rounded-2xl text-main placeholder:text-tertiary/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all duration-300 text-sm";
+  
   return (
-    <div className="flex flex-col gap-1.5">
-      {label && <label className="text-[10px] font-black text-tertiary uppercase tracking-widest ml-1">{label}</label>}
-      {rows
-        ? <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={rows} className={`${baseClass} resize-none`} />
-        : <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className={baseClass} />}
+    <div className="flex flex-col gap-2.5">
+      {label && <label className="text-[10px] font-black text-tertiary uppercase tracking-[0.3em] ml-1">{label}</label>}
+      <div className="relative flex items-center w-full">
+        {Icon && <Icon className="absolute left-4 text-tertiary group-focus-within:text-primary transition-colors" size={18} strokeWidth={2.5} />}
+        {rows
+          ? <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={rows} className={`${Icon ? baseClass : noIconClass} resize-none`} />
+          : <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className={Icon ? baseClass : noIconClass} />}
+      </div>
     </div>
   );
 }
 
 function Card({ children, style: sx = {}, className = "" }) {
-  return <div className={`bg-surface border border-border-subtle rounded-[24px] shadow-sm overflow-hidden ${className}`} style={sx}>{children}</div>;
+  return (
+    <div className={`bento-card group ${className}`} style={sx}>
+      <div className="premium-glow" />
+      <div className="relative z-10">
+        {children}
+      </div>
+    </div>
+  );
 }
 
 function CardHeader({ title, subtitle, action }) {
@@ -131,8 +146,10 @@ const NAV = [
   { id: "crm2",      icon: Users,           label: "CRM — Pacientes" },
   { id: "equipe",    icon: Calendar,        label: "Equipe & Agenda" },
   { id: "financeiro",icon: Wallet,          label: "Financeiro" },
+  { id: "marketing", icon: Megaphone,       label: "Marketing & Vendas" },
   { id: "ia",        icon: Brain,           label: "IA Aprendizados" },
   { id: "plano",     icon: Star,            label: "Meu Plano" },
+  { id: "settings",  icon: Settings,        label: "Configurações" },
 ];
 
 function NavItem({ item, active, onClick }) {
@@ -195,55 +212,63 @@ function ClientDashboardView({ client, leads, pacientes, whatsappNums }) {
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
         {cards.map(({ l, v, Icon, color, bg }) => (
-          <div key={l} className="p-6 rounded-[24px] bg-surface border border-border-subtle flex flex-col justify-between hover:border-primary/20 transition-all group">
-            <div className={`h-10 w-10 rounded-xl ${bg} flex items-center justify-center ${color} group-hover:scale-110 transition-transform`}>
-              <Icon size={20} />
-            </div>
-            <div className="mt-6">
-              <h4 className="text-2xl font-black text-main tracking-tighter leading-none">{v}</h4>
-              <p className="text-[10px] text-tertiary font-black uppercase tracking-widest mt-2">{l}</p>
+          <div key={l} className="bento-card group cursor-pointer">
+            <div className="premium-glow" />
+            <div className="relative z-10 flex flex-col justify-between h-full">
+              <div className={`h-12 w-12 rounded-2xl ${bg} flex items-center justify-center ${color} group-hover:scale-110 transition-transform duration-500 mb-4`}>
+                <Icon size={22} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4 className="text-[10px] font-black text-secondary uppercase tracking-[0.2em] mb-1">{l}</h4>
+                <div className="text-3xl font-bold text-main tracking-tighter">{v}</div>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-2">
-          <CardHeader title="🤖 Atendimento em Tempo Real" subtitle="Leads sendo processados pela sua IA agora." />
-          <div className="p-4 space-y-2">
+        <Card className="lg:col-span-2 p-0 overflow-hidden">
+          <CardHeader title="Atendimento de Inteligência" subtitle="Sessões ativas sendo processadas em tempo real." action={<div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[9px] font-black text-primary uppercase tracking-widest"><div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> Live</div>} />
+          <div className="p-6 space-y-3">
             {leads.filter(l => l.atendimento_ia === "ativo").slice(0, 5).map(l => (
-              <div key={l.id} className="flex items-center gap-4 p-4 rounded-2xl bg-surface-soft/50 border border-border-subtle group hover:border-primary/20 transition-all">
+              <div key={l.id} className="flex items-center gap-5 p-5 rounded-2xl bg-surface-up/20 border border-border-subtle group hover:border-primary/30 transition-all duration-300 cursor-pointer">
                 <Pulse status="online" />
-                <span className="text-xs font-bold text-main flex-1 truncate">{l.nome || l.telefone}</span>
-                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20">IA Analisando</span>
-                <button className="h-8 w-8 rounded-lg bg-surface-up flex items-center justify-center text-tertiary group-hover:text-primary transition-colors">
-                   <ChevronRight size={14} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-main truncate">{l.nome || l.telefone}</div>
+                  <div className="text-[9px] text-tertiary font-black uppercase tracking-widest mt-1 flex items-center gap-2">
+                    <Activity size={10} className="text-primary" /> Atendimento em curso
+                  </div>
+                </div>
+                <button className="h-10 w-10 rounded-xl bg-surface-up/50 flex items-center justify-center text-tertiary group-hover:text-primary transition-all">
+                   <ChevronRight size={16} strokeWidth={3} />
                 </button>
               </div>
             ))}
             {leads.filter(l => l.atendimento_ia === "ativo").length === 0 && (
-              <EmptyState icon="🌙" title="Modo de espera" subtitle="Todas as conversas foram concluídas." />
+              <div className="py-20 text-center opacity-30 flex flex-col items-center">
+                 <ShieldCheck size={48} strokeWidth={1} className="mb-4" />
+                 <p className="text-[10px] font-black uppercase tracking-[0.2em]">SecretarIA em prontidão</p>
+              </div>
             )}
           </div>
         </Card>
 
-        <div className="space-y-6">
-           <Card className="bg-primary/5 border-primary/20 p-8 flex flex-col items-center text-center gap-4 relative overflow-hidden">
-              <div className="absolute -right-8 -top-8 text-primary opacity-5 rotate-12">
-                 <Zap size={120} />
-              </div>
-              <div className="h-16 w-16 rounded-[24px] bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/10">
-                 <Zap size={32} className="fill-current" />
-              </div>
-              <div>
-                 <h4 className="text-lg font-black text-main">Motor Operacional</h4>
-                 <p className="text-xs text-secondary font-medium mt-2 leading-relaxed">Sua SecretarIA está em plena capacidade no plano <span className="text-primary font-bold">{client.plan}</span>.</p>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                 <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                 <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Sistemas Online</span>
+        <div className="space-y-8">
+           <Card className="bg-primary/5 border-primary/20 p-10 flex flex-col items-center text-center gap-6 group">
+              <div className="premium-glow" />
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="h-20 w-20 rounded-[32px] bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-2xl shadow-primary/20 group-hover:scale-110 transition-transform duration-500 mb-6">
+                   <Zap size={40} className="fill-current" strokeWidth={1} />
+                </div>
+                <h4 className="text-xl font-black text-main tracking-tight uppercase">Motor de Elite</h4>
+                <p className="text-xs text-secondary font-medium mt-3 leading-relaxed">Sua SecretarIA está operando em alta performance no plano <span className="text-primary font-bold uppercase tracking-widest">{client.plan}</span>.</p>
+                <div className="mt-8 flex items-center gap-3 px-5 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+                   <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                   <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">Sistemas Normais</span>
+                </div>
               </div>
            </Card>
         </div>
@@ -252,7 +277,7 @@ function ClientDashboardView({ client, leads, pacientes, whatsappNums }) {
   );
 }
 
-// ── WhatsApp View ─────────────────────────────────────────────────────────
+// ── WhatsApp View (Premium Refactor) ──────────────────────────────────────
 function WhatsAppView({ client, numbers, reload }) {
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -265,9 +290,11 @@ function WhatsAppView({ client, numbers, reload }) {
   const save = async () => {
     if (!form.nome_display.trim() || !form.phone_number_id.trim()) return;
     setSaving(true);
-    // Simulação ou chamada real ao DB aqui, assumindo que WhatsAppNumbers está disponível globalmente ou via props (no original estava importado)
-    // Para simplificar o refactor visual, assumo que a lógica de salvamento permanece a mesma.
-    setShowAdd(false);
+    // Simulação - Manter lógica existente
+    setTimeout(() => {
+      setShowAdd(false);
+      setSaving(false);
+    }, 1000);
   };
 
   const startEdit = (num) => {
@@ -283,87 +310,89 @@ function WhatsAppView({ client, numbers, reload }) {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="space-y-12 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <PageTitle
           icon={Smartphone}
-          title="WhatsApp Cloud API"
-          subtitle={`Gestão de canais oficiais. Limite do plano: ${limit} número(s).`}
+          title="WhatsApp Enterprise"
+          subtitle={`Gestão de canais oficiais Cloud API. Cota do plano: ${limit} terminal.`}
         />
-        <button 
+        <Btn 
           onClick={() => { setEditing(null); setForm({ nome_display: "", ia_nome: "", ia_funcao: "", waba_id: "", phone_number_id: "" }); setShowAdd(true); }} 
-          disabled={!canAdd} 
-          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-primary text-black font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+          disabled={!canAdd}
+          icon={Plus}
         >
-          <Plus size={14} /> Adicionar Canal
-        </button>
+          Novo Canal
+        </Btn>
       </div>
 
       {!canAdd && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-3">
-          <AlertCircle size={18} className="text-amber-500 shrink-0" />
-          <p className="text-xs text-amber-700 font-bold uppercase tracking-tight">Limite atingido. Faça upgrade para adicionar mais números.</p>
+        <div className="p-5 rounded-3xl bg-cta/10 border border-cta/20 flex items-center gap-4 animate-fade-in">
+          <AlertCircle size={20} className="text-cta shrink-0" strokeWidth={2.5} />
+          <p className="text-[10px] text-cta font-black uppercase tracking-[0.2em]">Cota Máxima Atingida. Realize upgrade para escalar sua operação.</p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-6">
         {numbers.map(num => (
-          <div key={num.id} className="p-6 rounded-[28px] bg-surface border border-border-subtle flex flex-col md:flex-row items-center gap-6 group hover:border-primary/20 transition-all">
-            <div className={`h-16 w-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner ${num.status === 'ativo' ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-surface-up text-tertiary'}`}>
-              📱
-            </div>
-            <div className="flex-1 text-center md:text-left">
-              <div className="flex flex-col md:flex-row md:items-center gap-3">
-                <h4 className="text-base font-black text-main">{num.nome_display}</h4>
-                <div className="flex items-center justify-center md:justify-start gap-2">
-                   <Pulse status={num.status === "ativo" ? "online" : num.status === "pendente" ? "pendente" : "offline"} />
-                   <span className="text-[10px] font-black uppercase tracking-widest text-secondary">{num.status}</span>
+          <div key={num.id} className="bento-card group flex flex-col md:flex-row items-center gap-8 p-8 transition-all duration-500 cursor-pointer">
+            <div className="premium-glow" />
+            <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 w-full">
+              <div className={`h-20 w-20 rounded-[28px] flex items-center justify-center text-3xl shadow-inner transition-all duration-500 group-hover:scale-105 ${num.status === 'ativo' ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-surface-up/50 text-tertiary border border-border-subtle'}`}>
+                <Smartphone size={32} strokeWidth={1} />
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <div className="flex flex-col md:flex-row md:items-center gap-4">
+                  <h4 className="text-xl font-black text-main tracking-tight uppercase">{num.nome_display}</h4>
+                  <div className="flex items-center justify-center md:justify-start gap-3 px-3 py-1 rounded-full bg-surface-up/50 border border-border-subtle">
+                     <Pulse status={num.status === "ativo" ? "online" : num.status === "pendente" ? "pendente" : "offline"} />
+                     <span className="text-[10px] font-black uppercase tracking-widest text-secondary">{num.status}</span>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-x-8 gap-y-2 text-[10px] font-black text-tertiary uppercase tracking-[0.2em]">
+                  <span className="flex items-center gap-2">Persona: <strong className="text-primary">{num.ia_nome || "PADRÃO"}</strong></span>
+                  <span className="flex items-center gap-2">Terminal ID: <span className="text-secondary">{num.phone_number_id || "PENDENTE"}</span></span>
                 </div>
               </div>
-              <div className="mt-2 flex flex-wrap justify-center md:justify-start gap-x-4 gap-y-1 text-[10px] font-black text-tertiary uppercase tracking-widest">
-                <span>IA: <strong className="text-primary">{num.ia_nome || "NÃO CONFIG."}</strong></span>
-                <span className="opacity-30">•</span>
-                <span>ID: {num.phone_number_id || "—"}</span>
+              <div className="flex gap-3">
+                <button onClick={() => startEdit(num)} className="h-12 w-12 flex items-center justify-center rounded-2xl bg-surface-up/80 border border-border-subtle text-tertiary hover:text-primary hover:border-primary/40 transition-all cursor-pointer"><Edit2 size={18} /></button>
+                <button className="h-12 w-12 flex items-center justify-center rounded-2xl bg-red-500/5 border border-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all cursor-pointer"><X size={18} /></button>
               </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => startEdit(num)} className="h-10 w-10 flex items-center justify-center rounded-xl bg-surface-up border border-border-subtle text-tertiary hover:text-primary transition-colors"><Edit2 size={14} /></button>
-              <button className="h-10 w-10 flex items-center justify-center rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all"><X size={14} /></button>
             </div>
           </div>
         ))}
         {numbers.length === 0 && (
-          <div className="py-20 rounded-[40px] border border-dashed border-border-subtle flex flex-col items-center text-center">
-             <Smartphone size={48} className="text-tertiary mb-4 opacity-30" />
-             <h4 className="text-sm font-bold text-secondary uppercase tracking-widest">Nenhum canal conectado</h4>
-             <p className="text-xs text-tertiary mt-2">Adicione seu Phone Number ID para começar.</p>
+          <div className="py-32 rounded-[48px] border border-dashed border-border-subtle flex flex-col items-center text-center opacity-30">
+             <Smartphone size={80} strokeWidth={1} className="text-tertiary mb-6" />
+             <h4 className="text-sm font-black text-secondary uppercase tracking-[0.3em]">Ambiente Desconectado</h4>
+             <p className="text-xs text-tertiary mt-3">Sincronize seu Phone Number ID para ativar a IA.</p>
           </div>
         )}
       </div>
 
       {showAdd && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[200] flex items-center justify-center p-6">
-           <div className="w-full max-w-lg bg-surface border border-border-subtle rounded-[32px] shadow-2xl overflow-hidden animate-zoom-in">
-              <div className="px-8 py-6 border-b border-border-subtle flex items-center justify-between">
-                 <h4 className="text-lg font-black text-main tracking-tight">{editing ? "Editar Canal" : "Novo Canal WhatsApp"}</h4>
-                 <button onClick={() => setShowAdd(false)} className="text-tertiary hover:text-main transition-colors"><X size={20} /></button>
+        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[200] flex items-center justify-center p-8">
+           <Card className="w-full max-w-xl animate-fade-in p-0 overflow-hidden shadow-2xl border-primary/20">
+              <div className="px-10 py-8 border-b border-border-subtle flex items-center justify-between bg-surface-up/30">
+                 <h4 className="text-xl font-black text-main tracking-tighter uppercase">{editing ? "Refinar Canal" : "Novo Canal Enterprise"}</h4>
+                 <button onClick={() => setShowAdd(false)} className="h-10 w-10 rounded-xl bg-surface-up flex items-center justify-center text-tertiary hover:text-main transition-all cursor-pointer"><X size={20} /></button>
               </div>
-              <div className="p-8 space-y-6">
-                 <Inp label="Nome da Operação *" value={form.nome_display} onChange={v => setForm(p => ({ ...p, nome_display: v }))} placeholder="Ex: Recepção Central" />
-                 <div className="grid grid-cols-2 gap-4">
-                    <Inp label="Codinome da IA" value={form.ia_nome} onChange={v => setForm(p => ({ ...p, ia_nome: v }))} placeholder="Ex: Clara" />
-                    <Inp label="Função da IA" value={form.ia_funcao} onChange={v => setForm(p => ({ ...p, ia_funcao: v }))} placeholder="Ex: Concierge" />
+              <div className="p-10 space-y-8">
+                 <Inp label="Identificação da Operação *" value={form.nome_display} onChange={v => setForm(p => ({ ...p, nome_display: v }))} placeholder="Ex: Recepção Central" icon={Activity} />
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Inp label="Persona IA" value={form.ia_nome} onChange={v => setForm(p => ({ ...p, ia_nome: v }))} placeholder="Ex: Clara" icon={User} />
+                    <Inp label="Função IA" value={form.ia_funcao} onChange={v => setForm(p => ({ ...p, ia_funcao: v }))} placeholder="Ex: Concierge" icon={Brain} />
                  </div>
-                 <Inp label="Phone Number ID *" value={form.phone_number_id} onChange={v => setForm(p => ({ ...p, phone_number_id: v }))} placeholder="ID do painel da Meta" />
+                 <Inp label="Phone Number ID *" value={form.phone_number_id} onChange={v => setForm(p => ({ ...p, phone_number_id: v }))} placeholder="ID Oficial da Meta" icon={ShieldCheck} />
                  
-                 <div className="pt-4 flex gap-3">
-                    <button onClick={() => setShowAdd(false)} className="flex-1 py-4 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-black text-[10px] uppercase tracking-widest hover:border-primary/20">Cancelar</button>
-                    <button onClick={save} disabled={saving || !form.nome_display || !form.phone_number_id} className="flex-1 py-4 rounded-2xl bg-primary text-black font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">
+                 <div className="pt-6 flex gap-4">
+                    <button onClick={() => setShowAdd(false)} className="flex-1 py-5 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-black text-[10px] uppercase tracking-[0.3em] hover:bg-surface transition-all cursor-pointer">Cancelar</button>
+                    <Btn disabled={saving || !form.nome_display || !form.phone_number_id} onClick={save} className="flex-1" icon={CheckCircle2}>
                        {saving ? "Processando..." : (editing ? "Salvar" : "Adicionar")}
-                    </button>
+                    </Btn>
                  </div>
               </div>
-           </div>
+           </Card>
         </div>
       )}
     </div>

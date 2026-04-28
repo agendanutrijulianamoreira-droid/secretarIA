@@ -1,6 +1,7 @@
 import { ManagerAgent } from './manager.js';
 import { FAQAgent } from './faq.js';
 import { SchedulingAgent } from './scheduling.js';
+import { SalesAgent } from './sales.js';
 import { ClinicContext, PatientContext, ChatMessage, AgentResponse } from './types.js';
 import { query } from '../lib/db.js';
 import { notifyHandoff } from '../services/notifier.js';
@@ -9,6 +10,7 @@ export class Orchestrator {
   private manager = new ManagerAgent();
   private faq = new FAQAgent();
   private scheduler = new SchedulingAgent();
+  private sales = new SalesAgent();
 
   async processMessage(
     message: string,
@@ -36,6 +38,10 @@ export class Orchestrator {
 
       case 'scheduling':
         response = await this.scheduler.handle(message, clinic, patient, history);
+        break;
+
+      case 'sales':
+        response = await this.sales.handle(message, clinic, patient, history);
         break;
 
       case 'billing':

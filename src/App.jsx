@@ -16,8 +16,14 @@ import FluxosView from "./views/admin/FluxosView";
 import TokensView from "./views/admin/TokensView";
 import FinanceiroAdminView from "./views/admin/FinanceiroAdmin";
 import DashboardView from "./views/admin/DashboardView";
-import { Bot, Zap, Activity, TrendingUp, Target, Smartphone, MessageSquare, Plus, ArrowRight, Shield, Settings, Bell } from "lucide-react";
+import { 
+  Bot, Zap, Activity, TrendingUp, Target, Smartphone, MessageSquare, 
+  Plus, ArrowRight, Shield, Settings, Bell, CheckCircle2, AlertTriangle, 
+  Search, Brain, Briefcase, HelpCircle, X, ShieldCheck, User, Layout, 
+  ChevronRight, ArrowLeft, CreditCard, Clock, Star, ActivitySquare
+} from "lucide-react";
 import { Logo, Badge } from "./components/UI";
+import { Btn, Inp, Card, CardHeader, PageTitle, Pill, Pulse, COLORS } from "./pages/ClientPortal";
 
 
 // ── Tokens ──────────────────────────────────────────────────────────────────
@@ -46,65 +52,99 @@ const T = {
 
 
 
-const CAP_META={text:{label:"Texto",icon:"✍️"},audio:{label:"Áudio",icon:"🎙️"},image:{label:"Imagem",icon:"🖼️"},file:{label:"Arquivo",icon:"📎"}};
-const CRM_STATUSES = {
-  novo: { label: "Novo", color: T.cyan, bg: T.cyanDim, icon: "✨" },
-  contatado: { label: "Em Contato", color: T.amber, bg: T.amberDim, icon: "💬" },
-  qualificado: { label: "Qualificado", color: T.purple, bg: T.purpleDim, icon: "🔥" },
-  convertido: { label: "Convertido", color: T.green, bg: T.greenDim, icon: "✅" },
-  perdido: { label: "Perdido", color: T.red, bg: T.redDim, icon: "✖️" },
+const CAP_META = {
+  text:  { label: "Texto", icon: MessageSquare },
+  audio: { label: "Áudio", icon: ActivitySquare },
+  image: { label: "Imagem", icon: Target },
+  file:  { label: "Arquivo", icon: Briefcase }
 };
-const PLAN_META={Starter:{color:T.inkSec,bg:"rgba(156,163,176,0.1)"},Pro:{color:T.green,bg:T.greenDim},Enterprise:{color:T.amber,bg:T.amberDim}};
-const SEGMENTS=["Saúde / Clínica","Saúde / Odontologia","Beleza / Salão","Educação","Imobiliária","Jurídico","Alimentação","Varejo","Serviços Gerais","Outro"];
-const TONES=["Acolhedora e profissional","Formal e sério","Descontraído e amigável","Jovial e animado","Técnico e objetivo"];
-const GOALS=["Agendamentos","Vendas / Captação","Suporte ao cliente","Tirar dúvidas (FAQ)","Tudo acima"];
-const EMPTY_B={segment:"",description:"",site:"",instagram:"",ai_name:"",ai_tone:"",ai_goal:"",business_hours:"",escalation_trigger:"",escalation_number:"",services:[],faqs:[],restrictions:"",promotions:""};
-const COLORS=["#6366F1","#EC4899","#F59E0B","#0EA5E9","#10B981","#8B5CF6","#F43F5E"];
-const STEPS=[{id:"negocio",icon:"🏢",label:"Negócio"},{id:"ia",icon:"🤖",label:"Persona da IA"},{id:"servicos",icon:"💼",label:"Serviços"},{id:"faqs",icon:"❓",label:"FAQ"},{id:"regras",icon:"🚫",label:"Regras"},{id:"plano",icon:"💳",label:"Plano"}];
 
-// ── Primitives ────────────────────────────────────────────────────────────────
-function Pulse({status}){
-  const c={online:T.green,offline:T.red,pending:T.amber}[status]||T.inkTert;
-  return(<span style={{position:"relative",display:"inline-flex",alignItems:"center"}}>
-    {status==="online"&&<span style={{position:"absolute",inset:-3,borderRadius:"50%",background:c,opacity:.25,animation:"pulse 2s infinite"}}/>}
-    <span style={{width:8,height:8,borderRadius:"50%",background:c,display:"inline-block"}}/>
-  </span>);
+const CRM_STATUSES = {
+  novo:        { label: "Novo Lead",     color: "#3B82F6", bg: "rgba(59,130,246,0.1)",   icon: Sparkles },
+  contatado:   { label: "Conversando",   color: "#F59E0B", bg: "rgba(245,158,11,0.1)",  icon: MessageSquare },
+  qualificado: { label: "Interessado",   color: "#8B5CF6", bg: "rgba(139,92,246,0.1)", icon: Target },
+  convertido:  { label: "Convertido",    color: "#10B981", bg: "rgba(16,185,129,0.1)", icon: CheckCircle2 },
+  perdido:     { label: "Arquivado",     color: "#EF4444", bg: "rgba(239,68,68,0.1)",  icon: X },
+};
+
+const PLAN_META = {
+  Starter:    { color: "#94A3B8", bg: "rgba(148,163,184,0.1)", label: "START" },
+  Pro:        { color: "#10B981", bg: "rgba(16,185,129,0.1)", label: "PRO" },
+  Enterprise: { color: "#F59E0B", bg: "rgba(245,158,11,0.1)",  label: "ELITE" }
+};
+
+const SEGMENTS = ["Saúde / Clínica", "Saúde / Odontologia", "Beleza / Salão", "Educação", "Imobiliária", "Jurídico", "Alimentação", "Varejo", "Serviços Gerais", "Outro"];
+const TONES = ["Acolhedora e profissional", "Formal e sério", "Descontraído e amigável", "Jovial e animado", "Técnico e objetivo"];
+const GOALS = ["Agendamentos", "Vendas / Captação", "Suporte ao cliente", "Tirar dúvidas (FAQ)", "Tudo acima"];
+const EMPTY_B = { segment: "", description: "", site: "", instagram: "", ai_name: "", ai_tone: "", ai_goal: "", business_hours: "", escalation_trigger: "", escalation_number: "", services: [], faqs: [], restrictions: "", promotions: "" };
+const STEPS = [
+  { id: "negocio",  icon: Briefcase, label: "Negócio" },
+  { id: "ia",       icon: Brain,     label: "Persona" },
+  { id: "servicos", icon: Layout,    label: "Serviços" },
+  { id: "faqs",     icon: HelpCircle, label: "FAQ" },
+  { id: "regras",   icon: Shield,    label: "Regras" },
+  { id: "plano",    icon: CreditCard, label: "Plano" }
+];
+
+function Av({ initials, color, size = 40 }) {
+  return (
+    <div 
+      className="rounded-2xl flex items-center justify-center font-black border shadow-inner transition-transform duration-500" 
+      style={{ width: size, height: size, backgroundColor: color + '15', color: color, borderColor: color + '30', fontSize: size * 0.35, letterSpacing: '0.05em' }}
+    >
+      {initials}
+    </div>
+  );
 }
-function Av({initials,color,size=40}){
-  return(<div style={{width:size,height:size,borderRadius:12,background:color+"22",border:`1px solid ${color}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*.3,fontWeight:700,color,flexShrink:0,letterSpacing:1}}>{initials}</div>);
+
+function StatusTag({ status }) {
+  const m = {
+    active: { l: "Ativo", c: "#10B981", b: "rgba(16,185,129,0.1)" },
+    paused: { l: "Pausado", c: "#F59E0B", b: "rgba(245,158,11,0.1)" },
+    setup:  { l: "Configurando", c: "#94A3B8", b: "rgba(148,163,184,0.1)" }
+  }[status] || { l: "—", c: "#94A3B8", b: "transparent" };
+  return <div className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border" style={{ color: m.c, backgroundColor: m.b, borderColor: m.c + '30' }}>{m.l}</div>;
 }
-function Tag({children,color,bg}){return<span style={{fontSize:11,fontWeight:600,padding:"2px 8px",borderRadius:6,color,background:bg,letterSpacing:.3,whiteSpace:"nowrap"}}>{children}</span>;}
-function StatusTag({status}){
-  const m={active:{l:"Ativo",c:T.green,b:T.greenDim},paused:{l:"Pausado",c:T.amber,b:T.amberDim},setup:{l:"Configurando",c:T.inkSec,b:"rgba(156,163,176,0.1)"}}[status]||{l:"—",c:T.inkTert,b:"transparent"};
-  return<Tag color={m.c} bg={m.b}>{m.l}</Tag>;
+
+function InvTag({ status }) {
+  const m = {
+    pago:     { l: "Pago", c: "#10B981", b: "rgba(16,185,129,0.1)" },
+    pendente: { l: "Pendente", c: "#F59E0B", b: "rgba(245,158,11,0.1)" },
+    vencido:  { l: "Vencido", c: "#EF4444", b: "rgba(239,68,68,0.1)" }
+  }[status] || { l: status, c: "#94A3B8", b: "rgba(148,163,184,0.1)" };
+  return <div className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border" style={{ color: m.c, backgroundColor: m.b, borderColor: m.c + '30' }}>{m.l}</div>;
 }
-function InvTag({status}){
-  const m={pago:{l:"Pago",c:T.green,b:T.greenDim},pendente:{l:"Pendente",c:T.amber,b:T.amberDim},vencido:{l:"Vencido",c:T.red,b:T.redDim}}[status]||{l:status,c:T.inkSec,b:T.up};
-  return<Tag color={m.c} bg={m.b}>{m.l}</Tag>;
+
+function Selct({ label, value, onChange, options, icon: Icon }) {
+  return (
+    <div className="space-y-3">
+      {label && <label className="text-[10px] font-black text-tertiary uppercase tracking-[0.3em] ml-1">{label}</label>}
+      <div className="relative flex items-center">
+        {Icon && <Icon className="absolute left-5 text-tertiary" size={18} />}
+        <select 
+          value={value} 
+          onChange={e => onChange(e.target.value)} 
+          className={`w-full ${Icon ? 'pl-14' : 'px-6'} pr-10 py-4 bg-surface-up/30 border border-border-subtle rounded-2xl text-main text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all duration-300 appearance-none`}
+        >
+          <option value="">Selecionar…</option>
+          {options.map(o => <option key={o} value={o} className="bg-surface">{o}</option>)}
+        </select>
+        <ChevronRight className="absolute right-5 text-tertiary rotate-90 pointer-events-none" size={16} />
+      </div>
+    </div>
+  );
 }
-function Inp({label,value,onChange,placeholder,rows}){
-  const s={width:"100%",padding:"10px 12px",borderRadius:10,background:T.bg,border:`1px solid ${T.border}`,color:T.ink,fontSize:13,outline:"none",boxSizing:"border-box",fontFamily:"inherit"};
-  return(<div style={{display:"flex",flexDirection:"column",gap:5}}>
-    {label&&<label style={{fontSize:11,color:T.inkTert}}>{label}</label>}
-    {rows?<textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={rows} style={{...s,resize:"vertical"}}/>
-         :<input value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={s}/>}
-  </div>);
-}
-function Selct({label,value,onChange,options}){
-  return(<div style={{display:"flex",flexDirection:"column",gap:5}}>
-    {label&&<label style={{fontSize:11,color:T.inkTert}}>{label}</label>}
-    <select value={value} onChange={e=>onChange(e.target.value)} style={{padding:"10px 12px",borderRadius:10,background:T.bg,border:`1px solid ${T.border}`,color:value?T.ink:T.inkTert,fontSize:13,outline:"none",fontFamily:"inherit"}}>
-      <option value="">Selecionar…</option>
-      {options.map(o=><option key={o} value={o}>{o}</option>)}
-    </select>
-  </div>);
-}
-function Chip({active,onClick,children}){
-  return(<button onClick={onClick} style={{padding:"6px 12px",borderRadius:8,fontSize:12,cursor:"pointer",border:`1px solid ${active?T.green+"44":T.border}`,background:active?T.greenDim:T.bg,color:active?T.green:T.inkSec,fontFamily:"inherit"}}>{children}</button>);
-}
-function Btn({children,onClick,variant="primary",style:sx={}}){
-  const v={primary:{bg:T.green,color:"#000",border:"none"},ghost:{bg:"transparent",color:T.inkSec,border:`1px solid ${T.border}`}}[variant]||{bg:T.green,color:"#000",border:"none"};
-  return(<button onClick={onClick} style={{padding:"10px 18px",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",...v,...sx}}>{children}</button>);
+
+function Chip({ active, onClick, children, icon: Icon }) {
+  return (
+    <button 
+      onClick={onClick} 
+      className={`px-6 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border flex items-center gap-3 cursor-pointer ${active ? 'bg-primary text-black border-primary shadow-xl shadow-primary/20 scale-105' : 'bg-surface-up/30 border-border-subtle text-secondary hover:border-primary/40'}`}
+    >
+      {Icon && <Icon size={14} />}
+      {children}
+    </button>
+  );
 }
 
 // ── Loading Skeleton ──────────────────────────────────────────────────────────
@@ -126,109 +166,140 @@ function Skeleton(){
   </div>);
 }
 
-// ── Briefing Wizard ───────────────────────────────────────────────────────────
-function BriefingWizard({initial,planInit,onSave,onCancel}){
-  const [step,setStep]=useState(0);
-  const [b,setB]=useState({...EMPTY_B,...initial});
-  const [plan,setPlan]=useState(planInit||"Pro");
-  const [ns,setNs]=useState({name:"",price:""});
-  const [nf,setNf]=useState({q:"",a:""});
-  const [saving,setSaving]=useState(false);
-  const upd=k=>v=>setB(p=>({...p,[k]:v}));
+// ── Briefing Wizard (Premium Refactor) ───────────────────────────────────────
+function BriefingWizard({ initial, planInit, onSave, onCancel }) {
+  const [step, setStep] = useState(0);
+  const [b, setB] = useState({ ...EMPTY_B, ...initial });
+  const [plan, setPlan] = useState(planInit || "Pro");
+  const [ns, setNs] = useState({ name: "", price: "" });
+  const [nf, setNf] = useState({ q: "", a: "" });
+  const [saving, setSaving] = useState(false);
+  const upd = k => v => setB(p => ({ ...p, [k]: v }));
 
-  const info=(t)=>(<div style={{background:T.up,borderRadius:12,padding:"12px 16px",border:`1px solid ${T.border}`,fontSize:12,color:T.inkSec,lineHeight:1.6}}>{t}</div>);
+  const info = (t) => (
+    <div className="p-6 rounded-[24px] bg-primary/5 border border-primary/20 flex items-start gap-4 mb-6">
+       <Sparkles className="text-primary shrink-0 mt-0.5" size={18} />
+       <p className="text-xs text-secondary font-medium leading-relaxed italic opacity-80">{t}</p>
+    </div>
+  );
 
-  const pages=[
-    <div key="n" style={{display:"flex",flexDirection:"column",gap:14}}>
-      {info("💡 Essas informações alimentam o contexto da IA — ela entende o negócio e fala com precisão.")}
-      <Selct label="Segmento *" value={b.segment} onChange={upd("segment")} options={SEGMENTS}/>
-      <Inp label="Descrição do negócio *" value={b.description} onChange={upd("description")} placeholder="O que a empresa faz, público-alvo, diferenciais…" rows={4}/>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-        <Inp label="Site" value={b.site} onChange={upd("site")} placeholder="meunegocio.com.br"/>
-        <Inp label="Instagram" value={b.instagram} onChange={upd("instagram")} placeholder="@usuario"/>
+  const pages = [
+    <div key="n" className="space-y-8 animate-fade-in">
+      {info("Estas informações alimentam o núcleo da IA — ela entende o negócio e fala com precisão absoluta.")}
+      <Selct label="Segmento de Atuação *" value={b.segment} onChange={upd("segment")} options={SEGMENTS} icon={Activity} />
+      <Inp label="Proposta de Valor *" value={b.description} onChange={upd("description")} placeholder="O que a empresa faz, público-alvo, diferenciais competitivos…" rows={5} icon={Briefcase} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <Inp label="Site Oficial" value={b.site} onChange={upd("site")} placeholder="meunegocio.com.br" icon={Layout} />
+        <Inp label="Instagram" value={b.instagram} onChange={upd("instagram")} placeholder="@usuario" icon={Target} />
       </div>
     </div>,
-    <div key="ia" style={{display:"flex",flexDirection:"column",gap:14}}>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-        <Inp label='Nome da assistente *' value={b.ai_name} onChange={upd("ai_name")} placeholder='"Ana", "Max", "Luna"'/>
-        <Selct label="Tom de voz *" value={b.ai_tone} onChange={upd("ai_tone")} options={TONES}/>
+    <div key="ia" className="space-y-8 animate-fade-in">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <Inp label='Codinome da Assistente *' value={b.ai_name} onChange={upd("ai_name")} placeholder='"Ana", "Max", "Luna"' icon={User} />
+        <Selct label="Arquetipo de Voz *" value={b.ai_tone} onChange={upd("ai_tone")} options={TONES} icon={Brain} />
       </div>
-      <div><label style={{fontSize:11,color:T.inkTert,display:"block",marginBottom:8}}>Objetivo principal *</label>
-        <div style={{display:"flex",flexWrap:"wrap",gap:8}}>{GOALS.map(g=><Chip key={g} active={b.ai_goal===g} onClick={()=>upd("ai_goal")(g)}>{g}</Chip>)}</div>
+      <div className="space-y-4">
+        <label className="text-[10px] font-black text-tertiary uppercase tracking-[0.3em] ml-1">Objetivo Estratégico *</label>
+        <div className="flex flex-wrap gap-4">{GOALS.map(g => <Chip key={g} active={b.ai_goal === g} onClick={() => upd("ai_goal")(g)} icon={Zap}>{g}</Chip>)}</div>
       </div>
-      <Inp label="Horário de atendimento *" value={b.business_hours} onChange={upd("business_hours")} placeholder="Seg–Sex 8h–18h | Sáb 8h–13h"/>
-      <div style={{borderTop:`1px solid ${T.border}`,paddingTop:14}}>
-        <div style={{fontSize:11,fontWeight:700,color:T.inkTert,letterSpacing:1.2,textTransform:"uppercase",marginBottom:12}}>Transferência para humano</div>
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          <Inp label="Quando transferir?" value={b.escalation_trigger} onChange={upd("escalation_trigger")} placeholder="Urgências, reclamações…" rows={2}/>
-          <Inp label="Número WhatsApp para transferência" value={b.escalation_number} onChange={upd("escalation_number")} placeholder="+55 11 9 0000-0000"/>
+      <Inp label="Grade de Horários *" value={b.business_hours} onChange={upd("business_hours")} placeholder="Seg–Sex 8h–18h | Sáb 8h–13h" icon={Clock} />
+      <div className="pt-8 border-t border-border-subtle">
+        <h5 className="text-[10px] font-black text-tertiary uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
+          <ShieldCheck size={14} className="text-primary" /> Protocolo de Transbordo
+        </h5>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Inp label="Gatilho de Transferência" value={b.escalation_trigger} onChange={upd("escalation_trigger")} placeholder="Urgências, reclamações críticas…" rows={3} icon={AlertTriangle} />
+          <Inp label="Terminal de Suporte" value={b.escalation_number} onChange={upd("escalation_number")} placeholder="+55 11 9 0000-0000" icon={Smartphone} />
         </div>
       </div>
     </div>,
-    <div key="s" style={{display:"flex",flexDirection:"column",gap:14}}>
-      {info("📋 Liste os principais serviços/produtos. A IA usará para responder preços e disponibilidade.")}
-      <div style={{display:"flex",flexDirection:"column",gap:6}}>
-        {b.services.map((s,i)=>(
-          <div key={i} style={{display:"flex",alignItems:"center",gap:10,background:T.bg,padding:"10px 14px",borderRadius:10,border:`1px solid ${T.border}`}}>
-            <div style={{flex:1}}><div style={{fontSize:13,color:T.ink}}>{s.name}</div><div style={{fontSize:11,color:T.inkTert}}>{s.price||"Preço a consultar"}</div></div>
-            <button onClick={()=>setB(p=>({...p,services:p.services.filter((_,j)=>j!==i)}))} style={{background:"none",border:"none",cursor:"pointer",color:T.red,fontSize:16}}>✕</button>
+    <div key="s" className="space-y-8 animate-fade-in">
+      {info("Liste os principais serviços. A IA usará este portfólio para responder sobre honorários e disponibilidade.")}
+      <div className="space-y-4">
+        {b.services.map((s, i) => (
+          <div key={i} className="flex items-center gap-6 bg-surface-up/20 p-5 rounded-[24px] border border-border-subtle group hover:border-primary/30 transition-all">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20"><Briefcase size={18} /></div>
+            <div className="flex-1 min-w-0">
+               <div className="text-sm font-black text-main truncate uppercase tracking-tight">{s.name}</div>
+               <div className="text-[10px] text-primary font-black uppercase tracking-widest mt-1">{s.price || "SOB CONSULTA"}</div>
+            </div>
+            <button onClick={() => setB(p => ({ ...p, services: p.services.filter((_, j) => j !== i) }))} className="h-10 w-10 rounded-xl bg-red-500/5 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"><X size={16} /></button>
           </div>
         ))}
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:8,alignItems:"end"}}>
-        <Inp label="Nome do serviço" value={ns.name} onChange={v=>setNs(p=>({...p,name:v}))} placeholder="Ex: Consulta de avaliação"/>
-        <Inp label="Valor" value={ns.price} onChange={v=>setNs(p=>({...p,price:v}))} placeholder="R$ 0"/>
-        <Btn onClick={()=>{if(!ns.name.trim())return;setB(p=>({...p,services:[...p.services,{...ns}]}));setNs({name:"",price:""});}} style={{whiteSpace:"nowrap"}}>+ Add</Btn>
+      <div className="p-8 rounded-[32px] bg-surface-up/30 border border-border-subtle space-y-6">
+        <Inp label="Nome do serviço" value={ns.name} onChange={v => setNs(p => ({ ...p, name: v }))} placeholder="Ex: Avaliação Inicial" icon={Plus} />
+        <div className="grid grid-cols-2 gap-4">
+           <Inp label="Valor Sugerido" value={ns.price} onChange={v => setNs(p => ({ ...p, price: v }))} placeholder="R$ 0,00" icon={DollarSign} />
+           <div className="flex items-end">
+             <Btn onClick={() => { if (!ns.name.trim()) return; setB(p => ({ ...p, services: [...p.services, { ...ns }] })); setNs({ name: "", price: "" }); }} className="w-full h-[54px]" icon={Plus}>Adicionar</Btn>
+           </div>
+        </div>
       </div>
     </div>,
-    <div key="f" style={{display:"flex",flexDirection:"column",gap:14}}>
-      {info("❓ Cada resposta vira conhecimento direto da IA — sem invenção, sem erro.")}
-      <div style={{display:"flex",flexDirection:"column",gap:8}}>
-        {b.faqs.map((f,i)=>(
-          <div key={i} style={{background:T.bg,padding:"12px 14px",borderRadius:10,border:`1px solid ${T.border}`,display:"flex",gap:10}}>
-            <div style={{flex:1}}>
-              <div style={{fontSize:12,fontWeight:600,color:T.ink,marginBottom:4}}>❓ {f.q}</div>
-              <div style={{fontSize:12,color:T.inkSec}}>✅ {f.a}</div>
+    <div key="f" className="space-y-8 animate-fade-in">
+      {info("Cada resposta vira conhecimento direto da IA — eliminando alucinações e erros operacionais.")}
+      <div className="space-y-4">
+        {b.faqs.map((f, i) => (
+          <div key={i} className="bg-surface-up/20 p-6 rounded-[28px] border border-border-subtle space-y-3 relative group">
+            <div className="text-xs font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2">
+               <HelpCircle size={14} /> Pergunta Protocolada
             </div>
-            <button onClick={()=>setB(p=>({...p,faqs:p.faqs.filter((_,j)=>j!==i)}))} style={{background:"none",border:"none",cursor:"pointer",color:T.red,fontSize:16}}>✕</button>
+            <div className="text-sm font-bold text-main">{f.q}</div>
+            <div className="text-xs text-secondary leading-relaxed italic border-l-2 border-primary/20 pl-4 py-1">"{f.a}"</div>
+            <button onClick={() => setB(p => ({ ...p, faqs: p.faqs.filter((_, j) => j !== i) }))} className="absolute top-4 right-4 h-8 w-8 rounded-lg bg-red-500/5 text-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><X size={14} /></button>
           </div>
         ))}
       </div>
-      <div style={{background:T.bg,padding:14,borderRadius:12,border:`1px solid ${T.border}`,display:"flex",flexDirection:"column",gap:10}}>
-        <Inp label="Pergunta" value={nf.q} onChange={v=>setNf(p=>({...p,q:v}))} placeholder="Vocês atendem aos sábados?"/>
-        <Inp label="Resposta que a IA deve dar" value={nf.a} onChange={v=>setNf(p=>({...p,a:v}))} placeholder="Sim! Atendemos sábados das 8h às 13h." rows={2}/>
-        <Btn onClick={()=>{if(!nf.q.trim()||!nf.a.trim())return;setB(p=>({...p,faqs:[...p.faqs,{...nf}]}));setNf({q:"",a:""});}}>+ Adicionar</Btn>
+      <div className="p-8 rounded-[32px] bg-surface-up/30 border border-border-subtle space-y-6">
+        <Inp label="Pergunta Frequente" value={nf.q} onChange={v => setNf(p => ({ ...p, q: v }))} placeholder="Ex: Vocês atendem aos sábados?" icon={HelpCircle} />
+        <Inp label="Resposta de Conhecimento" value={nf.a} onChange={v => setNf(p => ({ ...p, a: v }))} placeholder="Sim! Atendemos sábados das 8h às 13h." rows={3} icon={CheckCircle2} />
+        <Btn onClick={() => { if (!nf.q.trim() || !nf.a.trim()) return; setB(p => ({ ...p, faqs: [...p.faqs, { ...nf }] })); setNf({ q: "", a: "" }); }} className="w-full" icon={Plus}>Memorizar Regra</Btn>
       </div>
     </div>,
-    <div key="r" style={{display:"flex",flexDirection:"column",gap:14}}>
-      <div style={{background:"rgba(239,68,68,0.06)",borderRadius:12,padding:"12px 16px",border:`1px solid ${T.red}33`,fontSize:12,color:T.inkSec}}>
-        🚫 Defina o que a IA <strong style={{color:T.ink}}>jamais</strong> deve fazer ou dizer.
+    <div key="r" className="space-y-8 animate-fade-in">
+      <div className="p-6 rounded-[24px] bg-cta/5 border border-cta/20 flex items-start gap-4">
+         <Shield size={20} className="text-cta shrink-0 mt-0.5" strokeWidth={2.5} />
+         <p className="text-xs text-cta font-black uppercase tracking-widest leading-relaxed">Defina barreiras críticas. O que a IA <span className="underline">jamais</span> deve processar sem aval humano.</p>
       </div>
-      <Inp label="O que a IA NUNCA deve dizer ou fazer" value={b.restrictions} onChange={upd("restrictions")} placeholder="Ex: nunca confirmar diagnóstico…" rows={4}/>
-      <Inp label="Promoções e avisos temporários ativos" value={b.promotions} onChange={upd("promotions")} placeholder="Ex: 20% off em março…" rows={3}/>
+      <Inp label="Restrições e Zonas Proibidas" value={b.restrictions} onChange={upd("restrictions")} placeholder="Ex: nunca confirmar diagnósticos médicos…" rows={5} icon={ShieldCheck} />
+      <Inp label="Ofertas e Comunicados Temporários" value={b.promotions} onChange={upd("promotions")} placeholder="Ex: Bônus de 20% off em consultas de Maio…" rows={4} icon={Zap} />
     </div>,
-    <div key="p" style={{display:"flex",flexDirection:"column",gap:14}}>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
-        {[{p:"Starter",price:"R$ 197/mês",impl:"R$ 900",f:["Texto + Imagem","1 workflow n8n","Suporte chat"]},
-          {p:"Pro",price:"R$ 397/mês",impl:"R$ 1.200",f:["Texto+Áudio+Imagem+Arquivo","2 workflows n8n","Google Agenda","Suporte prioritário"]},
-          {p:"Enterprise",price:"R$ 897/mês",impl:"R$ 2.500",f:["Tudo do Pro","Workflows ilimitados","Integrações custom","Onboarding dedicado"]}
-        ].map(({p,price,impl,f})=>{
-          const pm=PLAN_META[p];const sel=plan===p;
-          return(<div key={p} onClick={()=>setPlan(p)} style={{cursor:"pointer",background:sel?pm.bg:T.bg,border:`2px solid ${sel?pm.color+"66":T.border}`,borderRadius:14,padding:16,transition:"all 150ms"}}>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
-              <span style={{fontSize:13,fontWeight:700,color:sel?pm.color:T.ink}}>{p}</span>
-              {sel&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:20,background:pm.color,color:"#000",fontWeight:700}}>✓</span>}
+    <div key="p" className="space-y-8 animate-fade-in">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { p: "Starter", price: "R$ 197", f: ["Texto + Imagem", "1 Agente Local", "Suporte VIP"] },
+          { p: "Pro", price: "R$ 397", f: ["Multimodal (Áudio/Img)", "Google Agenda", "IA Cognitiva"] },
+          { p: "Enterprise", price: "R$ 897", f: ["Fluxos Custom", "Tokens Ilimitados", "Setup Dedicado"] }
+        ].map(({ p, price, f }) => {
+          const pm = PLAN_META[p]; const sel = plan === p;
+          return (
+            <div key={p} onClick={() => setPlan(p)} className={`relative overflow-hidden cursor-pointer rounded-[32px] p-8 border transition-all duration-500 group ${sel ? 'bg-primary/10 border-primary ring-1 ring-primary/20 shadow-2xl shadow-primary/10 scale-105' : 'bg-surface-up/30 border-border-subtle hover:border-primary/30'}`}>
+              <div className="flex justify-between items-start mb-6">
+                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${sel ? 'text-primary' : 'text-tertiary'}`}>{p}</span>
+                {sel && <CheckCircle2 className="text-primary animate-pulse" size={18} />}
+              </div>
+              <div className="text-3xl font-black text-main tracking-tighter mb-1">{price}</div>
+              <div className="text-[10px] text-tertiary font-black uppercase tracking-widest mb-8">por mês</div>
+              <div className="space-y-3">
+                {f.map(x => (
+                  <div key={x} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-secondary/70">
+                    <Check size={10} className="text-primary" strokeWidth={3} /> {x}
+                  </div>
+                ))}
+              </div>
             </div>
-            <div style={{fontSize:16,fontWeight:700,color:T.ink,marginBottom:2}}>{price}</div>
-            <div style={{fontSize:11,color:T.inkTert,marginBottom:10}}>Impl.: {impl}</div>
-            {f.map(x=><div key={x} style={{fontSize:11,color:T.inkSec,marginBottom:3}}>✓ {x}</div>)}
-          </div>);
+          );
         })}
       </div>
-      <div style={{background:T.greenDim,borderRadius:12,padding:"14px 16px",border:`1px solid ${T.green}33`,display:"flex",alignItems:"center",gap:12}}>
-        <span style={{fontSize:22}}>💳</span>
-        <div><div style={{fontSize:13,fontWeight:600,color:T.ink}}>Cobrança via Asaas</div>
-          <div style={{fontSize:12,color:T.inkSec}}>Link de pagamento gerado automaticamente após salvar.</div></div>
+      <div className="p-8 rounded-[32px] bg-primary/5 border border-primary/20 flex items-center gap-8 group">
+        <div className="h-16 w-16 rounded-[22px] bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-2xl group-hover:rotate-12 transition-all">
+           <CreditCard size={32} strokeWidth={1} />
+        </div>
+        <div className="flex-1 min-w-0">
+           <h4 className="text-sm font-black text-main uppercase tracking-widest">Ativação via Asaas</h4>
+           <p className="text-xs text-secondary font-medium mt-1 italic opacity-70">O link de faturamento será gerado automaticamente ao salvar.</p>
+        </div>
       </div>
     </div>,
   ];
@@ -238,36 +309,42 @@ function BriefingWizard({initial,planInit,onSave,onCancel}){
     try { await onSave(b, plan); } finally { setSaving(false); }
   };
 
-  return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(4px)"}}>
-      <div style={{background:T.surface,borderRadius:24,width:640,maxHeight:"90vh",display:"flex",flexDirection:"column",border:`1px solid ${T.borderSt}`,overflow:"hidden",animation:"fadeIn 150ms ease"}}>
-        <div style={{padding:"18px 28px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div><div style={{fontSize:15,fontWeight:700,color:T.ink}}>Briefing do Cliente</div>
-            <div style={{fontSize:12,color:T.inkTert,marginTop:2}}>Configure a IA para o negócio dele</div></div>
-          <button onClick={onCancel} style={{background:"none",border:"none",cursor:"pointer",color:T.inkTert,fontSize:18}}>✕</button>
+  return (
+    <div className="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-[400] flex items-center justify-center p-8">
+      <Card className="w-full max-w-4xl animate-fade-in p-0 overflow-hidden shadow-2xl border-primary/20 flex flex-col max-h-[90vh]">
+        <div className="px-10 py-10 border-b border-border-subtle bg-surface-up/30 flex items-center justify-between">
+          <div>
+            <h4 className="text-2xl font-black text-main tracking-tighter uppercase">Onboarding de Inteligência</h4>
+            <p className="text-[10px] text-tertiary font-black uppercase tracking-[0.3em] mt-2 flex items-center gap-2">
+              <Activity size={12} className="text-primary" /> Módulo de Calibragem {STEPS[step].label}
+            </p>
+          </div>
+          <button onClick={onCancel} className="h-12 w-12 rounded-2xl bg-surface-up flex items-center justify-center text-tertiary hover:text-main transition-all cursor-pointer"><X size={24} /></button>
         </div>
-        <div style={{display:"flex",padding:"0 28px",borderBottom:`1px solid ${T.border}`,overflowX:"auto",gap:2}}>
-          {STEPS.map((s,i)=>(
-            <button key={s.id} onClick={()=>setStep(i)} style={{padding:"11px 10px",border:"none",cursor:"pointer",background:"none",color:step===i?T.green:T.inkTert,fontSize:11,fontWeight:step===i?700:500,borderBottom:`2px solid ${step===i?T.green:"transparent"}`,whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4,fontFamily:"inherit"}}>
-              {s.icon} {s.label} {i<step&&<span style={{color:T.green,fontSize:10}}>✓</span>}
+        <div className="flex gap-4 px-10 border-b border-border-subtle bg-surface-up/10 overflow-x-auto no-scrollbar scroll-smooth">
+          {STEPS.map((s, i) => (
+            <button key={s.id} onClick={() => setStep(i)} className={`py-6 px-4 border-b-2 transition-all flex items-center gap-3 cursor-pointer whitespace-nowrap ${step === i ? 'border-primary text-primary' : 'border-transparent text-tertiary hover:text-secondary'}`}>
+              <s.icon size={16} strokeWidth={step === i ? 3 : 2} />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em]">{s.label}</span>
+              {i < step && <CheckCircle2 size={12} className="text-primary" />}
             </button>
           ))}
         </div>
-        <div style={{flex:1,overflowY:"auto",padding:"22px 28px"}}>{pages[step]}</div>
-        <div style={{padding:"14px 28px",borderTop:`1px solid ${T.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div style={{fontSize:12,color:T.inkTert}}>Passo {step+1} de {STEPS.length}</div>
-          <div style={{display:"flex",gap:10}}>
-            {step>0&&<Btn variant="ghost" onClick={()=>setStep(s=>s-1)}>← Anterior</Btn>}
-            {step<STEPS.length-1&&<Btn onClick={()=>setStep(s=>s+1)}>Próximo →</Btn>}
-            {step===STEPS.length-1&&<Btn onClick={handleSave} style={{opacity:saving?.6:1}}>{saving?"Salvando…":"✅ Salvar"}</Btn>}
+        <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">{pages[step]}</div>
+        <div className="p-10 border-t border-border-subtle bg-surface-up/30 flex justify-between items-center">
+          <div className="text-[10px] font-black text-tertiary uppercase tracking-[0.4em]">Fase {step + 1} de {STEPS.length}</div>
+          <div className="flex gap-4">
+            {step > 0 && <button onClick={() => setStep(s => s - 1)} className="px-8 py-4 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-black text-[10px] uppercase tracking-widest hover:bg-surface transition-all cursor-pointer flex items-center gap-2"><ArrowLeft size={14} /> Voltar</button>}
+            {step < STEPS.length - 1 && <Btn onClick={() => setStep(s => s + 1)} className="px-10" icon={ArrowRight}>Próximo Passo</Btn>}
+            {step === STEPS.length - 1 && <Btn onClick={handleSave} disabled={saving} icon={CheckCircle2}>{saving ? "Sincronizando..." : "Concluir Setup"}</Btn>}
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
 
-// ── Login Page ───────────────────────────────────────────────────────────────
+// ── Login Page (Premium Refactor) ───────────────────────────────────────────
 function LoginView() {
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState("");
@@ -288,7 +365,7 @@ function LoginView() {
       }
     } catch (err) {
       console.error(err);
-      setError("E-mail ou senha incorretos.");
+      setError("Credenciais inválidas ou falha na conexão.");
     } finally {
       setLoading(false);
     }
@@ -302,130 +379,122 @@ function LoginView() {
       await signInWithPopup(auth, provider);
     } catch (err) {
       console.error(err);
-      setError("Falha na autenticação com Google.");
+      setError("Falha na autenticação via Google Cloud.");
     } finally {
       setLoading(false);
     }
   };
 
-
   return (
-    <div className="flex min-h-screen w-full bg-background selection:bg-primary/20 selection:text-primary overflow-hidden font-sans">
-      <div className="hidden lg:flex w-1/2 relative flex-col justify-center p-16 overflow-hidden bg-slate-950">
+    <div className="flex min-h-screen w-full bg-slate-950 selection:bg-primary/20 selection:text-primary overflow-hidden font-sans">
+      <div className="hidden lg:flex w-1/2 relative flex-col justify-center p-20 overflow-hidden bg-slate-950 border-r border-slate-900">
         <div className="absolute inset-0 z-0 opacity-40">
            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.1),transparent)] animate-pulse" />
-           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px]" />
         </div>
 
-        <div className="absolute top-12 left-12 z-20">
-          <Logo size={42} />
+        <div className="absolute top-16 left-16 z-20">
+          <Logo size={48} />
         </div>
 
-        <div className="relative z-20 space-y-12">
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-              <Shield size={12} className="text-primary fill-current" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-primary">Ambiente Seguro (Zero Trust)</span>
+        <div className="relative z-20 space-y-16">
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 shadow-2xl shadow-primary/10">
+              <ShieldCheck size={14} className="text-primary" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Sistema Autenticado (E2E)</span>
             </div>
-            <h1 className="text-6xl font-black leading-tight tracking-tighter text-white">
-              O futuro da sua <br/>
-              <span className="text-primary">clínica</span> começa aqui.
+            <h1 className="text-7xl font-black leading-none tracking-tighter text-white">
+              Inteligência <br/>
+              <span className="text-primary">Cognitiva</span> <br/>
+              para Clínicas.
             </h1>
-            <p className="text-xl text-secondary leading-relaxed max-w-md font-medium">
-              Evolua o atendimento da sua clínica com IA avançada e gestão inteligente de dados.
+            <p className="text-xl text-secondary leading-relaxed max-w-lg font-medium opacity-80">
+              Transforme o atendimento da sua clínica com automação de elite e gestão orientada a dados.
             </p>
           </div>
 
-          <div className="flex items-center gap-6">
-             <div className="h-px flex-1 bg-border-subtle" />
-             <div className="flex gap-4">
-                <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                <div className="h-2 w-2 rounded-full bg-surface-up" />
-                <div className="h-2 w-2 rounded-full bg-surface-up" />
+          <div className="flex items-center gap-10">
+             <div className="h-px flex-1 bg-gradient-to-r from-primary/50 to-transparent" />
+             <div className="flex gap-6">
+                <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_15px_rgba(16,185,129,0.8)]" />
+                <div className="h-2 w-2 rounded-full bg-slate-800" />
+                <div className="h-2 w-2 rounded-full bg-slate-800" />
              </div>
           </div>
         </div>
       </div>
 
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative bg-background">
-        <div className="absolute top-8 left-8 lg:hidden">
-          <Logo size={32} />
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-12 sm:p-24 relative bg-slate-950">
+        <div className="absolute top-12 left-12 lg:hidden">
+          <Logo size={36} />
         </div>
 
-        <div className="w-full max-w-md space-y-10 animate-fade-in">
-          <div className="space-y-2">
-            <h2 className="text-4xl font-black text-main tracking-tight">
-              {isRegister ? "Criar Conta" : "Bem-vinda"}
+        <div className="w-full max-w-md space-y-12 animate-fade-in">
+          <div className="space-y-4 text-center lg:text-left">
+            <h2 className="text-5xl font-black text-main tracking-tighter uppercase italic">
+              {isRegister ? "Nova Conta" : "Bem-vinda"}
             </h2>
-            <p className="text-secondary font-medium">
-              Acesse o núcleo de inteligência da sua clínica.
+            <p className="text-secondary font-medium tracking-tight opacity-70">
+              Acesse a central de comando da sua clínica.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="space-y-6">
               {isRegister && (
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-tertiary uppercase tracking-widest ml-1">Nome da Clínica</label>
-                  <input 
-                    type="text" 
-                    value={name} 
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full px-5 py-4 bg-surface border border-border-subtle rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-main placeholder:text-tertiary/30"
-                    placeholder="Ex: Clínica Equilíbrio"
-                    required={isRegister}
-                  />
-                </div>
+                <Inp 
+                  label="Nome da Organização *" 
+                  value={name} 
+                  onChange={setName}
+                  placeholder="Ex: Clínica Alpha Saúde"
+                  icon={Briefcase}
+                  required
+                />
               )}
 
-              <div className="space-y-2">
-                <label className="text-[11px] font-bold text-tertiary uppercase tracking-widest ml-1">E-mail de Acesso</label>
-                <input 
-                  type="email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-5 py-4 bg-surface border border-border-subtle rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-main placeholder:text-tertiary/30"
-                  placeholder="seu@email.com"
-                  required
-                />
-              </div>
+              <Inp 
+                label="Identificador (E-mail) *" 
+                value={email} 
+                onChange={setEmail}
+                placeholder="seu@dominio.com.br"
+                icon={User}
+                type="email"
+                required
+              />
 
-              <div className="space-y-2">
-                <div className="flex justify-between items-center px-1">
-                  <label className="text-[11px] font-bold text-tertiary uppercase tracking-widest">Sua Senha</label>
-                </div>
-                <input 
-                  type="password" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-5 py-4 bg-surface border border-border-subtle rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-main placeholder:text-tertiary/30"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
+              <Inp 
+                label="Chave de Acesso *" 
+                value={password} 
+                onChange={setPassword}
+                placeholder="••••••••••••"
+                icon={Shield}
+                type="password"
+                required
+              />
             </div>
 
             {error && (
-              <div className="bg-red-500/5 text-red-500 p-4 rounded-2xl text-xs font-bold border border-red-500/10 flex items-center gap-3">
-                <Shield size={16} /> {error}
+              <div className="bg-red-500/5 text-red-500 p-6 rounded-[24px] text-xs font-black uppercase tracking-widest border border-red-500/10 flex items-center gap-4 animate-shake">
+                <AlertTriangle size={20} /> {error}
               </div>
             )}
 
-            <button 
+            <Btn 
               type="submit" 
               disabled={loading}
-              className="w-full bg-primary text-black py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+              className="w-full py-6"
+              icon={isRegister ? Sparkles : ChevronRight}
             >
-              {loading ? "Verificando..." : (isRegister ? "Começar Agora" : "Entrar no Sistema")}
-            </button>
+              {loading ? "Processando..." : (isRegister ? "Criar Ecossistema" : "Entrar no Sistema")}
+            </Btn>
           </form>
 
-          <div className="relative">
+          <div className="relative py-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border-subtle"></div>
+              <div className="w-full border-t border-slate-900"></div>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-4 text-tertiary font-black tracking-widest">Ou continue com</span>
+            <div className="relative flex justify-center text-[10px] uppercase font-black tracking-[0.4em]">
+              <span className="bg-slate-950 px-6 text-tertiary">Cloud Auth</span>
             </div>
           </div>
 
@@ -433,25 +502,25 @@ function LoginView() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full bg-surface border border-border-subtle text-main py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-primary/30 transition-all flex items-center justify-center gap-3 shadow-sm"
+            className="w-full bg-slate-900/50 border border-slate-800 text-main py-5 rounded-[24px] font-black text-[10px] uppercase tracking-[0.2em] hover:border-primary/40 hover:bg-slate-900 transition-all flex items-center justify-center gap-4 shadow-xl active:scale-[0.98] cursor-pointer"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>
-            Google Account
+            Google Connect
           </button>
 
-          <div className="text-center pt-4">
-            <p className="text-sm text-secondary font-medium">
-              {isRegister ? "Já possui conta?" : "Ainda não faz parte?"} 
+          <div className="text-center pt-8">
+            <p className="text-xs text-secondary font-black uppercase tracking-widest">
+              {isRegister ? "Já possui credenciais?" : "Nova por aqui?"} 
               <button 
                 onClick={() => setIsRegister(!isRegister)}
-                className="ml-2 text-primary font-black hover:underline underline-offset-8"
+                className="ml-3 text-primary hover:underline underline-offset-8 cursor-pointer"
               >
-                {isRegister ? "Fazer Login" : "Criar Conta Grátis"}
+                {isRegister ? "Fazer Login" : "Criar Nova Clínica"}
               </button>
             </p>
           </div>
@@ -713,99 +782,89 @@ function Portal({client,onBack}){
   );
 }
 
-// ── Admin Card ────────────────────────────────────────────────────────────────
-function AdminCard({client,onPortal,onBriefing}){
-  const [hov,setHov]=useState(false);
-  const pm=PLAN_META[client.plan]||PLAN_META.Starter;
-  const b=client.briefing||{};
-  const pct=[b.description,b.ai_name,b.ai_tone,b.ai_goal,b.business_hours].filter(Boolean).length*20;
-  const hasPending=(client._pendingInvoices||0)>0;
-  return(
-    <div style={{background:hov?T.up:T.surface,border:`1px solid ${hov?T.borderSt:T.border}`,borderRadius:16,padding:20,display:"flex",flexDirection:"column",gap:14,transition:"all 150ms"}} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}>
-      <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
-        <Av initials={client.avatar} color={client.color}/>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-            <span style={{fontSize:14,fontWeight:600,color:T.ink}}>{client.name}</span>
-            <StatusTag status={client.status}/>
-            {hasPending&&<Tag color={T.amber} bg={T.amberDim}>💰 Pendente</Tag>}
-          </div>
-          <div style={{fontSize:11,color:T.inkTert,marginTop:2}}>{client.phone}</div>
-        </div>
-        <Tag color={pm.color} bg={pm.bg}>{client.plan}</Tag>
-      </div>
-      <div style={{background:T.bg,borderRadius:10,padding:"9px 12px",border:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:8}}>
-        <Pulse status={client.status === "active" ? "online" : "offline"}/>
-        <span style={{fontSize:11,color:T.green,fontWeight:600}}>IA Ativa</span>
-        <span style={{fontSize:11,color:T.inkTert,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>Motor Multi-Agente</span>
-      </div>
-      <div>
-        <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
-          <span style={{fontSize:11,color:T.inkTert}}>Briefing</span>
-          <span style={{fontSize:11,color:pct>=80?T.green:pct>=40?T.amber:T.red}}>{pct}%</span>
-        </div>
-        <div style={{height:4,background:T.bg,borderRadius:2}}><div style={{height:4,borderRadius:2,width:`${pct}%`,background:pct>=80?T.green:pct>=40?T.amber:T.red,transition:"width 600ms"}}/></div>
-      </div>
-      <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-        {(client.capabilities||["text"]).map(c=>{const m=CAP_META[c];return<span key={c} style={{fontSize:10,padding:"2px 7px",borderRadius:6,background:"var(--color-surface-soft)",border:`1px solid ${T.border}`,color:T.inkSec}}>{m?.icon} {m?.label}</span>;})}
-        {client.calendar_email&&<span style={{fontSize:10,padding:"2px 7px",borderRadius:6,background:T.cyanDim,border:`1px solid ${T.cyan}33`,color:T.cyan}}>📅 Agenda</span>}
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,paddingTop:10,borderTop:`1px solid ${T.border}`}}>
-        <div style={{textAlign:"center"}}><div style={{fontSize:20,fontWeight:700,color:T.ink}}>{client.msgs_today||0}</div><div style={{fontSize:10,color:T.inkTert}}>msgs hoje</div></div>
-        <div style={{textAlign:"center"}}><div style={{fontSize:20,fontWeight:700,color:T.inkSec}}>{client.msgs_month||0}</div><div style={{fontSize:10,color:T.inkTert}}>este mês</div></div>
-      </div>
-      <div style={{display:"flex",gap:8,marginTop:10}}>
-        <button onClick={()=>onPortal(client)} style={{flex:1,padding:"8px",borderRadius:9,background:"transparent",border:`1px solid ${T.border}`,color:T.inkSec,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Portal</button>
-        <button onClick={()=>onBriefing(client)} style={{flex:1,padding:"8px",borderRadius:9,background:T.greenDim,border:`1px solid ${T.green}44`,color:T.green,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>✏️ Briefing</button>
-      </div>
-    </div>
-  );
-}
+// ── Admin Card (Premium Refactor) ────────────────────────────────────────────
+function AdminCard({ client, onPortal, onBriefing }) {
+  const [hov, setHov] = useState(false);
+  const pm = PLAN_META[client.plan] || PLAN_META.Starter;
+  const b = client.briefing || {};
+  const pct = [b.description, b.ai_name, b.ai_tone, b.ai_goal, b.business_hours].filter(Boolean).length * 20;
+  const hasPending = (client._pendingInvoices || 0) > 0;
 
-// ── New Client Modal ──────────────────────────────────────────────────────────
-function NewModal({onClose,onNext,onFinish}){
-  const [f,setF]=useState({name:"",phone:"",email:"",plan:"Pro",capabilities:["text"]});
-  const upd=k=>v=>setF(p=>({...p,[k]:v}));
-  const tc=c=>setF(p=>({...p,capabilities:p.capabilities.includes(c)?p.capabilities.filter(x=>x!==c):[...p.capabilities,c]}));
-  
-  const isValid = f.name.trim() && f.phone.trim() && f.email.trim();
+  return (
+    <div 
+      className={`bento-card group p-8 transition-all duration-500 cursor-pointer flex flex-col gap-6 ${hov ? 'border-primary/40 ring-1 ring-primary/10' : ''}`}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+    >
+      <div className="premium-glow" />
+      <div className="relative z-10 flex flex-col h-full">
+        <div className="flex items-start justify-between gap-6">
+          <div className="flex items-center gap-4">
+             <Av initials={client.avatar} color={client.color} />
+             <div>
+                <h4 className="text-base font-black text-main tracking-tight uppercase">{client.name}</h4>
+                <div className="flex items-center gap-2 mt-1.5">
+                   <StatusTag status={client.status} />
+                   {hasPending && <div className="px-3 py-1 rounded-full bg-cta/10 border border-cta/20 text-[9px] font-black text-cta uppercase tracking-widest flex items-center gap-2"><DollarSign size={10} /> Pendente</div>}
+                </div>
+             </div>
+          </div>
+          <div className={`px-4 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest shadow-sm`} style={{ color: pm.color, backgroundColor: pm.bg, borderColor: pm.color + '30' }}>
+            {pm.label}
+          </div>
+        </div>
 
-  return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(4px)"}}>
-      <div style={{background:T.surface,borderRadius:20,width:460,border:`1px solid ${T.borderSt}`,overflow:"hidden",animation:"fadeIn 150ms ease"}}>
-        <div style={{padding:"18px 24px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div style={{fontSize:15,fontWeight:700,color:T.ink}}>Novo Cliente</div>
-          <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",color:T.inkTert,fontSize:18}}>✕</button>
+        <div className="mt-8 flex items-center gap-4 p-4 rounded-2xl bg-surface-up/30 border border-border-subtle group-hover:border-primary/20 transition-all">
+           <Pulse status={client.status === "active" ? "online" : "offline"} />
+           <div className="flex-1">
+              <div className="text-[10px] font-black text-secondary uppercase tracking-widest">Motor IA Ativo</div>
+              <div className="text-[9px] text-tertiary font-black uppercase tracking-[0.2em] mt-0.5">Sincronização em tempo real</div>
+           </div>
+           <Activity size={18} className="text-primary opacity-40 group-hover:scale-110 transition-transform" />
         </div>
-        <div style={{padding:22,display:"flex",flexDirection:"column",gap:14,maxHeight:"70vh",overflowY:"auto"}}>
-          <Inp label="Nome do cliente *" value={f.name} onChange={upd("name")} placeholder="Ex: Clínica Saúde Total"/>
-          <Inp label="Número WhatsApp *" value={f.phone} onChange={upd("phone")} placeholder="+55 11 9 0000-0000"/>
-          <Inp label="E-mail de acesso *" value={f.email} onChange={upd("email")} placeholder="cliente@email.com"/>
-          
-          <div><label style={{fontSize:11,color:T.inkTert,display:"block",marginBottom:8}}>Capacidades da IA</label>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{Object.entries(CAP_META).map(([c,m])=><Chip key={c} active={f.capabilities.includes(c)} onClick={()=>tc(c)}>{m.icon} {m.label}</Chip>)}</div>
+
+        <div className="mt-8 space-y-3">
+          <div className="flex justify-between items-end">
+            <span className="text-[10px] font-black text-tertiary uppercase tracking-[0.2em]">Briefing de Calibragem</span>
+            <span className={`text-[10px] font-black tracking-widest ${pct >= 80 ? 'text-primary' : 'text-cta'}`}>{pct}%</span>
           </div>
-          <div><label style={{fontSize:11,color:T.inkTert,display:"block",marginBottom:8}}>Plano inicial</label>
-            <div style={{display:"flex",gap:8}}>{["Starter","Pro","Enterprise"].map(p=><Chip key={p} active={f.plan===p} onClick={()=>upd("plan")(p)}>{p}</Chip>)}</div>
+          <div className="h-2 w-full bg-surface-up rounded-full overflow-hidden shadow-inner">
+            <div className={`h-full transition-all duration-700 ${pct >= 80 ? 'bg-primary shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-cta shadow-[0_0_10px_rgba(202,138,4,0.5)]'}`} style={{ width: `${pct}%` }} />
           </div>
         </div>
-        <div style={{padding:"14px 22px",borderTop:`1px solid ${T.border}`,display:"flex",flexDirection:"column",gap:10}}>
-          <div style={{display:"flex",gap:10}}>
-            <Btn variant="ghost" onClick={onClose} style={{flex:1}}>Cancelar</Btn>
-            <button 
-              onClick={()=>{if(isValid) onFinish(f);}} 
-              disabled={!isValid}
-              style={{flex:1.5,padding:10,borderRadius:10,fontSize:13,fontWeight:700,cursor:isValid?"pointer":"default",background:T.bg,border:`1px solid ${T.border}`,color:T.ink,opacity:isValid?1:0.5,fontFamily:"inherit"}}
-            >
-              🚀 Criar Direto
-            </button>
-          </div>
-          <button 
-            onClick={()=>{if(isValid) onNext(f);}} 
-            disabled={!isValid}
-            style={{padding:12,borderRadius:10,fontSize:13,fontWeight:700,cursor:isValid?"pointer":"default",background:T.green,border:"none",color:"#000",opacity:isValid?1:0.5,fontFamily:"inherit"}}
-          >
-            Avançar: Briefing →
+
+        <div className="mt-8 flex flex-wrap gap-2">
+          {(client.capabilities || ["text"]).map(c => {
+            const m = CAP_META[c];
+            return (
+              <div key={c} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-up/50 border border-border-subtle text-[9px] font-black uppercase tracking-widest text-secondary hover:border-primary/20 transition-all">
+                {m && <m.icon size={12} className="text-primary" />}
+                {m?.label}
+              </div>
+            );
+          })}
+          {client.calendar_email && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-[9px] font-black uppercase tracking-widest text-primary">
+              <Calendar size={12} /> Agenda
+            </div>
+          )}
+        </div>
+
+        <div className="mt-auto pt-8 border-t border-border-subtle grid grid-cols-2 gap-8 text-center">
+           <div>
+              <div className="text-2xl font-black text-main tracking-tighter">{client.msgs_today || 0}</div>
+              <div className="text-[9px] text-tertiary font-black uppercase tracking-[0.2em] mt-1">Interações hoje</div>
+           </div>
+           <div>
+              <div className="text-2xl font-black text-secondary tracking-tighter">{client.msgs_month || 0}</div>
+              <div className="text-[9px] text-tertiary font-black uppercase tracking-[0.2em] mt-1">Acúmulo mensal</div>
+           </div>
+        </div>
+
+        <div className="mt-8 flex gap-4">
+          <button onClick={() => onPortal(client)} className="flex-1 py-4 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-black text-[10px] uppercase tracking-[0.2em] hover:bg-surface hover:text-main transition-all cursor-pointer">Portal</button>
+          <button onClick={() => onBriefing(client)} className="flex-1 py-4 rounded-2xl bg-primary/10 border border-primary/30 text-primary font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary hover:text-black transition-all cursor-pointer flex items-center justify-center gap-2">
+            <Edit2 size={12} /> Briefing
           </button>
         </div>
       </div>
@@ -813,94 +872,151 @@ function NewModal({onClose,onNext,onFinish}){
   );
 }
 
-// ── Share Modal ───────────────────────────────────────────────────────────────
-function ShareModal({client, onClose}){
-  const portalUrl = `${window.location.origin}/?client=${client.id}`;
-  const msg = `Olá ${client.name}! 🚀\n\nSua SecretarIA já está configurada. Acesse seu portal agora para completar o seu briefing e acompanhar seus leads:\n\n🔗 *Link de Acesso:* ${portalUrl}\n📧 *E-mail:* ${client.email}\n🔑 *Senha:* (A mesma do seu cadastro ou sua conta Google)\n\nSeja bem-vindo(a)!`;
+// ── New Client Modal (Premium Refactor) ───────────────────────────────────────
+function NewModal({ onClose, onNext, onFinish }) {
+  const [f, setF] = useState({ name: "", phone: "", email: "", plan: "Pro", capabilities: ["text"] });
+  const upd = k => v => setF(p => ({ ...p, [k]: v }));
+  const tc = c => setF(p => ({ ...p, capabilities: p.capabilities.includes(c) ? p.capabilities.filter(x => x !== c) : [...p.capabilities, c] }));
   
-  const copy = () => {
-    navigator.clipboard.writeText(msg);
-    alert("Dados copiados para a área de transferência!");
-  };
+  const isValid = f.name.trim() && f.phone.trim() && f.email.trim();
 
-  const shareWa = () => {
-    const url = `https://wa.me/${client.phone.replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`;
-    window.open(url, "_blank");
-  };
-
-  return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,backdropFilter:"blur(8px)"}}>
-      <div style={{background:T.surface,borderRadius:24,width:480,border:`1px solid ${T.green}33`,padding:32,animation:"fadeIn 200ms ease",textAlign:"center"}}>
-        <div style={{fontSize:48,marginBottom:16}}>🎉</div>
-        <h2 style={{margin:"0 0 8px",fontSize:20,fontWeight:700}}>Cliente Cadastrado!</h2>
-        <p style={{margin:"0 0 24px",fontSize:14,color:T.inkTert}}>O acesso de <b>{client.name}</b> foi gerado com sucesso.</p>
-        
-        <div style={{background:T.bg,borderRadius:16,padding:20,textAlign:"left",marginBottom:24,border:`1px solid ${T.border}`}}>
-          <div style={{fontSize:11,color:T.inkTert,marginBottom:8,textTransform:"uppercase"}}>Mensagem formatada:</div>
-          <div style={{fontSize:12,color:T.inkSec,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{msg}</div>
+  return (
+    <div className="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-[400] flex items-center justify-center p-8">
+      <Card className="w-full max-w-xl animate-fade-in p-0 overflow-hidden shadow-2xl border-primary/20">
+        <div className="px-10 py-10 border-b border-border-subtle bg-surface-up/30 flex items-center justify-between">
+           <h4 className="text-2xl font-black text-main tracking-tighter uppercase italic">Nova Implementação</h4>
+           <button onClick={onClose} className="h-12 w-12 rounded-2xl bg-surface-up flex items-center justify-center text-tertiary hover:text-main transition-all cursor-pointer"><X size={24} /></button>
         </div>
+        <div className="p-12 space-y-8">
+          <Inp label="Nomenclatura da Clínica *" value={f.name} onChange={upd("name")} placeholder="Ex: Instituto Vitality" icon={Briefcase} />
+          <Inp label="Terminal de Acesso (WhatsApp) *" value={f.phone} onChange={upd("phone")} placeholder="+55 11 9 0000-0000" icon={Smartphone} />
+          <Inp label="Identificador de Gestão (E-mail) *" value={f.email} onChange={upd("email")} placeholder="gestao@clinica.com" icon={User} />
+          
+          <div className="space-y-4">
+            <label className="text-[10px] font-black text-tertiary uppercase tracking-[0.3em] ml-1">Capacidades Cognitivas</label>
+            <div className="flex flex-wrap gap-3">
+              {Object.entries(CAP_META).map(([c, m]) => (
+                <Chip key={c} active={f.capabilities.includes(c)} onClick={() => tc(c)} icon={m.icon}>{m.label}</Chip>
+              ))}
+            </div>
+          </div>
 
-        <div style={{display:"flex",flexDirection:"column",gap:12}}>
-          <Btn onClick={shareWa} style={{background:T.green,color:"#000",padding:14}}>📱 Enviar via WhatsApp</Btn>
-          <div style={{display:"flex",gap:10}}>
-            <Btn variant="ghost" onClick={copy} style={{flex:1}}>📋 Copiar Dados</Btn>
-            <Btn variant="ghost" onClick={onClose} style={{flex:1}}>Fechar</Btn>
+          <div className="space-y-4">
+            <label className="text-[10px] font-black text-tertiary uppercase tracking-[0.3em] ml-1">Escalonamento de Plano</label>
+            <div className="flex gap-4">
+              {["Starter", "Pro", "Enterprise"].map(p => (
+                <Chip key={p} active={f.plan === p} onClick={() => upd("plan")(p)} icon={Star}>{p}</Chip>
+              ))}
+            </div>
+          </div>
+          
+          <div className="pt-8 flex gap-6">
+             <button onClick={onClose} className="flex-1 py-5 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-black text-[10px] uppercase tracking-[0.3em] hover:bg-surface hover:text-main transition-all cursor-pointer">Abortar</button>
+             <div className="flex-[1.5] flex flex-col gap-3">
+                <Btn disabled={!isValid} onClick={() => onFinish(f)} className="w-full py-5" icon={Zap}>Ativar Ecossistema</Btn>
+                <button onClick={() => { if(isValid) onNext(f); }} disabled={!isValid} className="w-full py-3 rounded-xl bg-surface-up/50 border border-border-subtle text-tertiary font-black text-[9px] uppercase tracking-widest hover:text-primary transition-all cursor-pointer">Seguir para Calibragem →</button>
+             </div>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
 
-function ClientsView({clients, onPortal, onBriefing}){
-  return(
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-black tracking-tighter text-main">Gestão de Clientes</h1>
-        <p className="text-secondary font-medium mt-1">Controle total dos portfólios e acessos dos seus clientes.</p>
-      </div>
+// ── Share Modal (Premium Refactor) ───────────────────────────────────────────
+function ShareModal({ client, onClose }) {
+  const portalUrl = `${window.location.origin}/?client=${client.id}`;
+  const msg = `Olá ${client.name}! \n\nSua SecretarIA já está configurada. Acesse seu portal agora para completar o seu briefing e acompanhar seus leads:\n\nLink de Acesso: ${portalUrl}\nE-mail: ${client.email}\nSenha: (A mesma do seu cadastro ou sua conta Google)\n\nSeja bem-vindo(a)!`;
+  
+  const copy = () => {
+    navigator.clipboard.writeText(msg);
+  };
+
+  const shareWa = () => {
+    const url = `https://wa.me/${client.phone.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`;
+    window.open(url, "_blank");
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-950/98 backdrop-blur-2xl z-[500] flex items-center justify-center p-8">
+      <Card className="w-full max-w-lg animate-fade-in p-12 border-primary/30 text-center space-y-8 shadow-[0_0_100px_rgba(16,185,129,0.15)] relative overflow-hidden">
+        <div className="premium-glow" />
+        <div className="relative z-10 flex flex-col items-center">
+          <div className="h-24 w-24 rounded-[32px] bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-8 shadow-2xl animate-bounce-subtle">
+             <CheckCircle2 size={56} strokeWidth={1} />
+          </div>
+          <h2 className="text-3xl font-black text-main tracking-tighter uppercase italic">Implementação Concluída</h2>
+          <p className="text-sm text-secondary font-medium opacity-70 mt-3">O ecossistema de <b>{client.name}</b> foi provisionado com sucesso.</p>
+          
+          <div className="w-full mt-10 p-8 rounded-[32px] bg-surface-up/30 border border-border-subtle text-left space-y-4">
+            <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-2">
+               <MessageSquare size={14} /> Mensagem de Onboarding
+            </div>
+            <div className="text-xs text-secondary font-medium leading-relaxed italic opacity-80 whitespace-pre-wrap select-all">
+              {msg}
+            </div>
+          </div>
+
+          <div className="w-full pt-10 flex flex-col gap-4">
+            <Btn onClick={shareWa} icon={Smartphone}>Disparar via WhatsApp</Btn>
+            <div className="flex gap-4">
+              <button onClick={copy} className="flex-1 py-4 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-black text-[10px] uppercase tracking-widest hover:text-primary transition-all cursor-pointer flex items-center justify-center gap-2">
+                <Download size={14} /> Copiar Dados
+              </button>
+              <button onClick={onClose} className="flex-1 py-4 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 transition-all cursor-pointer">Fechar</button>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function ClientsView({ clients, onPortal, onBriefing }) {
+  return (
+    <div className="space-y-12 animate-fade-in">
+      <PageTitle icon={User} title="Gestão de Portfólios" subtitle="Controle centralizado de acessos, planos e configurações de clínicas." />
       
-      <div className="bg-surface border border-border-subtle rounded-[32px] overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
+      <div className="bento-card p-0 overflow-hidden shadow-2xl">
+        <div className="premium-glow opacity-30" />
+        <div className="relative z-10 overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-surface-soft/50 border-b border-border-subtle">
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-tertiary">Cliente / Clínica</th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-tertiary">WhatsApp</th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-tertiary">Plano</th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-tertiary">Status</th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-tertiary text-right">Ações</th>
+              <tr className="bg-surface-up/30 border-b border-border-subtle">
+                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Entidade / Clínica</th>
+                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Terminal WA</th>
+                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Escalonamento</th>
+                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Status Operacional</th>
+                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary text-right">Comandos</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle/50">
-              {clients.map(c=>(
-                <tr key={c.id} className="group hover:bg-surface-up transition-colors duration-300">
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20 shadow-inner">
-                        {c.avatar}
-                      </div>
-                      <span className="text-sm font-bold text-main">{c.name}</span>
+              {clients.map(c => (
+                <tr key={c.id} className="group hover:bg-surface-up/30 transition-all duration-300">
+                  <td className="px-10 py-6">
+                    <div className="flex items-center gap-5">
+                      <Av initials={c.avatar} color={c.color} size={42} />
+                      <span className="text-base font-black text-main tracking-tight uppercase italic">{c.name}</span>
                     </div>
                   </td>
-                  <td className="px-8 py-5 text-sm font-medium text-secondary">{c.phone}</td>
-                  <td className="px-8 py-5">
-                    <span className="px-3 py-1 rounded-full bg-surface-soft border border-border-subtle text-[10px] font-black uppercase tracking-tighter text-secondary group-hover:border-primary/20 transition-colors">
+                  <td className="px-10 py-6 text-sm font-bold text-secondary">{c.phone}</td>
+                  <td className="px-10 py-6">
+                    <div className="px-4 py-1.5 rounded-xl bg-surface-up border border-border-subtle text-[9px] font-black uppercase tracking-widest text-secondary group-hover:border-primary/20 transition-all inline-block">
                       {c.plan}
-                    </span>
-                  </td>
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-2">
-                       <div className={`h-1.5 w-1.5 rounded-full ${c.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-tertiary'}`} />
-                       <span className="text-[11px] font-bold text-secondary uppercase tracking-tight">{c.status === 'active' ? 'Ativo' : 'Pausado'}</span>
                     </div>
                   </td>
-                  <td className="px-8 py-5 text-right">
-                    <div className="flex gap-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={()=>onBriefing(c)} className="h-9 w-9 flex items-center justify-center rounded-lg bg-surface-up border border-border-subtle text-secondary hover:text-primary hover:border-primary/30 transition-all">
-                        <Settings size={14} />
+                  <td className="px-10 py-6">
+                    <div className="flex items-center gap-4">
+                       <Pulse status={c.status === 'active' ? 'online' : 'offline'} />
+                       <span className="text-[10px] font-black text-secondary uppercase tracking-widest">{c.status === 'active' ? 'Operante' : 'Suspenso'}</span>
+                    </div>
+                  </td>
+                  <td className="px-10 py-6 text-right">
+                    <div className="flex gap-4 justify-end opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      <button onClick={() => onBriefing(c)} className="h-11 w-11 flex items-center justify-center rounded-2xl bg-surface-up border border-border-subtle text-tertiary hover:text-primary hover:border-primary/40 transition-all cursor-pointer">
+                        <Settings size={18} />
                       </button>
-                      <button onClick={()=>onPortal(c)} className="h-9 px-4 flex items-center justify-center rounded-lg bg-primary text-black text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/10 hover:scale-105 active:scale-95 transition-all">
+                      <button onClick={() => onPortal(c)} className="h-11 px-8 flex items-center justify-center rounded-2xl bg-primary text-black text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all cursor-pointer">
                         Portal
                       </button>
                     </div>
@@ -915,49 +1031,57 @@ function ClientsView({clients, onPortal, onBriefing}){
   );
 }
 
-function StatsView({clients}){
-  const totalMsgs = clients.reduce((a,c)=>a+(c.msgs_month||0),0);
-  const avgMsgs = clients.length ? (totalMsgs/clients.length).toFixed(0) : 0;
+function StatsView({ clients }) {
+  const totalMsgs = clients.reduce((a, c) => a + (c.msgs_month || 0), 0);
+  const avgMsgs = clients.length ? (totalMsgs / clients.length).toFixed(0) : 0;
   
-  return(
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-black tracking-tighter text-main">Estatísticas</h1>
-        <p className="text-secondary font-medium mt-1">Análise de performance e volume de interações.</p>
-      </div>
+  return (
+    <div className="space-y-12 animate-fade-in">
+      <PageTitle icon={PieChart} title="Inteligência de Dados" subtitle="Análise volumétrica de interações e métricas de engajamento do ecossistema." />
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {[
-          { label: "Volume Total (Mês)", value: totalMsgs.toLocaleString(), icon: MessageSquare, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-          { label: "Média por Unidade", value: avgMsgs, icon: TrendingUp, color: "text-blue-500", bg: "bg-blue-500/10" },
-          { label: "Uptime do Sistema", value: "99.9%", icon: Activity, color: "text-amber-500", bg: "bg-amber-500/10" },
-        ].map(s=>(
-          <div key={s.label} className="p-8 rounded-[32px] bg-surface border border-border-subtle hover:border-primary/20 transition-all">
-            <div className={`h-12 w-12 rounded-2xl ${s.bg} flex items-center justify-center ${s.color} mb-6`}>
-              <s.icon size={24} />
+          { label: "Tráfego Mensal Consolidado", value: totalMsgs.toLocaleString(), icon: MessageSquare, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+          { label: "Performance Média / Unidade", value: avgMsgs, icon: TrendingUp, color: "text-primary", bg: "bg-primary/10" },
+          { label: "Uptime do Core Cognitivo", value: "99.99%", icon: Activity, color: "text-blue-500", bg: "bg-blue-500/10" },
+        ].map(s => (
+          <div key={s.label} className="bento-card group">
+            <div className="premium-glow" />
+            <div className="relative z-10 flex flex-col h-full">
+              <div className={`h-14 w-14 rounded-2xl ${s.bg} flex items-center justify-center ${s.color} border border-border-subtle shadow-inner mb-8 group-hover:scale-110 transition-transform duration-500`}>
+                <s.icon size={26} strokeWidth={2.5} />
+              </div>
+              <h4 className="text-5xl font-black tracking-tighter text-main">{s.value}</h4>
+              <p className="text-[10px] text-tertiary font-black uppercase tracking-[0.3em] mt-3">{s.label}</p>
             </div>
-            <h4 className="text-4xl font-black tracking-tight text-main">{s.value}</h4>
-            <p className="text-[10px] text-tertiary font-black uppercase tracking-widest mt-2">{s.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="p-8 rounded-[32px] bg-surface border border-border-subtle">
-        <h3 className="text-lg font-black tracking-tight mb-8">Uso de Mensagens por Cliente</h3>
-        <div className="space-y-8">
-          {clients.slice(0,6).map(c=>(
-            <div key={c.id} className="space-y-3">
+      <div className="bento-card p-12">
+        <div className="premium-glow opacity-30" />
+        <h3 className="text-xl font-black tracking-tighter text-main uppercase italic mb-12 flex items-center gap-4">
+           <ActivitySquare size={24} className="text-primary" /> Distribuição de Carga Cognitiva
+        </h3>
+        <div className="space-y-12">
+          {clients.slice(0, 8).map(c => (
+            <div key={c.id} className="space-y-4 group">
               <div className="flex justify-between items-end">
-                <div className="flex items-center gap-3">
-                   <div className="h-6 w-6 rounded-md" style={{ background: c.color + '33', border: `1px solid ${c.color}66` }} />
-                   <span className="text-sm font-bold text-main">{c.name}</span>
+                <div className="flex items-center gap-5">
+                   <div className="h-10 w-10 rounded-xl bg-surface-up flex items-center justify-center border border-border-subtle group-hover:border-primary/40 transition-all">
+                      <Av initials={c.avatar} color={c.color} size={28} />
+                   </div>
+                   <span className="text-sm font-black text-main uppercase tracking-tight italic">{c.name}</span>
                 </div>
-                <span className="text-xs font-black text-tertiary uppercase">{c.msgs_month || 0} interações</span>
+                <div className="text-right">
+                   <span className="text-xs font-black text-primary tracking-tighter">{c.msgs_month || 0}</span>
+                   <span className="text-[9px] text-tertiary font-black uppercase tracking-widest ml-2">Interações</span>
+                </div>
               </div>
-              <div className="h-2 w-full bg-background rounded-full overflow-hidden">
+              <div className="h-2.5 w-full bg-surface-up rounded-full overflow-hidden shadow-inner p-0.5">
                 <div 
-                  className="h-full rounded-full transition-all duration-1000" 
-                  style={{ background: c.color, width: `${Math.min(100,(c.msgs_month||0)/10)}%` }}
+                  className="h-full rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(16,185,129,0.3)]" 
+                  style={{ backgroundColor: c.color, width: `${Math.min(100, (c.msgs_month || 0) / 10)}%` }}
                 />
               </div>
             </div>
@@ -968,66 +1092,73 @@ function StatsView({clients}){
   );
 }
 
-function SettingsView({user}){
+function SettingsView({ user }) {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({ 
-    name: user.displayName || "Dra. Juliana", 
+    name: user.displayName || "Admin Master", 
     email: user.email 
   });
 
   const save = () => {
     setIsEditing(false);
-    alert("Perfil administrativo atualizado.");
   };
 
-  return(
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-black tracking-tighter text-main">Configurações</h1>
-        <p className="text-secondary font-medium mt-1">Gerenciamento da conta administrativa e sistema.</p>
-      </div>
+  return (
+    <div className="space-y-12 animate-fade-in">
+      <PageTitle icon={Settings} title="Configurações do Núcleo" subtitle="Gerenciamento da conta administrativa e parâmetros globais do sistema." />
       
-      <div className="max-w-2xl space-y-6">
-        <div className="p-8 rounded-[32px] bg-surface border border-border-subtle">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-lg font-black tracking-tight">Perfil Administrativo</h3>
-            <button onClick={() => setIsEditing(!isEditing)} className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">
-              {isEditing ? 'Cancelar' : 'Editar Perfil'}
+      <div className="max-w-3xl space-y-8">
+        <div className="bento-card p-12">
+          <div className="premium-glow opacity-30" />
+          <div className="relative z-10 flex items-center justify-between mb-12">
+            <h3 className="text-xl font-black text-main tracking-tighter uppercase italic">Identidade Administrativa</h3>
+            <button onClick={() => setIsEditing(!isEditing)} className="text-[10px] font-black text-primary uppercase tracking-[0.3em] hover:underline cursor-pointer">
+              {isEditing ? 'Cancelar Protocolo' : 'Ajustar Perfil'}
             </button>
           </div>
           
-          {isEditing ? (
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-tertiary uppercase tracking-widest ml-1">Nome Completo</label>
-                <input value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} className="w-full px-5 py-4 bg-background border border-border-subtle rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-main" />
+          <div className="relative z-10">
+            {isEditing ? (
+              <div className="space-y-8">
+                <Inp label="Nomenclatura Completa" value={profile.name} onChange={v => setProfile({...profile, name: v})} icon={User} />
+                <Btn onClick={save} className="w-full py-5" icon={CheckCircle2}>Salvar Atributos</Btn>
               </div>
-              <button onClick={save} className="w-full py-4 rounded-2xl bg-primary text-black text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">Salvar Alterações</button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-6 p-6 rounded-2xl bg-surface-soft border border-border-subtle">
-              <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl font-black border border-primary/20">
-                {profile.name[0].toUpperCase()}
+            ) : (
+              <div className="flex items-center gap-10 p-8 rounded-[32px] bg-surface-up/30 border border-border-subtle group hover:border-primary/20 transition-all">
+                <div className="h-24 w-24 rounded-[32px] bg-primary/10 flex items-center justify-center text-primary text-4xl font-black border border-primary/20 shadow-2xl group-hover:rotate-6 transition-all">
+                  {profile.name[0].toUpperCase()}
+                </div>
+                <div>
+                  <h4 className="text-2xl font-black text-main tracking-tight uppercase italic">{profile.name}</h4>
+                  <p className="text-base text-secondary font-medium opacity-60 mt-1">{profile.email}</p>
+                  <div className="flex items-center gap-3 mt-4">
+                     <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-2">
+                        <ShieldCheck size={10} /> Root Access
+                     </div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h4 className="text-lg font-black text-main">{profile.name}</h4>
-                <p className="text-sm text-secondary font-medium">{profile.email}</p>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        <div className="p-8 rounded-[32px] bg-surface border border-border-subtle space-y-6">
-          <h3 className="text-lg font-black tracking-tight">Infraestrutura & Segurança</h3>
-          <div className="space-y-4 divide-y divide-border-subtle/50">
+        <div className="bento-card p-12 space-y-10">
+          <div className="premium-glow opacity-20" />
+          <h3 className="relative z-10 text-xl font-black text-main tracking-tighter uppercase italic flex items-center gap-4">
+            <ShieldCheck size={24} className="text-primary" /> Infraestrutura & Encriptação
+          </h3>
+          <div className="relative z-10 space-y-6">
             {[
-              { label: "Ambiente", value: "Produção", color: "text-emerald-500" },
-              { label: "Segurança", value: "Ativa (Zero Trust)", color: "text-primary" },
-              { label: "Versão", value: "v5.0.0-gold", color: "text-tertiary" },
+              { label: "Cluster Operacional", value: "CLOUD-PROD-BRAZIL", color: "text-emerald-500", icon: Layout },
+              { label: "Segurança de Camada", value: "ZERO TRUST ACTIVATED", color: "text-primary", icon: ShieldCheck },
+              { label: "Versão do Engine", value: "v5.4.2-STABLE", color: "text-tertiary", icon: Activity },
             ].map((item, i) => (
-              <div key={i} className="flex justify-between items-center pt-4 first:pt-0">
-                <span className="text-xs font-bold text-secondary uppercase tracking-tight">{item.label}</span>
-                <span className={`text-xs font-black uppercase tracking-widest ${item.color}`}>{item.value}</span>
+              <div key={i} className="flex justify-between items-center p-6 rounded-2xl bg-surface-up/20 border border-border-subtle/50 group hover:bg-surface-up/40 transition-all cursor-default">
+                <div className="flex items-center gap-4">
+                   <item.icon size={18} className="text-tertiary group-hover:text-primary transition-colors" />
+                   <span className="text-[10px] font-black text-secondary uppercase tracking-[0.2em]">{item.label}</span>
+                </div>
+                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${item.color}`}>{item.value}</span>
               </div>
             ))}
           </div>
@@ -1039,40 +1170,45 @@ function SettingsView({user}){
 
 function AlertsView({ alerts, markRead }) {
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-black tracking-tighter text-main">Central de Alertas</h1>
-        <p className="text-secondary font-medium mt-1">Histórico completo de eventos e disparos do sistema.</p>
-      </div>
+    <div className="space-y-12 animate-fade-in">
+      <PageTitle icon={Bell} title="Monitoramento de Eventos" subtitle="Logs em tempo real de disparos, conversões e alertas críticos do sistema." />
 
-      <div className="max-w-4xl space-y-3">
+      <div className="max-w-4xl space-y-6">
         {alerts.length === 0 ? (
-          <div className="p-20 rounded-[40px] border border-dashed border-border-subtle flex flex-col items-center justify-center text-center opacity-50">
-             <Bell size={48} className="text-tertiary mb-4" />
-             <p className="text-sm font-medium">Nenhum alerta pendente.</p>
+          <div className="py-40 rounded-[48px] border border-dashed border-border-subtle flex flex-col items-center justify-center text-center opacity-30">
+             <Bell size={80} strokeWidth={1} className="text-tertiary mb-6" />
+             <p className="text-sm font-black uppercase tracking-[0.3em]">Nenhum evento protocolado</p>
           </div>
         ) : (
           alerts.map(a => (
-            <div key={a.id} className={`p-6 rounded-[28px] border transition-all duration-300 flex items-center gap-6 ${a.read ? 'bg-surface/50 border-border-subtle opacity-60' : 'bg-surface border-primary/20 shadow-lg shadow-primary/5'}`}>
-              <div className="h-14 w-14 rounded-2xl bg-surface-up flex items-center justify-center text-3xl shadow-inner">
-                {a.type === "SALE" ? "🎉" : "🔔"}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                   <h4 className={`text-sm font-black truncate ${a.read ? 'text-secondary' : 'text-main'}`}>{a.title}</h4>
-                   {!a.read && <span className="h-2 w-2 rounded-full bg-primary animate-ping" />}
+            <div key={a.id} className={`bento-card group p-8 transition-all duration-500 flex items-center gap-10 ${a.read ? 'opacity-40 grayscale hover:grayscale-0 hover:opacity-100' : 'border-primary/20 shadow-[0_0_50px_rgba(16,185,129,0.05)]'}`}>
+              <div className="premium-glow opacity-30" />
+              <div className="relative z-10">
+                <div className={`h-16 w-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner border transition-all ${a.type === "SALE" ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-surface-up border-border-subtle'}`}>
+                  {a.type === "SALE" ? <DollarSign size={28} /> : <Bell size={28} />}
                 </div>
-                <p className="text-xs text-tertiary font-medium truncate mb-2">{a.message}</p>
-                <div className="flex items-center gap-3 text-[10px] font-black text-tertiary uppercase tracking-widest">
-                   <span>{new Date(a.created_at).toLocaleDateString('pt-BR')}</span>
-                   <div className="h-1 w-1 rounded-full bg-border-subtle" />
-                   <span>{new Date(a.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+              <div className="relative z-10 flex-1 min-w-0 space-y-1.5">
+                <div className="flex items-center gap-4">
+                   <h4 className={`text-base font-black tracking-tight uppercase italic ${a.read ? 'text-secondary' : 'text-main'}`}>{a.title}</h4>
+                   {!a.read && <div className="h-2 w-2 rounded-full bg-primary animate-ping" />}
+                </div>
+                <p className="text-sm text-secondary font-medium leading-relaxed opacity-80">{a.message}</p>
+                <div className="flex items-center gap-6 pt-2">
+                   <div className="flex items-center gap-2 text-[10px] font-black text-tertiary uppercase tracking-widest">
+                      <Calendar size={12} className="text-primary" /> {new Date(a.created_at).toLocaleDateString('pt-BR')}
+                   </div>
+                   <div className="flex items-center gap-2 text-[10px] font-black text-tertiary uppercase tracking-widest">
+                      <Clock size={12} className="text-primary" /> {new Date(a.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                   </div>
                 </div>
               </div>
               {!a.read && (
-                <button onClick={() => markRead(a.id)} className="px-4 py-2 rounded-xl bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20 hover:bg-primary hover:text-black transition-all">
-                  Lido
-                </button>
+                <div className="relative z-10">
+                  <button onClick={() => markRead(a.id)} className="px-6 py-3 rounded-2xl bg-primary/10 text-primary text-[10px] font-black uppercase tracking-[0.2em] border border-primary/30 hover:bg-primary hover:text-black transition-all cursor-pointer">
+                    Arquivar
+                  </button>
+                </div>
               )}
             </div>
           ))
@@ -1088,12 +1224,9 @@ function VendasAdminView({ clients, alerts }) {
   const unread = vendas.filter(a => !a.read).length;
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-black tracking-tighter text-main">Vendas & Pipeline</h1>
-          <p className="text-secondary font-medium mt-1">Acompanhamento em tempo real de novos assinantes.</p>
-        </div>
+    <div className="space-y-12 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+        <PageTitle icon={TrendingUp} title="Pipeline de Aquisição" subtitle="Monitoramento em tempo real de novos assinantes e conversões de alto ticket." />
         <button 
           onClick={() => {
              const csv = ["Data,Cliente,Plano"];
@@ -1103,46 +1236,58 @@ function VendasAdminView({ clients, alerts }) {
              const a = document.createElement('a');
              a.href = url; a.download = 'vendas-secretaria.csv'; a.click();
           }}
-          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface border border-border-subtle text-secondary text-[10px] font-black uppercase tracking-widest hover:text-primary hover:border-primary/30 transition-all"
+          className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-surface-up border border-border-subtle text-secondary text-[10px] font-black uppercase tracking-[0.2em] hover:text-primary hover:border-primary/40 transition-all cursor-pointer shadow-xl"
         >
-          Exportar CSV
+          <Download size={14} /> Exportar Ledger
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {[
-          { label: "Vendas Totais", value: totalVendas, icon: ShoppingCart, color: "text-emerald-500" },
-          { label: "Aguardando Leitura", value: unread, icon: Bell, color: "text-blue-500" },
-          { label: "Taxa de Conversão", value: "14.2%", icon: Target, color: "text-amber-500" },
-        ].map(s=>(
-          <div key={s.label} className="p-8 rounded-[32px] bg-surface border border-border-subtle relative overflow-hidden group">
-            <div className="absolute -right-4 -top-4 opacity-5 group-hover:scale-110 transition-transform duration-700">
-               <s.icon size={100} />
+          { label: "Volume Consolidado", value: totalVendas, icon: ShoppingCart, color: "text-emerald-500" },
+          { label: "Leads em Verificação", value: unread, icon: Bell, color: "text-blue-500" },
+          { label: "Taxa de Conversão", value: "14.2%", icon: Target, color: "text-primary" },
+        ].map(s => (
+          <div key={s.label} className="bento-card group overflow-hidden">
+            <div className="premium-glow" />
+            <div className="absolute -right-6 -top-6 opacity-[0.03] group-hover:scale-125 group-hover:rotate-12 transition-all duration-1000">
+               <s.icon size={140} strokeWidth={1} />
             </div>
-            <h4 className="text-4xl font-black tracking-tight text-main relative z-10">{s.value}</h4>
-            <p className="text-[10px] text-tertiary font-black uppercase tracking-widest mt-2 relative z-10">{s.label}</p>
+            <div className="relative z-10 flex flex-col h-full">
+              <h4 className="text-5xl font-black tracking-tighter text-main">{s.value}</h4>
+              <p className="text-[10px] text-tertiary font-black uppercase tracking-[0.3em] mt-3 flex items-center gap-2">
+                 <s.icon size={12} className={s.color} /> {s.label}
+              </p>
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="space-y-4">
-        <h3 className="text-lg font-black tracking-tight px-2">Pipeline Recente</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-6">
+        <h3 className="text-xl font-black tracking-tighter text-main uppercase italic px-4 flex items-center gap-3">
+           <Zap size={20} className="text-primary" /> Atividade de Pipeline
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
            {vendas.length === 0 ? (
-             <div className="md:col-span-2 p-12 text-center text-tertiary font-medium bg-surface/50 rounded-[32px] border border-dashed border-border-subtle">
-                Nenhuma venda registrada no pipeline.
+             <div className="md:col-span-2 py-24 text-center bg-surface-up/20 rounded-[48px] border border-dashed border-border-subtle opacity-30">
+                <ShoppingCart size={48} strokeWidth={1} className="mx-auto mb-4" />
+                <p className="text-[10px] font-black uppercase tracking-[0.3em]">Nenhuma transação detectada</p>
              </div>
            ) : (
              vendas.map(v => (
-               <div key={v.id} className="p-6 rounded-[28px] bg-surface border border-border-subtle flex items-center gap-5">
-                  <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shadow-inner">
-                     <Plus size={20} />
+               <div key={v.id} className="bento-card p-6 flex items-center gap-6 group hover:border-primary/30 transition-all duration-300">
+                  <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 shadow-inner group-hover:rotate-6 transition-all">
+                     <Plus size={24} />
                   </div>
                   <div className="flex-1 min-w-0">
-                     <p className="text-sm font-bold text-main truncate">{v.title}</p>
-                     <p className="text-[10px] text-tertiary font-black uppercase tracking-widest mt-0.5">{new Date(v.created_at).toLocaleDateString('pt-BR')}</p>
+                     <p className="text-base font-black text-main tracking-tight uppercase italic truncate">{v.title}</p>
+                     <div className="flex items-center gap-3 mt-1.5">
+                        <span className="text-[10px] text-tertiary font-black uppercase tracking-widest">{new Date(v.created_at).toLocaleDateString('pt-BR')}</span>
+                        <div className="h-1 w-1 rounded-full bg-border-subtle" />
+                        <span className="text-[9px] text-primary font-black uppercase tracking-widest">Ativação Instantânea</span>
+                     </div>
                   </div>
-                  <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)] animate-pulse" />
                </div>
              ))
            )}
@@ -1158,91 +1303,101 @@ function PaywallView({ user, onPlanSelected }) {
       id: "starter",
       name: "Plano Slim",
       price: "197",
-      desc: "Essencial para nutris que atuam sozinhas e buscam o primeiro nível de automação.",
-      features: ["Clone da sua Personalidade", "Atendimento WhatsApp Automático", "500 interações/mês", "Dashboard de Gestão"]
+      desc: "Essencial para nutris que atuam sozinhas e buscam o primeiro nível de automação cognitiva.",
+      features: ["Clone de Personalidade", "Atendimento WhatsApp 24/7", "Fluxos de Triagem", "Dashboard de Gestão"]
     },
     {
       id: "pro",
       name: "Plano Clinic",
       price: "497",
-      desc: "A escolha definitiva para quem busca escala e conversão agressiva.",
+      desc: "A escolha definitiva para quem busca escala massiva e conversão agressiva de leads.",
       isPopular: true,
-      features: ["Tudo do Slim", "Agendamento Inteligente via IA", "2.000 interações/mês", "Follow-up de Leads Perdidos"]
+      features: ["Tudo do Slim", "Agendamento IA Inteligente", "Análise de Sentimento", "Follow-up Cognitivo"]
     },
     {
       id: "enterprise",
       name: "Smart VIP",
       price: "997",
-      desc: "A arquitetura suprema para clínicas multiprofissionais e redes.",
-      features: ["Tudo do Clinic", "Interações Ilimitadas", "Suporte 24h Dedicado", "Multi-Agentes Customizados"]
+      desc: "A arquitetura suprema para clínicas multiprofissionais e redes de atendimento de elite.",
+      features: ["Tudo do Clinic", "Interações Ilimitadas", "Multi-Agentes Custom", "Suporte VIP Dedicado"]
     }
   ];
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-8 font-sans relative overflow-hidden text-main">
-      {/* Glow Effects */}
-      <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-blue-500/5 blur-[120px] rounded-full pointer-events-none" />
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-8 font-sans relative overflow-hidden text-main selection:bg-primary/20">
+      <div className="absolute top-0 left-1/4 w-[800px] h-[800px] bg-primary/10 blur-[160px] rounded-full pointer-events-none animate-pulse" />
+      <div className="absolute bottom-0 right-1/4 w-[800px] h-[800px] bg-blue-500/5 blur-[160px] rounded-full pointer-events-none" />
+      
+      <div className="absolute inset-0 z-0 opacity-20">
+         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
+      </div>
 
-      <div className="max-w-6xl w-full space-y-16 animate-fade-in relative z-10">
-        <div className="text-center space-y-6">
-          <div className="flex justify-center mb-4">
-            <Logo size={80} />
+      <div className="max-w-7xl w-full space-y-20 animate-fade-in relative z-10">
+        <div className="text-center space-y-8">
+          <div className="flex justify-center mb-6">
+            <Logo size={100} />
           </div>
-          <h2 className="text-5xl md:text-6xl font-black tracking-tighter">Escolha seu Nível.</h2>
-          <p className="text-secondary max-w-2xl mx-auto text-lg font-medium">
-            Sua conta está ativa e protegida. Agora, selecione a potência da sua <span className="text-primary font-bold">SecretarIA</span>.
+          <h2 className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic leading-none">
+             Escolha sua <br/>
+             <span className="text-primary">Potência.</span>
+          </h2>
+          <p className="text-secondary max-w-2xl mx-auto text-xl font-medium opacity-70">
+            Sua conta está ativa e protegida. Agora, selecione a arquitetura da sua <span className="text-primary font-bold">SecretarIA</span>.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {plans.map((plan) => (
-            <div key={plan.id} className={`group p-10 rounded-[40px] bg-surface border transition-all duration-500 flex flex-col hover:translate-y-[-8px] ${plan.isPopular ? 'border-primary/40 shadow-2xl shadow-primary/10 ring-1 ring-primary/20' : 'border-border-subtle'}`}>
-              <div className="flex justify-between items-start mb-8">
-                <div>
-                  <h3 className="text-2xl font-black tracking-tight">{plan.name}</h3>
-                  <p className="text-xs text-tertiary font-bold uppercase tracking-widest mt-1">{plan.id}</p>
-                </div>
-                {plan.isPopular && (
-                  <div className="px-3 py-1 rounded-full bg-primary text-black text-[9px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">
-                    Popular
+            <div key={plan.id} className={`bento-card group p-12 transition-all duration-700 flex flex-col hover:translate-y-[-12px] ${plan.isPopular ? 'border-primary/50 shadow-[0_0_80px_rgba(16,185,129,0.15)] ring-1 ring-primary/30' : 'border-border-subtle'}`}>
+              <div className="premium-glow opacity-30" />
+              <div className="relative z-10">
+                <div className="flex justify-between items-start mb-10">
+                  <div>
+                    <h3 className="text-3xl font-black tracking-tight uppercase italic">{plan.name}</h3>
+                    <p className="text-[10px] text-tertiary font-black uppercase tracking-[0.4em] mt-1.5">{plan.id}</p>
                   </div>
-                )}
-              </div>
-
-              <div className="flex items-baseline gap-1 mb-8">
-                <span className="text-sm font-bold text-tertiary">R$</span>
-                <span className="text-5xl font-black tracking-tighter">{plan.price}</span>
-                <span className="text-tertiary font-bold text-xs uppercase tracking-widest">/mês</span>
-              </div>
-              
-              <p className="text-secondary text-sm font-medium mb-10 leading-relaxed flex-1">{plan.desc}</p>
-              
-              <div className="space-y-4 mb-12">
-                {plan.features.map(f => (
-                  <div key={f} className="flex items-center gap-3">
-                    <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                      <Zap size={10} className="fill-current" />
+                  {plan.isPopular && (
+                    <div className="px-5 py-2 rounded-2xl bg-primary text-black text-[10px] font-black uppercase tracking-widest shadow-2xl shadow-primary/30 animate-pulse">
+                      Recomendado
                     </div>
-                    <span className="text-xs text-secondary font-bold">{f}</span>
-                  </div>
-                ))}
-              </div>
+                  )}
+                </div>
 
-              <button 
-                onClick={() => onPlanSelected(plan)}
-                className={`w-full py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-xl ${plan.isPopular ? 'bg-primary text-black shadow-primary/20' : 'bg-surface-up text-main border border-border-subtle hover:border-primary/30 shadow-none'}`}
-              >
-                Ativar Plano
-              </button>
+                <div className="flex items-baseline gap-2 mb-10">
+                  <span className="text-lg font-black text-tertiary">R$</span>
+                  <span className="text-7xl font-black tracking-tighter text-main">{plan.price}</span>
+                  <span className="text-tertiary font-black text-[10px] uppercase tracking-[0.3em]">/ ciclo mensal</span>
+                </div>
+                
+                <p className="text-secondary text-base font-medium mb-12 leading-relaxed flex-1 opacity-80">{plan.desc}</p>
+                
+                <div className="space-y-5 mb-14">
+                  {plan.features.map(f => (
+                    <div key={f} className="flex items-center gap-4 group/item">
+                      <div className="h-6 w-6 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover/item:scale-125 transition-all border border-primary/20">
+                        <Zap size={12} className="fill-current" />
+                      </div>
+                      <span className="text-[11px] text-secondary font-black uppercase tracking-widest">{f}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <Btn 
+                  onClick={() => onPlanSelected(plan)}
+                  className={`w-full py-6 text-[11px] tracking-[0.3em] ${plan.isPopular ? '' : 'bg-surface-up text-main border-border-subtle'}`}
+                  icon={Sparkles}
+                >
+                  Ativar Ecossistema
+                </Btn>
+              </div>
             </div>
           ))}
         </div>
 
         <div className="text-center">
-          <button onClick={() => signOut(auth)} className="text-tertiary hover:text-main transition-colors text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-3 mx-auto justify-center">
-            <ArrowRight size={14} className="rotate-180" />
-            Sair da Conta
+          <button onClick={() => signOut(auth)} className="text-tertiary hover:text-primary transition-all text-[11px] font-black uppercase tracking-[0.4em] flex items-center gap-4 mx-auto justify-center group cursor-pointer">
+            <ArrowLeft size={16} className="group-hover:-translate-x-2 transition-transform" />
+            Abortar Acesso e Sair
           </button>
         </div>
       </div>

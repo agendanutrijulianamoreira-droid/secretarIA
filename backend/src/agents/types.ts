@@ -1,4 +1,4 @@
-export type AgentIntent = 'faq' | 'scheduling' | 'billing' | 'handoff' | 'unknown';
+export type AgentIntent = 'faq' | 'scheduling' | 'billing' | 'handoff' | 'sales' | 'unknown';
 
 export interface ClinicContext {
   id: string;
@@ -7,6 +7,8 @@ export interface ClinicContext {
   receptionist_phone: string;
   config_json: any;
   prompt_context: string;
+  specialties?: string[];
+  operating_hours?: any;
 }
 
 export interface PatientContext {

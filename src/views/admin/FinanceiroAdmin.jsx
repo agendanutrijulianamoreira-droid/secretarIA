@@ -1,28 +1,22 @@
-const T = {
-  bg: "var(--color-bg)",
-  surface: "var(--color-surface)",
-  up: "var(--color-surface-up)",
-  border: "var(--color-border)",
-  green: "var(--color-cta)",
-  greenDim: "var(--color-surface-soft)",
-  amber: "#B67A62", // Terracota
-  amberDim: "rgba(182, 122, 98, 0.1)",
-  red: "#EF4444",
-  redDim: "rgba(239, 68, 68, 0.1)",
-  cyan: "#3B82F6",
-  cyanDim: "rgba(59, 130, 246, 0.1)",
-  ink: "var(--color-text)",
-  inkSec: "var(--color-text-sec)",
-  inkTert: "var(--color-text-sec)",
-  n8n: "var(--color-cta)",
-  n8nDim: "var(--color-surface-soft)",
-  borderSt: "var(--color-border)",
-};
+import React from 'react';
+import { 
+  DollarSign, TrendingUp, Target, Users, Download, 
+  ChevronRight, ArrowRight, Zap, PieChart, CreditCard,
+  Briefcase, Activity
+} from 'lucide-react';
+import { Card, PageTitle, Btn, Pulse, COLORS } from '../../pages/ClientPortal';
 
-const PLAN_PRICES = { Starter: 197, Pro: 397, Enterprise: 897 };
+const PLAN_PRICES = { Starter: 197, Pro: 497, Enterprise: 997 };
 
-function Pill({ c, b, children }) {
-  return <span style={{ fontSize:11, fontWeight:600, padding:"2px 8px", borderRadius:6, color:c, background:b }}>{children}</span>;
+function Pill({ color, children }) {
+  return (
+    <span 
+      className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border"
+      style={{ color: color, backgroundColor: color + '10', borderColor: color + '20' }}
+    >
+      {children}
+    </span>
+  );
 }
 
 export default function FinanceiroAdminView({ clients }) {
@@ -30,121 +24,145 @@ export default function FinanceiroAdminView({ clients }) {
     .filter(c => c.status === "active")
     .reduce((acc, c) => acc + (PLAN_PRICES[c.plan] || 0), 0);
 
-  const setupRevenue = clients.reduce((acc, c) => {
-    const impl = { Starter: 900, Pro: 1200, Enterprise: 2500 }[c.plan] || 0;
-    return acc + impl;
-  }, 0);
-
-  const byPlan = ["Starter","Pro","Enterprise"].map(p => ({
+  const byPlan = ["Starter", "Pro", "Enterprise"].map(p => ({
     plan: p,
     count: clients.filter(c => c.plan === p).length,
     mrr: clients.filter(c => c.plan === p && c.status === "active").length * PLAN_PRICES[p],
   }));
 
-  const PLAN_META = {
-    Starter:    { color:T.inkSec, bg:"rgba(156,163,176,0.1)" },
-    Pro:        { color:T.green,  bg:T.greenDim },
-    Enterprise: { color:T.amber,  bg:T.amberDim },
+  const exportCSV = () => {
+    const csv = ["Data,Cliente,Plano,Status,MRR"];
+    clients.forEach(c => csv.push(`${new Date().toLocaleDateString()},"${c.name}","${c.plan}","${c.status}","${c.status === 'active' ? PLAN_PRICES[c.plan] : 0}"`));
+    const blob = new Blob([csv.join("\n")], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `ledger-financeiro-${new Date().toISOString().slice(0,10)}.csv`; a.click();
   };
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", gap:24, animation:"fadeIn 300ms ease" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <div>
-          <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:800, color:T.ink }}>💰 Financeiro Admin</h1>
-          <p style={{ margin:0, fontSize:13, color:T.inkTert }}>Receita recorrente, cobranças e análise de custos.</p>
-        </div>
-        <button onClick={() => {
-          const csv = ["Cliente,Plano,Status,MRR"];
-          clients.forEach(c => csv.push(`"${c.name}","${c.plan}","${c.status}","${c.status === 'active' ? PLAN_PRICES[c.plan] : 0}"`));
-          const blob = new Blob([csv.join("\n")], { type: 'text/csv' });
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `relatorio-financeiro-admin-${new Date().toISOString().slice(0,10)}.csv`;
-          a.click();
-        }} style={{ padding: "8px 16px", borderRadius: 10, background: T.surface, border: `1px solid ${T.border}`, color: T.ink, fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-          📥 Exportar CSV
+    <div className="space-y-12 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+        <PageTitle icon={DollarSign} title="Gestão Financeira" subtitle="Controle de receita recorrente, planos e performance comercial do ecossistema." />
+        <button 
+          onClick={exportCSV}
+          className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-surface-up border border-border-subtle text-secondary text-[10px] font-black uppercase tracking-[0.2em] hover:text-primary hover:border-primary/40 transition-all cursor-pointer shadow-xl"
+        >
+          <Download size={14} /> Exportar Ledger
         </button>
       </div>
 
-      {/* KPIs principais */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
+      {/* Financial KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {[
-          { l:"MRR",          v:`R$ ${mrr.toLocaleString("pt-BR")}`,       c:T.green,  i:"📈" },
-          { l:"ARR Estimado", v:`R$ ${(mrr*12).toLocaleString("pt-BR")}`,  c:T.cyan,   i:"🎯" },
-          { l:"Clientes Ativos", v:clients.filter(c=>c.status==="active").length, c:T.amber, i:"👥" },
+          { label: "MRR Consolidado", value: `R$ ${mrr.toLocaleString("pt-BR")}`, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+          { label: "ARR Projetado", value: `R$ ${(mrr * 12).toLocaleString("pt-BR")}`, icon: Target, color: "text-primary", bg: "bg-primary/10" },
+          { label: "Terminais Ativos", value: clients.filter(c => c.status === "active").length, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
         ].map(s => (
-          <div key={s.l} style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:16, padding:"20px 22px" }}>
-            <div style={{ fontSize:22, marginBottom:8 }}>{s.i}</div>
-            <div style={{ fontSize:28, fontWeight:800, color:s.c }}>{s.v}</div>
-            <div style={{ fontSize:11, color:T.inkTert, textTransform:"uppercase", letterSpacing:0.5, marginTop:4 }}>{s.l}</div>
+          <div key={s.label} className="bento-card group">
+            <div className="premium-glow" />
+            <div className="relative z-10">
+              <div className={`h-14 w-14 rounded-2xl ${s.bg} flex items-center justify-center ${s.color} border border-border-subtle shadow-inner mb-8 group-hover:scale-110 transition-transform duration-500`}>
+                <s.icon size={26} strokeWidth={2.5} />
+              </div>
+              <h4 className="text-5xl font-black tracking-tighter text-main italic uppercase">{s.value}</h4>
+              <p className="text-[10px] text-tertiary font-black uppercase tracking-[0.3em] mt-3 opacity-60">{s.label}</p>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Breakdown por plano */}
-      <div style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:16, overflow:"hidden" }}>
-        <div style={{ padding:"14px 20px", borderBottom:`1px solid ${T.border}`, fontSize:14, fontWeight:700, color:T.ink }}>📊 Receita por Plano</div>
-        <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
-          <thead>
-            <tr style={{ background:"var(--color-surface-soft)" }}>
-              {["Plano","Clientes","Mensalidade","MRR do Plano","% do Total"].map(h => (
-                <th key={h} style={{ textAlign:"left", padding:"11px 16px", color:T.inkTert, fontWeight:600, fontSize:12 }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {byPlan.map(row => {
-              const pm = PLAN_META[row.plan];
-              return (
-                <tr key={row.plan} style={{ borderTop:`1px solid ${T.border}` }}>
-                  <td style={{ padding:"12px 16px" }}><Pill c={pm.color} b={pm.bg}>{row.plan}</Pill></td>
-                  <td style={{ padding:"12px 16px", color:T.ink }}>{row.count}</td>
-                  <td style={{ padding:"12px 16px", color:T.inkSec }}>R$ {PLAN_PRICES[row.plan]}/mês</td>
-                  <td style={{ padding:"12px 16px", fontWeight:700, color:T.green }}>R$ {row.mrr.toLocaleString("pt-BR")}</td>
-                  <td style={{ padding:"12px 16px", color:T.inkSec }}>{mrr > 0 ? ((row.mrr / mrr) * 100).toFixed(0) : 0}%</td>
+      {/* Revenue Breakdown */}
+      <div className="bento-card p-0 overflow-hidden shadow-2xl">
+        <div className="premium-glow opacity-30" />
+        <div className="px-10 py-8 border-b border-border-subtle bg-surface-up/30 flex items-center gap-4">
+           <PieChart size={20} className="text-primary" />
+           <h3 className="text-xl font-black text-main tracking-tighter uppercase italic">Breakdown por Escalonamento</h3>
+        </div>
+        <div className="relative z-10 overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-surface-up/10 border-b border-border-subtle">
+                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Plano de Acesso</th>
+                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Ecossistemas</th>
+                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Ticket Mensal</th>
+                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">MRR Ativo</th>
+                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">% Participação</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-subtle/50">
+              {byPlan.map(row => (
+                <tr key={row.plan} className="group hover:bg-surface-up/30 transition-all duration-300">
+                  <td className="px-10 py-6">
+                    <Pill color={row.plan === 'Enterprise' ? '#F59E0B' : row.plan === 'Pro' ? '#10B981' : '#94A3B8'}>{row.plan}</Pill>
+                  </td>
+                  <td className="px-10 py-6 text-sm font-black text-main">{row.count}</td>
+                  <td className="px-10 py-6 text-sm font-bold text-secondary">R$ {PLAN_PRICES[row.plan]}</td>
+                  <td className="px-10 py-6 text-sm font-black text-emerald-500">R$ {row.mrr.toLocaleString("pt-BR")}</td>
+                  <td className="px-10 py-6">
+                    <div className="flex items-center gap-4">
+                       <div className="h-1.5 w-24 bg-surface-up rounded-full overflow-hidden shadow-inner">
+                          <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${mrr > 0 ? (row.mrr / mrr) * 100 : 0}%` }} />
+                       </div>
+                       <span className="text-[10px] font-black text-secondary">{mrr > 0 ? ((row.mrr / mrr) * 100).toFixed(0) : 0}%</span>
+                    </div>
+                  </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Lista de clientes com receita */}
-      <div style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:16, overflow:"hidden" }}>
-        <div style={{ padding:"14px 20px", borderBottom:`1px solid ${T.border}`, fontSize:14, fontWeight:700, color:T.ink }}>🧾 Clientes & Receita</div>
-        <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
-          <thead>
-            <tr style={{ background:"var(--color-surface-soft)" }}>
-              {["Cliente","Plano","Status","Mensalidade","Msgs/Mês"].map(h => (
-                <th key={h} style={{ textAlign:"left", padding:"11px 16px", color:T.inkTert, fontWeight:600, fontSize:12 }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {clients.map(c => {
-              const pm = PLAN_META[c.plan] || PLAN_META.Starter;
-              const sc = { active:{ c:T.green,b:T.greenDim,l:"Ativo" }, setup:{ c:T.amber,b:T.amberDim,l:"Setup" }, paused:{ c:T.inkSec,b:T.up,l:"Pausado" } }[c.status] || { c:T.inkSec,b:T.up,l:c.status||"—" };
-              return (
-                <tr key={c.id} style={{ borderTop:`1px solid ${T.border}` }}
-                  onMouseEnter={e => e.currentTarget.style.background = "var(--color-surface-soft)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  <td style={{ padding:"12px 16px" }}>
-                    <div style={{ fontWeight:600, color:T.ink }}>{c.name}</div>
-                    <div style={{ fontSize:11, color:T.inkTert }}>{c.email}</div>
+      {/* Detailed Ledger */}
+      <div className="bento-card p-0 overflow-hidden shadow-2xl">
+        <div className="premium-glow opacity-20" />
+        <div className="px-10 py-8 border-b border-border-subtle bg-surface-up/30 flex items-center gap-4">
+           <CreditCard size={20} className="text-primary" />
+           <h3 className="text-xl font-black text-main tracking-tighter uppercase italic">Ledger de Contas & Receita</h3>
+        </div>
+        <div className="relative z-10 overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-surface-up/10 border-b border-border-subtle">
+                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Unidade / Identificador</th>
+                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Plano</th>
+                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Status</th>
+                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Mensalidade</th>
+                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Carga Cognitiva</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-subtle/50">
+              {clients.map(c => (
+                <tr key={c.id} className="group hover:bg-surface-up/30 transition-all duration-300">
+                  <td className="px-10 py-6">
+                    <div className="flex flex-col">
+                       <span className="text-sm font-black text-main tracking-tight uppercase italic">{c.name}</span>
+                       <span className="text-[10px] text-tertiary font-bold lowercase opacity-60">{c.email}</span>
+                    </div>
                   </td>
-                  <td style={{ padding:"12px 16px" }}><Pill c={pm.color} b={pm.bg}>{c.plan}</Pill></td>
-                  <td style={{ padding:"12px 16px" }}><Pill c={sc.c} b={sc.b}>{sc.l}</Pill></td>
-                  <td style={{ padding:"12px 16px", fontWeight:600, color:c.status==="active" ? T.green : T.inkTert }}>
-                    {c.status === "active" ? `R$ ${PLAN_PRICES[c.plan]}/mês` : "—"}
+                  <td className="px-10 py-6">
+                    <Pill color={c.plan === 'Enterprise' ? '#F59E0B' : c.plan === 'Pro' ? '#10B981' : '#94A3B8'}>{c.plan}</Pill>
                   </td>
-                  <td style={{ padding:"12px 16px", color:T.inkSec }}>{c.msgs_month || 0}</td>
+                  <td className="px-10 py-6">
+                    <div className="flex items-center gap-4">
+                       <Pulse status={c.status === 'active' ? 'online' : 'offline'} />
+                       <span className="text-[10px] font-black text-secondary uppercase tracking-widest">{c.status === 'active' ? 'Operante' : 'Suspenso'}</span>
+                    </div>
+                  </td>
+                  <td className="px-10 py-6 text-sm font-black text-main">
+                    {c.status === "active" ? `R$ ${PLAN_PRICES[c.plan]}` : "—"}
+                  </td>
+                  <td className="px-10 py-6">
+                    <div className="flex items-center gap-3">
+                       <Activity size={14} className="text-primary opacity-40" />
+                       <span className="text-[10px] font-black text-secondary uppercase tracking-widest">{c.msgs_month || 0} Int.</span>
+                    </div>
+                  </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

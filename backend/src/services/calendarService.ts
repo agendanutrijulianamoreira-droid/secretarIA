@@ -9,12 +9,11 @@ import { query } from '../lib/db.js';
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 
 // Configuração da autenticação via JWT (Service Account)
-const auth = new google.auth.JWT(
-  process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-  undefined,
-  process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  SCOPES
-);
+const auth = new google.auth.JWT({
+  email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+  key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  scopes: SCOPES
+});
 
 const calendar = google.calendar({ version: 'v3', auth });
 
