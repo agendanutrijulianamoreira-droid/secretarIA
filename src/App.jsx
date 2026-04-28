@@ -1599,7 +1599,7 @@ export default function App(){
   if (showPaywall) return <PaywallView user={user} onPlanSelected={handlePlanSelection} />;
 
   // Cliente autenticado → vai direto para o portal do cliente
-  if(portal) return <ClientPortalMain client={portal} onBack={null} />;
+  if(portal) return <ClientPortalMain client={portal} onBack={() => setPortal(null)} />;
 
   return (
     <div style={{ background: "var(--color-bg)", color: "var(--color-text)", minHeight: "100vh" }}>
