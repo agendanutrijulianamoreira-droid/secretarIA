@@ -13,87 +13,98 @@ import CRM1View from "../views/client/CRM1View";
 import CRM2View from "../views/client/CRM2View";
 import FinanceiroClienteView from "../views/client/FinanceiroCliente";
 import IAAprendizadosView from "../views/client/IAAprendizados";
+import EquipeView from "../views/client/EquipeView";
 import OnboardingChat from "../views/client/OnboardingChat";
 import { Logo } from "../components/UI";
-import { Zap, Star, Settings, Power, ChevronRight } from "lucide-react";
+import { Zap, Star, Settings, Power, ChevronRight, Bell, Activity, Brain } from "lucide-react";
 
 const PLAN_META = {
-  Starter: { color: T.inkSec, bg: "rgba(156,163,176,0.1)" },
-  Pro:     { color: T.green,  bg: T.greenDim },
-  Enterprise: { color: T.amber, bg: T.amberDim },
+  Starter: { color: "#94A3B8", bg: "rgba(148,163,184,0.1)" },
+  Pro:     { color: "var(--color-primary)",  bg: "rgba(16,185,129,0.1)" },
+  Enterprise: { color: "#E3B341", bg: "rgba(227,179,65,0.1)" },
 };
 
 // ── Plano View ─────────────────────────────────────────────────────────────
 function PlanoView({ client, invoices }) {
   const pm = PLAN_META[client.plan] || PLAN_META.Starter;
   const plans = [
-    { p: "Starter", price: "R$ 197/mês", impl: "R$ 900", wpp: 1, f: ["Texto + Imagem", "1 Número WhatsApp", "CRM de Leads", "Suporte chat"] },
-    { p: "Pro",     price: "R$ 397/mês", impl: "R$ 1.200", wpp: 3, f: ["Texto + Áudio + Imagem + Arquivo", "Até 3 Números WhatsApp", "CRM Leads + Pacientes", "Campanhas automáticas", "Google Agenda", "Suporte prioritário"] },
-    { p: "Enterprise", price: "R$ 897/mês", impl: "R$ 2.500", wpp: 5, f: ["Tudo do Pro", "Até 5 Números WhatsApp", "Workflows ilimitados", "Integrações custom", "Onboarding dedicado"] },
+    { p: "Starter", price: "197", impl: "900", wpp: 1, f: ["IA de Texto", "1 Número WhatsApp", "CRM de Leads", "Suporte 24h"] },
+    { p: "Pro",     price: "497", impl: "1.200", wpp: 3, f: ["IA Multimodal", "3 Números WhatsApp", "CRM Completo", "Campanhas Automáticas", "Google Agenda"] },
+    { p: "Enterprise", price: "997", impl: "2.500", wpp: 5, f: ["Tudo do Pro", "Ilimitados Números", "Workflows Custom", "Onboarding VIP"] },
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24, animation: "fadeIn 300ms ease" }}>
-      <PageTitle icon={Star} iconColor={T.amber} title="Meu Plano" subtitle="Gerencie sua assinatura e veja os recursos disponíveis." />
+    <div className="space-y-8 animate-fade-in">
+      <PageTitle icon={Star} title="Gestão de Assinatura" subtitle="Veja seus recursos ativos e histórico de faturamento." />
 
-      <Card style={{ padding: "20px 24px", background: pm.bg, borderColor: pm.color + "44" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ fontSize: 12, color: pm.color, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Plano atual</div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: pm.color, marginTop: 4 }}>{client.plan}</div>
-          </div>
-          <Zap size={40} color={pm.color} style={{ opacity: 0.5 }} />
-        </div>
-      </Card>
+      <div className="p-10 rounded-[40px] bg-surface border border-primary/20 relative overflow-hidden">
+         <div className="absolute top-0 right-0 p-10 opacity-5">
+            <Zap size={120} className="text-primary" />
+         </div>
+         <div className="relative z-10">
+            <span className="text-[10px] font-black text-primary uppercase tracking-widest px-3 py-1 rounded-full bg-primary/10 border border-primary/20">Plano Atual</span>
+            <h2 className="text-5xl font-black text-main tracking-tighter mt-4">{client.plan}</h2>
+            <p className="text-secondary font-medium mt-2">Sua licença está ativa e operante.</p>
+         </div>
+      </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {plans.map(({ p, price, impl, wpp, f }) => {
-          const m = PLAN_META[p];
           const isCurrent = client.plan === p;
           return (
-            <Card key={p} style={{ padding: 20, border: `2px solid ${isCurrent ? m.color + "55" : T.border}`, background: isCurrent ? m.bg : T.surface }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <span style={{ fontSize: 15, fontWeight: 700, color: isCurrent ? m.color : T.ink }}>{p}</span>
-                {isCurrent && <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: m.color, color: "#000", fontWeight: 700 }}>ATUAL</span>}
+            <div key={p} className={`p-8 rounded-[32px] bg-surface border transition-all duration-500 ${isCurrent ? 'border-primary/40 shadow-xl shadow-primary/5 ring-1 ring-primary/20' : 'border-border-subtle opacity-70 hover:opacity-100'}`}>
+              <div className="flex justify-between items-center mb-6">
+                <h4 className="text-lg font-black text-main">{p}</h4>
+                {isCurrent && <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />}
               </div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: T.ink, marginBottom: 2 }}>{price}</div>
-              <div style={{ fontSize: 11, color: T.inkTert, marginBottom: 12 }}>Impl.: {impl} · {wpp} WhatsApp</div>
-              {f.map(x => (
-                <div key={x} style={{ fontSize: 12, color: T.inkSec, marginBottom: 4, display: "flex", gap: 6 }}>
-                  <span style={{ color: m.color }}>✓</span> {x}
-                </div>
-              ))}
+              <div className="flex items-baseline gap-1 mb-8">
+                <span className="text-sm font-bold text-tertiary">R$</span>
+                <span className="text-4xl font-black text-main tracking-tighter">{price}</span>
+                <span className="text-tertiary font-bold text-xs uppercase">/mês</span>
+              </div>
+              <div className="space-y-3 mb-10">
+                {f.map(x => (
+                  <div key={x} className="flex items-center gap-3 text-xs font-medium text-secondary">
+                    <div className="h-4 w-4 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                      <ChevronRight size={10} />
+                    </div>
+                    {x}
+                  </div>
+                ))}
+              </div>
               {!isCurrent && (
-                <Btn style={{ width: "100%", marginTop: 14, background: m.bg, color: m.color, border: `1px solid ${m.color}44` }}>
-                  Fazer Upgrade
-                </Btn>
+                <button className="w-full py-4 rounded-2xl bg-surface-up border border-border-subtle text-main text-[10px] font-black uppercase tracking-widest hover:border-primary/30 transition-all">Migrar Plano</button>
               )}
-            </Card>
+            </div>
           );
         })}
       </div>
 
-      {/* Histórico de cobranças */}
-      <div>
-        <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, marginBottom: 12 }}>🧾 Histórico de Cobranças</div>
-        {invoices.length === 0
-          ? <Card><div style={{ padding: 32, textAlign: "center", color: T.inkTert, fontSize: 13 }}>Sem cobranças ainda.</div></Card>
-          : invoices.map(inv => (
-            <Card key={inv.id} style={{ padding: "13px 18px", marginBottom: 8 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ fontSize: 16 }}>{inv.status === "pago" ? "🟢" : inv.status === "pendente" ? "🟡" : "🔴"}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, color: T.ink }}>{inv.descricao}</div>
-                  <div style={{ fontSize: 11, color: T.inkTert }}>{inv.due_date}</div>
-                </div>
-                <div style={{ fontWeight: 700, fontSize: 14 }}>R$ {Number(inv.amount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</div>
-                {inv.status !== "pago" && (
-                  <Btn size="sm" variant="cyan" onClick={() => inv.payment_link && window.open(inv.payment_link, "_blank")}>Pagar</Btn>
-                )}
-              </div>
-            </Card>
-          ))
-        }
+      <div className="space-y-4">
+        <h3 className="text-lg font-black tracking-tight px-2">Histórico de Faturamento</h3>
+        <div className="bg-surface border border-border-subtle rounded-[32px] overflow-hidden">
+           {invoices.length === 0 ? (
+             <div className="p-12 text-center text-tertiary font-medium italic">Nenhuma cobrança registrada.</div>
+           ) : (
+             <div className="divide-y divide-border-subtle/50">
+               {invoices.map(inv => (
+                 <div key={inv.id} className="p-6 flex items-center gap-6 group hover:bg-surface-soft transition-colors">
+                   <div className={`h-12 w-12 rounded-2xl flex items-center justify-center text-xl shadow-inner ${inv.status === 'pago' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                     {inv.status === "pago" ? "✓" : "⚡"}
+                   </div>
+                   <div className="flex-1">
+                     <p className="text-sm font-bold text-main">{inv.descricao}</p>
+                     <p className="text-[10px] text-tertiary font-black uppercase tracking-widest mt-1">{inv.due_date}</p>
+                   </div>
+                   <div className="text-right">
+                     <p className="text-sm font-black text-main">R$ {Number(inv.amount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+                     <span className={`text-[9px] font-black uppercase tracking-widest ${inv.status === 'pago' ? 'text-emerald-500' : 'text-amber-500'}`}>{inv.status}</span>
+                   </div>
+                 </div>
+               ))}
+             </div>
+           )}
+        </div>
       </div>
     </div>
   );
@@ -128,110 +139,100 @@ export default function ClientPortalMain({ client, onBack }) {
   }, [client.id]);
 
   const reloadNumbers = () => WhatsAppNumbers.list(client.id).then(setNumbers);
-
-  const pm = PLAN_META[client.plan] || PLAN_META.Starter;
   const initials = client.name?.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase() || "?";
 
   const VIEW_LABELS = {
-    dashboard: "Dashboard", whatsapp: "WhatsApp", crm1: "CRM — Leads",
-    crm2: "CRM — Pacientes", financeiro: "Financeiro", ia: "IA Aprendizados", plano: "Meu Plano",
+    crm2: "Gestão de Pacientes", equipe: "Equipe & Agenda", financeiro: "Financeiro & Vendas", ia: "Cérebro da IA", plano: "Plano & Cobrança",
   };
 
-  // Se o cliente está em onboarding, mostrar o chat de configuração
   if (client.status === "onboarding" || client.status === "setup") {
-    return (
-      <OnboardingChat
-        client={client}
-        onComplete={() => window.location.reload()}
-      />
-    );
+    return <OnboardingChat client={client} onComplete={() => window.location.reload()} />;
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: T.bg, color: T.ink }}>
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse  { 0%,100% { transform: scale(1); opacity: 0.25; } 50% { transform: scale(1.5); opacity: 0.1; } }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: ${T.border}; border-radius: 2px; }
-      `}</style>
-
+    <div className="flex min-h-screen bg-background text-main selection:bg-primary/20 selection:text-primary">
       {/* Sidebar */}
-      <aside style={{ width: 260, background: T.surface, borderRight: `1px solid ${T.border}`, display: "flex", flexDirection: "column", position: "fixed", height: "100vh", zIndex: 100 }}>
-        <div style={{ padding: "24px 20px 16px", borderBottom: `1px solid ${T.border}` }}>
-          <Logo size={24} />
+      <aside className="w-[280px] bg-surface border-r border-border-subtle flex flex-col fixed h-screen z-[100]">
+        <div className="p-8 border-b border-border-subtle flex items-center justify-between">
+           <Logo size={28} />
+           <div className="flex gap-1.5">
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="h-1.5 w-1.5 rounded-full bg-surface-up" />
+           </div>
         </div>
 
-        {/* Cliente info */}
-        <div style={{ padding: "14px 16px", borderBottom: `1px solid ${T.border}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 10, background: pm.bg, border: `1px solid ${pm.color}33`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: pm.color, flexShrink: 0 }}>{initials}</div>
-            <div style={{ overflow: "hidden", flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{client.name}</div>
-              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: pm.color, background: pm.bg, padding: "1px 6px", borderRadius: 4 }}>
-                {client.plan}
-              </span>
-            </div>
-          </div>
+        <div className="p-6 border-b border-border-subtle">
+           <div className="flex items-center gap-4 p-4 rounded-2xl bg-surface-soft/50 border border-border-subtle">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black border border-primary/20 shadow-inner">
+                 {initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                 <h4 className="text-xs font-black text-main truncate leading-none uppercase tracking-tight">{client.name}</h4>
+                 <div className="mt-1 flex items-center gap-1.5">
+                    <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-1.5 py-0.5 rounded-md border border-primary/20">{client.plan}</span>
+                 </div>
+              </div>
+           </div>
         </div>
 
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: "0 12px", display: "flex", flexDirection: "column", gap: 2 }}>
-          {NAV.map(item => (
-            <div key={item.id} style={{ position: "relative" }}>
-              <NavItem item={item} active={view === item.id} onClick={() => setView(item.id)} />
-              {item.id === "ia" && numPendentes > 0 && (
-                <span style={{ position: "absolute", top: 8, right: 12, width: 18, height: 18, borderRadius: "50%", background: T.amber, color: "#000", fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {numPendentes}
-                </span>
-              )}
-            </div>
-          ))}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
+           {NAV.map(item => (
+             <div key={item.id} className="relative">
+                <NavItem item={item} active={view === item.id} onClick={() => setView(item.id)} />
+                {item.id === "ia" && numPendentes > 0 && (
+                  <span className="absolute top-3 right-4 h-5 w-5 rounded-full bg-amber-500 text-black text-[10px] font-black flex items-center justify-center shadow-lg shadow-amber-500/20 ring-4 ring-surface">
+                    {numPendentes}
+                  </span>
+                )}
+             </div>
+           ))}
         </nav>
 
-        {/* Footer */}
-        <div style={{ padding: "16px 12px", borderTop: `1px solid ${T.border}`, display: "flex", flexDirection: "column", gap: 6 }}>
-          {onBack && (
-            <button onClick={onBack} style={{ width: "100%", padding: "9px 12px", borderRadius: 10, background: "transparent", border: `1px solid ${T.border}`, color: T.inkSec, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8 }}>
-              <ChevronRight size={14} style={{ transform: "rotate(180deg)" }} /> Voltar ao Admin
-            </button>
-          )}
-          <button onClick={() => signOut(auth)} style={{ width: "100%", padding: "9px 12px", borderRadius: 10, background: "transparent", border: `1px solid ${T.red}44`, color: T.red, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8 }}>
-            <Power size={14} /> Sair
-          </button>
+        <div className="p-6 border-t border-border-subtle space-y-3">
+           {onBack && (
+             <button onClick={onBack} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-surface-up border border-border-subtle text-secondary text-[10px] font-black uppercase tracking-widest hover:border-primary/20 transition-all">
+                <ChevronRight size={14} className="rotate-180" /> Admin
+             </button>
+           )}
+           <button onClick={() => signOut(auth)} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-500/5 border border-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">
+              <Power size={14} /> Encerrar Sessão
+           </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, marginLeft: 260, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-        {/* Header */}
-        <header style={{ height: 64, background: `${T.bg}dd`, backdropFilter: "blur(10px)", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 32px", position: "sticky", top: 0, zIndex: 90 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>{VIEW_LABELS[view]}</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {numbers.some(n => n.status === "ativo") && (
-              <div style={{ display: "flex", alignItems: "center", gap: 6, background: T.surface, padding: "5px 12px", borderRadius: 20, fontSize: 11, border: `1px solid ${T.border}` }}>
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: T.green, boxShadow: `0 0 8px ${T.green}` }} />
-                WhatsApp Ativo
+      <main className="flex-1 ml-[280px] min-h-screen flex flex-col">
+        {/* Top Header */}
+        <header className="h-20 bg-background/80 backdrop-blur-xl border-b border-border-subtle sticky top-0 z-90 px-10 flex items-center justify-between">
+           <div>
+              <h2 className="text-sm font-black text-main uppercase tracking-[0.2em]">{VIEW_LABELS[view]}</h2>
+           </div>
+           <div className="flex items-center gap-6">
+              {numbers.some(n => n.status === "ativo") && (
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
+                   <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                   <span className="text-[10px] font-black uppercase tracking-widest">WhatsApp Ativo</span>
+                </div>
+              )}
+              <div className="h-10 w-10 rounded-xl bg-surface border border-border-subtle flex items-center justify-center text-secondary hover:text-primary transition-colors cursor-pointer relative">
+                 <Bell size={18} />
+                 <div className="absolute top-0 right-0 h-2 w-2 rounded-full bg-primary" />
               </div>
-            )}
-            {numPendentes > 0 && (
-              <button onClick={() => setView("ia")} style={{ display: "flex", alignItems: "center", gap: 6, background: T.amberDim, padding: "5px 12px", borderRadius: 20, fontSize: 11, border: `1px solid ${T.amber}44`, color: T.amber, cursor: "pointer", fontFamily: "inherit" }}>
-                🧠 {numPendentes} revisão pendente
-              </button>
-            )}
-          </div>
+           </div>
         </header>
 
-        {/* Content */}
-        <div style={{ flex: 1, overflowY: "auto", padding: 32 }}>
-          {view === "dashboard"  && <ClientDashboardView client={client} leads={leads} pacientes={pacientes} whatsappNums={numbers} />}
-          {view === "whatsapp"   && <WhatsAppView client={client} numbers={numbers} reload={reloadNumbers} />}
-          {view === "crm1"       && <CRM1View client={client} leads={leads} />}
-          {view === "crm2"       && <CRM2View client={client} pacientes={pacientes} campanhas={campanhas} />}
-          {view === "financeiro" && <FinanceiroClienteView client={client} servicos={servicos} vendas={vendas} invoices={invoices} />}
-          {view === "ia"         && <IAAprendizadosView client={client} aprendizados={aprendizados} />}
-          {view === "plano"      && <PlanoView client={client} invoices={invoices} />}
+        {/* Dynamic Content */}
+        <div className="flex-1 p-10 overflow-x-hidden">
+           <div className="max-w-7xl mx-auto">
+              {view === "dashboard"  && <ClientDashboardView client={client} leads={leads} pacientes={pacientes} whatsappNums={numbers} />}
+              {view === "whatsapp"   && <WhatsAppView client={client} numbers={numbers} reload={reloadNumbers} />}
+              {view === "crm1"       && <CRM1View client={client} leads={leads} />}
+              {view === "crm2"       && <CRM2View client={client} pacientes={pacientes} campanhas={campanhas} />}
+              {view === "equipe"     && <EquipeView client={client} />}
+              {view === "financeiro" && <FinanceiroClienteView client={client} servicos={servicos} vendas={vendas} invoices={invoices} />}
+              {view === "ia"         && <IAAprendizadosView client={client} aprendizados={aprendizados} />}
+              {view === "plano"      && <PlanoView client={client} invoices={invoices} />}
+           </div>
         </div>
       </main>
     </div>

@@ -94,4 +94,22 @@ export const api = {
         body: { text },
       }),
   },
+
+  // Profissionais
+  professionals: {
+    list: (clientId) => request(`/clients/${clientId}/professionals`),
+    create: (clientId, data) => request(`/clients/${clientId}/professionals`, { method: "POST", body: data }),
+    update: (clientId, id, data) => request(`/clients/${clientId}/professionals/${id}`, { method: "PUT", body: data }),
+    delete: (clientId, id) => request(`/clients/${clientId}/professionals/${id}`, { method: "DELETE" }),
+  },
+
+  // Agendamentos
+  appointments: {
+    list: (clientId, params = {}) => {
+      const qs = new URLSearchParams(params).toString();
+      return request(`/clients/${clientId}/appointments${qs ? `?${qs}` : ""}`);
+    },
+    create: (clientId, data) => request(`/clients/${clientId}/appointments`, { method: "POST", body: data }),
+    cancel: (clientId, id) => request(`/clients/${clientId}/appointments/${id}/cancel`, { method: "POST" }),
+  }
 };

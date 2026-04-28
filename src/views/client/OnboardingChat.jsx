@@ -1,64 +1,64 @@
 import { useState, useRef, useEffect } from "react";
 import { Clientes } from "../../lib/db";
 import { Logo } from "../../components/UI";
-import { Send, Sparkles, CheckCircle } from "lucide-react";
+import { Send, Sparkles, CheckCircle, Bot, User, ArrowRight, Brain, Zap } from "lucide-react";
 
 // ── Fluxo de perguntas do Onboarding ────────────────────────────────────────
 const STEPS = [
   {
     id: "welcome",
-    bot: (name) => `Olá, ${name.split(" ")[0]}! 🎉 Sou a IA da SecretárIA. Vou te ajudar a configurar seu atendimento inteligente em poucos minutos. Vamos lá?`,
-    field: null, // Sem campo, só boas-vindas
-    options: ["Vamos lá! 🚀"],
+    bot: (name) => `Olá, ${name.split(" ")[0]}! 🎉 Sou o motor de inteligência da SecretarIA. Vou configurar seu atendimento premium em poucos segundos. Preparado(a)?`,
+    field: null, 
+    options: ["Começar Configuração 🚀"],
   },
   {
     id: "segment",
-    bot: () => "Primeiro, qual é o segmento do seu negócio?",
+    bot: () => "Para começar, em qual nicho da saúde você atua?",
     field: "segment",
     options: ["Nutrição", "Dermatologia", "Psicologia", "Odontologia", "Fisioterapia", "Estética", "Outro"],
   },
   {
     id: "description",
-    bot: () => "Me conte um pouco sobre seu consultório/clínica. O que te diferencia dos outros?",
+    bot: () => "Defina sua clínica em uma frase. Qual o seu diferencial competitivo?",
     field: "description",
-    placeholder: "Ex: Clínica especializada em emagrecimento feminino com foco em saúde integrativa...",
+    placeholder: "Ex: Especialista em emagrecimento com foco em longevidade...",
   },
   {
     id: "ai_name",
-    bot: () => "Que nome você quer que a sua IA tenha? Ela será a secretária virtual que atende seus pacientes no WhatsApp.",
+    bot: () => "Como devemos chamar sua IA no WhatsApp? (Escolha um nome amigável)",
     field: "ai_name",
     placeholder: "Ex: Ana, Sofia, Clara...",
   },
   {
     id: "ai_tone",
-    bot: (_, answers) => `Perfeito! A ${answers.ai_name || "IA"} vai ter qual tom de comunicação?`,
+    bot: (_, answers) => `Entendido. A ${answers.ai_name || "IA"} deve se comunicar em qual tom?`,
     field: "ai_tone",
-    options: ["Acolhedora e profissional", "Formal e sério", "Descontraído e amigável", "Jovial e animado", "Técnico e objetivo"],
+    options: ["Acolhedora e Empática", "Formal e Técnica", "Descontraída e Ágil", "Objetiva e Direta"],
   },
   {
     id: "ai_goal",
-    bot: () => "Qual o principal objetivo da IA no atendimento?",
+    bot: () => "Qual a missão principal da sua nova assistente?",
     field: "ai_goal",
-    options: ["Agendamentos", "Vendas / Captação", "Suporte ao paciente", "Tirar dúvidas (FAQ)", "Tudo acima"],
+    options: ["Agendamentos", "Vendas Ativas", "Suporte FAQ", "Tudo acima"],
   },
   {
     id: "business_hours",
-    bot: () => "Qual o horário de funcionamento? A IA vai informar isso aos pacientes quando perguntarem.",
+    bot: () => "Quais os horários de atendimento da clínica?",
     field: "business_hours",
-    placeholder: "Ex: Seg a Sex, 8h às 18h. Sáb, 8h às 12h.",
+    placeholder: "Ex: Seg a Sex, 08h às 19h.",
   },
   {
     id: "services",
-    bot: () => "Liste seus principais serviços e preços (um por linha). Isso ajuda a IA a responder sobre valores.",
+    bot: () => "Liste seus principais serviços e valores sugeridos (opcional).",
     field: "services_text",
-    placeholder: "Ex:\nConsulta Avaliação - R$ 250\nRetorno - R$ 150\nPlano Alimentar - R$ 350",
+    placeholder: "Ex:\nConsulta - R$ 300\nBioimpedância - R$ 100",
     rows: 4,
   },
   {
     id: "done",
-    bot: (_, answers) => `Tudo configurado! 🎉 A ${answers.ai_name || "IA"} está pronta para começar a atender seus pacientes no WhatsApp. Agora vou te levar para o seu painel de controle.`,
+    bot: (_, answers) => `Arquitetura concluída! 🦾 A ${answers.ai_name || "IA"} já está carregada com sua personalidade. Vamos ao painel?`,
     field: null,
-    options: ["Entrar no Painel →"],
+    options: ["Ativar Dashboard →"],
     isFinal: true,
   },
 ];
@@ -67,34 +67,20 @@ const STEPS = [
 function ChatBubble({ from, text, animate }) {
   const isBot = from === "bot";
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: isBot ? "flex-start" : "flex-end",
-        marginBottom: 12,
-        animation: animate ? "fadeIn 300ms ease" : "none",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "80%",
-          padding: "14px 18px",
-          borderRadius: isBot ? "4px 18px 18px 18px" : "18px 18px 4px 18px",
-          background: isBot ? "var(--color-surface)" : "var(--color-cta)",
-          color: isBot ? "var(--color-text)" : "#fff",
-          fontSize: 14,
-          lineHeight: 1.6,
-          border: isBot ? "1px solid var(--color-border)" : "none",
-          whiteSpace: "pre-line",
-        }}
-      >
+    <div className={`flex ${isBot ? 'justify-start' : 'justify-end'} mb-6 animate-fade-in`}>
+      <div className={`max-w-[85%] p-6 rounded-[28px] text-sm leading-relaxed ${isBot ? 'bg-surface border border-border-subtle rounded-bl-none shadow-sm' : 'bg-primary text-black font-medium rounded-br-none shadow-lg shadow-primary/20'}`}>
         {isBot && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6, opacity: 0.6 }}>
-            <Sparkles size={12} />
-            <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>SecretárIA</span>
+          <div className="flex items-center gap-2 mb-3 opacity-50">
+            <Bot size={14} className="text-primary" />
+            <span className="text-[10px] font-black uppercase tracking-widest">SecretarIA Intelligence</span>
           </div>
         )}
-        {text}
+        <p className="whitespace-pre-line">{text}</p>
+        {!isBot && (
+           <div className="mt-2 flex items-center justify-end gap-2 text-[9px] font-black uppercase tracking-widest opacity-40">
+              <User size={10} /> Você
+           </div>
+        )}
       </div>
     </div>
   );
@@ -110,14 +96,12 @@ export default function OnboardingChat({ client, onComplete }) {
   const [typing, setTyping] = useState(false);
   const chatRef = useRef(null);
 
-  // Scroll automático
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
   }, [messages, typing]);
 
-  // Mostrar primeira mensagem do bot
   useEffect(() => {
     const step = STEPS[0];
     const botText = step.bot(client.name, answers);
@@ -142,22 +126,18 @@ export default function OnboardingChat({ client, onComplete }) {
     if (!text?.trim()) return;
     const step = STEPS[currentStep];
 
-    // Adicionar mensagem do usuário
     setMessages((prev) => [...prev, { from: "user", text }]);
     setInput("");
 
-    // Salvar resposta
     const newAnswers = { ...answers };
     if (step.field) {
       newAnswers[step.field] = text;
       setAnswers(newAnswers);
     }
 
-    // Se é o passo final → salvar e redirecionar
     if (step.isFinal) {
       setSaving(true);
       try {
-        // Montar briefing
         const briefing = {
           segment: newAnswers.segment || "",
           description: newAnswers.description || "",
@@ -168,212 +148,120 @@ export default function OnboardingChat({ client, onComplete }) {
           services_text: newAnswers.services_text || "",
         };
 
-        // Salvar briefing e mudar status para active
-        await Clientes.update(client.id, {
-          briefing,
-          status: "active",
-        });
-
+        await Clientes.update(client.id, { briefing, status: "active" });
         setTimeout(() => onComplete(), 1500);
       } catch (err) {
-        console.error("Erro ao salvar onboarding:", err);
         setSaving(false);
       }
       return;
     }
 
-    // Avançar para próxima pergunta
     advanceToStep(currentStep + 1);
   };
 
   const step = STEPS[currentStep];
 
   return (
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      height: "100vh",
-      background: "var(--color-bg)",
-      color: "var(--color-text)",
-      fontFamily: "inherit",
-    }}>
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes typing { 0%, 60% { opacity: 0.3; } 30% { opacity: 1; } }
-      `}</style>
-
+    <div className="flex flex-col h-screen bg-background text-main font-sans selection:bg-primary/20">
       {/* Header */}
-      <div style={{
-        padding: "20px 24px",
-        borderBottom: "1px solid var(--color-border)",
-        background: "var(--color-surface)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}>
-        <Logo size={22} />
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          background: "var(--color-surface-soft)",
-          padding: "6px 14px",
-          borderRadius: 20,
-          fontSize: 12,
-          fontWeight: 600,
-          color: "var(--color-cta)",
-        }}>
-          <Sparkles size={14} />
-          Configuração Inicial
+      <div className="px-8 py-6 bg-surface border-b border-border-subtle flex items-center justify-between sticky top-0 z-50">
+        <Logo size={28} />
+        <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest shadow-sm">
+           <Zap size={14} className="fill-current" />
+           Deploy de Inteligência
         </div>
       </div>
 
-      {/* Barra de progresso */}
-      <div style={{ padding: "0 24px", background: "var(--color-surface)" }}>
-        <div style={{
-          height: 4,
-          background: "var(--color-surface-soft)",
-          borderRadius: 2,
-          overflow: "hidden",
-          margin: "12px 0",
-        }}>
-          <div style={{
-            height: "100%",
-            width: `${Math.min(100, (currentStep / (STEPS.length - 1)) * 100)}%`,
-            background: "var(--color-cta)",
-            borderRadius: 2,
-            transition: "width 600ms ease",
-          }} />
+      {/* Progress Bar */}
+      <div className="px-8 bg-surface border-b border-border-subtle/50">
+        <div className="h-1 w-full bg-surface-up rounded-full overflow-hidden mt-4">
+          <div 
+            className="h-full bg-primary transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+            style={{ width: `${Math.min(100, (currentStep / (STEPS.length - 1)) * 100)}%` }}
+          />
         </div>
-        <div style={{ fontSize: 11, color: "var(--color-text-sec)", paddingBottom: 12, textAlign: "center" }}>
-          Passo {Math.min(currentStep + 1, STEPS.length - 1)} de {STEPS.length - 2}
-        </div>
+        <p className="text-[9px] text-tertiary font-black uppercase tracking-[0.3em] py-4 text-center">
+          Calibragem: {Math.floor((currentStep / (STEPS.length - 1)) * 100)}%
+        </p>
       </div>
 
       {/* Chat Area */}
-      <div
+      <div 
         ref={chatRef}
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "24px 20px",
-          display: "flex",
-          flexDirection: "column",
-        }}
+        className="flex-1 overflow-y-auto p-8 flex flex-col custom-scrollbar bg-surface/30"
       >
-        {messages.map((msg, i) => (
-          <ChatBubble key={i} from={msg.from} text={msg.text} animate={i === messages.length - 1} />
-        ))}
+        <div className="max-w-3xl mx-auto w-full">
+          {messages.map((msg, i) => (
+            <ChatBubble key={i} from={msg.from} text={msg.text} animate={i === messages.length - 1} />
+          ))}
 
-        {/* Indicador de digitação */}
-        {typing && (
-          <div style={{ display: "flex", gap: 4, padding: "12px 0" }}>
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                style={{
-                  width: 8, height: 8, borderRadius: "50%",
-                  background: "var(--color-text-sec)",
-                  animation: `typing 1s infinite ${i * 0.2}s`,
-                }}
-              />
-            ))}
-          </div>
-        )}
+          {typing && (
+            <div className="flex gap-1.5 p-4 bg-surface rounded-2xl w-fit animate-pulse border border-border-subtle">
+              <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+              <div className="h-1.5 w-1.5 rounded-full bg-primary/60" />
+              <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
+            </div>
+          )}
 
-        {/* Saving indicator */}
-        {saving && (
-          <div style={{
-            display: "flex", alignItems: "center", gap: 10,
-            padding: "16px 20px", background: "var(--color-surface)",
-            borderRadius: 16, border: "1px solid var(--color-border)",
-            animation: "fadeIn 300ms ease",
-          }}>
-            <CheckCircle size={20} color="var(--color-cta)" />
-            <span style={{ fontSize: 14, fontWeight: 600 }}>Salvando configuração...</span>
-          </div>
-        )}
+          {saving && (
+            <div className="p-8 rounded-[32px] bg-primary text-black flex items-center gap-4 animate-bounce shadow-2xl shadow-primary/30 mx-auto w-fit">
+               <CheckCircle size={24} />
+               <span className="font-black text-xs uppercase tracking-widest">Sincronizando com o Core...</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Input Area */}
-      <div style={{
-        padding: "16px 20px",
-        borderTop: "1px solid var(--color-border)",
-        background: "var(--color-surface)",
-      }}>
-        {/* Opções rápidas (se existirem) */}
-        {step?.options && !typing && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-            {step.options.map((opt) => (
-              <button
-                key={opt}
-                onClick={() => handleSend(opt)}
-                style={{
-                  padding: "10px 18px",
-                  borderRadius: 20,
-                  border: "1px solid var(--color-cta)",
-                  background: "transparent",
-                  color: "var(--color-cta)",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  transition: "all 150ms",
-                }}
-                onMouseEnter={(e) => { e.target.style.background = "var(--color-cta)"; e.target.style.color = "#fff"; }}
-                onMouseLeave={(e) => { e.target.style.background = "transparent"; e.target.style.color = "var(--color-cta)"; }}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-        )}
+      <div className="p-8 bg-surface border-t border-border-subtle relative z-10">
+        <div className="max-w-3xl mx-auto w-full">
+          {step?.options && !typing && !saving && (
+            <div className="flex flex-wrap gap-3 mb-6 justify-center">
+              {step.options.map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => handleSend(opt)}
+                  className="px-6 py-4 rounded-2xl bg-surface-up border border-border-subtle text-main text-xs font-black uppercase tracking-widest hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm"
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          )}
 
-        {/* Campo de texto livre (se não houver opções) */}
-        {!step?.options && !typing && !saving && (
-          <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
-            {step?.rows ? (
-              <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={step?.placeholder || "Digite aqui..."}
-                rows={step.rows}
-                style={{
-                  flex: 1, padding: "12px 16px", borderRadius: 14,
-                  background: "var(--color-bg)", border: "1px solid var(--color-border)",
-                  color: "var(--color-text)", fontSize: 14, outline: "none",
-                  fontFamily: "inherit", resize: "vertical",
-                }}
-              />
-            ) : (
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
-                placeholder={step?.placeholder || "Digite aqui..."}
-                style={{
-                  flex: 1, padding: "14px 16px", borderRadius: 14,
-                  background: "var(--color-bg)", border: "1px solid var(--color-border)",
-                  color: "var(--color-text)", fontSize: 14, outline: "none",
-                  fontFamily: "inherit",
-                }}
-              />
-            )}
-            <button
-              onClick={() => handleSend(input)}
-              disabled={!input.trim()}
-              style={{
-                width: 48, height: 48, borderRadius: 14,
-                background: input.trim() ? "var(--color-cta)" : "var(--color-surface-soft)",
-                border: "none", cursor: input.trim() ? "pointer" : "default",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "all 150ms",
-              }}
-            >
-              <Send size={18} color={input.trim() ? "#fff" : "var(--color-text-sec)"} />
-            </button>
-          </div>
-        )}
+          {!step?.options && !typing && !saving && (
+            <div className="flex gap-3 items-end">
+              <div className="flex-1 relative group">
+                {step?.rows ? (
+                  <textarea
+                    autoFocus
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder={step?.placeholder || "Escreva aqui..."}
+                    rows={step.rows}
+                    className="w-full p-5 rounded-[28px] bg-surface-up border border-border-subtle text-main text-sm outline-none focus:border-primary/50 transition-all resize-none shadow-inner"
+                  />
+                ) : (
+                  <input
+                    autoFocus
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
+                    placeholder={step?.placeholder || "Sua resposta..."}
+                    className="w-full px-8 py-5 rounded-full bg-surface-up border border-border-subtle text-main text-sm outline-none focus:border-primary/50 transition-all shadow-inner"
+                  />
+                )}
+              </div>
+              <button
+                onClick={() => handleSend(input)}
+                disabled={!input.trim()}
+                className={`h-14 w-14 rounded-full flex items-center justify-center transition-all shadow-xl ${input.trim() ? 'bg-primary text-black shadow-primary/20 scale-110' : 'bg-surface-up text-tertiary opacity-50 cursor-default'}`}
+              >
+                <ArrowRight size={22} />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

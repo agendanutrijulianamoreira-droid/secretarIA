@@ -83,7 +83,36 @@ router.post('/', async (req, res) => {
     const orchestrator = new Orchestrator();
     const response = await orchestrator.processMessage(text, clinic, patient);
 
-    // 5. Enviar resposta via WhatsApp
+    // 5. Detectar e executar ações automáticas (ex: Agendamento)
+    if (response.content.includes('[[') && response.content.includes(']]')) {
+      try {
+        const actionMatch = response.content.match(/\[\[(.*?)\]\]/);
+        if (actionMatch) {
+          const actions = JSON.parse(actionMatch[1]);
+          for (const action of actions) {
+            if (action.action === 'create_appointment') {
+              const { calendarService } = await import('../services/calendarService.js');
+              await calendarService.createAppointment({
+                clinic_id: clinic.id,
+                professional_id: action.professional_id,
+                patient_id: patient.id,
+                patient_name: patient.name,
+                start_time: action.start_time,
+                end_time: new Date(new Date(action.start_time).getTime() + 60 * 60 * 1000).toISOString(), // +1h default
+                service_type: action.service_type || 'Consulta'
+              });
+              console.log('📅 Agendamento criado automaticamente via IA');
+            }
+          }
+          // Limpa o JSON da resposta para não enviar ao paciente
+          response.content = response.content.replace(/\[\[.*?\]\]/g, '').trim();
+        }
+      } catch (err) {
+        console.error('❌ Erro ao processar ação da IA:', err);
+      }
+    }
+
+    // 6. Enviar resposta via WhatsApp
     console.log(`🤖 IA Respondeu para ${patientPhone}: ${response.content}`);
     const fromPhoneNumberId = clinic.config_json?.whatsapp_phone_number_id;
     if (fromPhoneNumberId) {

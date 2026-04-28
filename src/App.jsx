@@ -16,7 +16,7 @@ import FluxosView from "./views/admin/FluxosView";
 import TokensView from "./views/admin/TokensView";
 import FinanceiroAdminView from "./views/admin/FinanceiroAdmin";
 import DashboardView from "./views/admin/DashboardView";
-import { Bot, Zap } from "lucide-react";
+import { Bot, Zap, Activity, TrendingUp, Target, Smartphone, MessageSquare, Plus, ArrowRight, Shield, Settings, Bell } from "lucide-react";
 import { Logo, Badge } from "./components/UI";
 
 
@@ -288,11 +288,7 @@ function LoginView() {
       }
     } catch (err) {
       console.error(err);
-      setError(err.code === "auth/user-not-found" || err.code === "auth/wrong-password" 
-        ? "E-mail ou senha incorretos." 
-        : err.code === "auth/email-already-in-use"
-        ? "Este e-mail já está em uso."
-        : "Erro ao tentar acessar. Verifique seus dados.");
+      setError("E-mail ou senha incorretos.");
     } finally {
       setLoading(false);
     }
@@ -306,150 +302,156 @@ function LoginView() {
       await signInWithPopup(auth, provider);
     } catch (err) {
       console.error(err);
-      setError("Erro na autenticação com Google.");
+      setError("Falha na autenticação com Google.");
     } finally {
       setLoading(false);
     }
   };
 
+
   return (
-    <div className="flex min-h-screen w-full bg-[var(--color-bg)] overflow-hidden font-sans">
-      <div className="hidden lg:flex w-1/2 relative flex-col justify-center p-12 overflow-hidden bg-slate-900">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="/login-bg.png" 
-            alt="SecretarIA Background" 
-            className="w-full h-full object-cover opacity-60 mix-blend-luminosity transition-transform duration-[20s] hover:scale-110"
-            style={{ filter: 'brightness(0.6) contrast(1.2)' }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#0F172A] via-[#0F172A]/90 to-transparent z-10" />
+    <div className="flex min-h-screen w-full bg-background selection:bg-primary/20 selection:text-primary overflow-hidden font-sans">
+      <div className="hidden lg:flex w-1/2 relative flex-col justify-center p-16 overflow-hidden bg-slate-950">
+        <div className="absolute inset-0 z-0 opacity-40">
+           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.1),transparent)] animate-pulse" />
+           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
         </div>
 
         <div className="absolute top-12 left-12 z-20">
           <Logo size={42} />
         </div>
 
-        <div className="relative z-20 space-y-6 max-w-xl">
-          <div className="space-y-4">
-            <Badge color="green" className="!bg-[var(--color-cta)]/10 !text-[var(--color-cta)] !border-[var(--color-cta)]/20">
-              <Zap size={14} className="fill-current" /> High-Tech Management
-            </Badge>
-            <h1 className="text-5xl xl:text-6xl font-bold leading-[1.1] tracking-tight text-white uppercase font-syncopate">
-              O futuro da sua <span className="text-[var(--color-cta)]">clínica</span> começa aqui.
+        <div className="relative z-20 space-y-12">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+              <Shield size={12} className="text-primary fill-current" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-primary">Ambiente Seguro (Zero Trust)</span>
+            </div>
+            <h1 className="text-6xl font-black leading-tight tracking-tighter text-white">
+              O futuro da sua <br/>
+              <span className="text-primary">clínica</span> começa aqui.
             </h1>
+            <p className="text-xl text-secondary leading-relaxed max-w-md font-medium">
+              Evolua o atendimento da sua clínica com IA avançada e gestão inteligente de dados.
+            </p>
           </div>
-          
-          <p className="text-lg text-slate-300 leading-relaxed font-light max-w-lg">
-            Evolua o atendimento da sua clínica com IA avançada. Recupere o controle da sua agenda e escale sua operação com tecnologia de ponta.
-          </p>
-        </div>
 
-        <div className="absolute bottom-12 left-12 right-12 z-20 flex items-center justify-between text-slate-500 text-[10px] font-bold tracking-widest uppercase opacity-50">
-          <span>&copy; 2026 SecretarIA Systems</span>
-          <div className="flex gap-4">
-            <span>Privacidade</span>
-            <span>Termos</span>
+          <div className="flex items-center gap-6">
+             <div className="h-px flex-1 bg-border-subtle" />
+             <div className="flex gap-4">
+                <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                <div className="h-2 w-2 rounded-full bg-surface-up" />
+                <div className="h-2 w-2 rounded-full bg-surface-up" />
+             </div>
           </div>
         </div>
       </div>
 
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative bg-[var(--color-bg)]">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative bg-background">
         <div className="absolute top-8 left-8 lg:hidden">
           <Logo size={32} />
         </div>
 
-        <div className="w-full max-w-md space-y-8 animate-in fade-in zoom-in duration-700">
+        <div className="w-full max-w-md space-y-10 animate-fade-in">
           <div className="space-y-2">
-            <h2 className="text-3xl font-bold text-[var(--color-text)] tracking-tight font-syncopate">
+            <h2 className="text-4xl font-black text-main tracking-tight">
               {isRegister ? "Criar Conta" : "Bem-vinda"}
             </h2>
-            <p className="text-[var(--color-text-sec)]">
-              {isRegister ? "Comece agora a automatizar sua clínica com IA." : "Acesse sua conta para gerenciar seus atendimentos inteligentes."}
+            <p className="text-secondary font-medium">
+              Acesse o núcleo de inteligência da sua clínica.
             </p>
           </div>
 
-          <div className="space-y-4">
-            <button 
-              onClick={handleGoogleLogin} 
-              disabled={loading}
-              className="w-full flex items-center justify-center space-x-4 bg-[var(--color-surface)] border border-[var(--color-border)] py-4 rounded-2xl hover:bg-[var(--color-surface-up)] hover:border-[var(--color-cta)]/30 transition-all font-semibold text-[var(--color-text)] disabled:opacity-50 shadow-sm group"
-            >
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google" />
-              <span>{isRegister ? "Cadastrar com Google" : "Continuar com Google"}</span>
-            </button>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-5">
+              {isRegister && (
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-tertiary uppercase tracking-widest ml-1">Nome da Clínica</label>
+                  <input 
+                    type="text" 
+                    value={name} 
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-5 py-4 bg-surface border border-border-subtle rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-main placeholder:text-tertiary/30"
+                    placeholder="Ex: Clínica Equilíbrio"
+                    required={isRegister}
+                  />
+                </div>
+              )}
 
-            <div className="flex items-center space-x-4 px-2">
-              <div className="flex-1 h-px bg-[var(--color-border)] opacity-50"></div>
-              <span className="text-[9px] text-[var(--color-text-sec)] font-bold uppercase tracking-[0.2em]">ou e-mail</span>
-              <div className="flex-1 h-px bg-[var(--color-border)] opacity-50"></div>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {isRegister && (
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-[var(--color-text-sec)] uppercase tracking-wider ml-1">Seu Nome / Clínica</label>
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-tertiary uppercase tracking-widest ml-1">E-mail de Acesso</label>
                 <input 
-                  type="text" 
-                  value={name} 
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Nome Completo"
-                  className="w-full px-5 py-3.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:ring-2 focus:ring-[var(--color-cta)]/20 focus:border-[var(--color-cta)] outline-none transition-all text-[var(--color-text)] placeholder:text-[var(--color-text-sec)]/20"
-                  required={isRegister}
+                  type="email" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-5 py-4 bg-surface border border-border-subtle rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-main placeholder:text-tertiary/30"
+                  placeholder="seu@email.com"
+                  required
                 />
               </div>
-            )}
 
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-[var(--color-text-sec)] uppercase tracking-wider ml-1">E-mail de acesso</label>
-              <input 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu@email.com"
-                className="w-full px-5 py-3.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:ring-2 focus:ring-[var(--color-cta)]/20 focus:border-[var(--color-cta)] outline-none transition-all text-[var(--color-text)] placeholder:text-[var(--color-text-sec)]/20"
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex justify-between items-center px-1">
-                <label className="text-[10px] font-bold text-[var(--color-text-sec)] uppercase tracking-wider">Senha</label>
-                {!isRegister && <a href="#" className="text-[10px] font-bold text-[var(--color-cta)] hover:opacity-80 transition-opacity">Esqueceu?</a>}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center px-1">
+                  <label className="text-[11px] font-bold text-tertiary uppercase tracking-widest">Sua Senha</label>
+                </div>
+                <input 
+                  type="password" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-5 py-4 bg-surface border border-border-subtle rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-main placeholder:text-tertiary/30"
+                  placeholder="••••••••"
+                  required
+                />
               </div>
-              <input 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full px-5 py-3.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:ring-2 focus:ring-[var(--color-cta)]/20 focus:border-[var(--color-cta)] outline-none transition-all text-[var(--color-text)] placeholder:text-[var(--color-text-sec)]/20"
-                required
-              />
             </div>
 
             {error && (
-              <div className="bg-red-500/10 text-red-500 p-3.5 rounded-xl text-xs font-medium border border-red-500/20 animate-in shake duration-300 flex items-center gap-2">
-                <span>⚠️</span> {error}
+              <div className="bg-red-500/5 text-red-500 p-4 rounded-2xl text-xs font-bold border border-red-500/10 flex items-center gap-3">
+                <Shield size={16} /> {error}
               </div>
             )}
 
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-[var(--color-cta)] text-black py-4 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-[var(--color-cta)]/10 hover:bg-[var(--color-cta-hover)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50"
+              className="w-full bg-primary text-black py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
             >
-              {loading ? "Processando..." : (isRegister ? "Criar Minha Conta" : "Entrar no Dashboard")}
+              {loading ? "Verificando..." : (isRegister ? "Começar Agora" : "Entrar no Sistema")}
             </button>
           </form>
 
-          <div className="text-center pt-2">
-            <p className="text-xs text-[var(--color-text-sec)] font-medium">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border-subtle"></div>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-4 text-tertiary font-black tracking-widest">Ou continue com</span>
+            </div>
+          </div>
+
+          <button 
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            className="w-full bg-surface border border-border-subtle text-main py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-primary/30 transition-all flex items-center justify-center gap-3 shadow-sm"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Google Account
+          </button>
+
+          <div className="text-center pt-4">
+            <p className="text-sm text-secondary font-medium">
               {isRegister ? "Já possui conta?" : "Ainda não faz parte?"} 
               <button 
                 onClick={() => setIsRegister(!isRegister)}
-                className="ml-1 text-[var(--color-cta)] font-bold hover:underline underline-offset-4"
+                className="ml-2 text-primary font-black hover:underline underline-offset-8"
               >
-                {isRegister ? "Fazer Login" : "Criar conta agora"}
+                {isRegister ? "Fazer Login" : "Criar Conta Grátis"}
               </button>
             </p>
           </div>
@@ -850,47 +852,64 @@ function ShareModal({client, onClose}){
   );
 }
 
-// ── Visões Adicionais ─────────────────────────────────────────────────────────
-
 function ClientsView({clients, onPortal, onBriefing}){
   return(
-    <div style={{animation:"fadeIn 300ms ease"}}>
-      <h1 style={{margin:"0 0 4px",fontSize:22,fontWeight:700,color:T.ink}}>👥 Gestão de Clientes</h1>
-      <p style={{margin:"0 0 24px",fontSize:13,color:T.inkTert}}>Lista completa e controle de acessos</p>
+    <div className="space-y-8 animate-fade-in">
+      <div>
+        <h1 className="text-3xl font-black tracking-tighter text-main">Gestão de Clientes</h1>
+        <p className="text-secondary font-medium mt-1">Controle total dos portfólios e acessos dos seus clientes.</p>
+      </div>
       
-      <div style={{background:"var(--color-surface)",border:`1px solid var(--color-border)`,borderRadius:16,overflow:"hidden"}}>
-        <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-          <thead>
-            <tr style={{background:"var(--color-surface-soft)",borderBottom:`1px solid ${T.border}`}}>
-              <th style={{textAlign:"left",padding:16,color:T.inkTert,fontWeight:600}}>Cliente</th>
-              <th style={{textAlign:"left",padding:16,color:T.inkTert,fontWeight:600}}>WhatsApp</th>
-              <th style={{textAlign:"left",padding:16,color:T.inkTert,fontWeight:600}}>Plano</th>
-              <th style={{textAlign:"left",padding:16,color:T.inkTert,fontWeight:600}}>Status</th>
-              <th style={{textAlign:"right",padding:16,color:T.inkTert,fontWeight:600}}>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {clients.map(c=>(
-              <tr key={c.id} style={{borderBottom:`1px solid ${T.border}`,transition:"background 150ms"}} onMouseEnter={e=>e.currentTarget.style.background="var(--color-surface-soft)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                <td style={{padding:16}}>
-                  <div style={{display:"flex",alignItems:"center",gap:12}}>
-                    <Av initials={c.avatar} color={c.color} size={32}/>
-                    <span style={{fontWeight:600}}>{c.name}</span>
-                  </div>
-                </td>
-                <td style={{padding:16,color:T.inkSec}}>{c.phone}</td>
-                <td style={{padding:16}}><Tag color={PLAN_META[c.plan]?.color} bg={PLAN_META[c.plan]?.bg}>{c.plan}</Tag></td>
-                <td style={{padding:16}}><StatusTag status={c.status}/></td>
-                <td style={{padding:16,textAlign:"right"}}>
-                  <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
-                    <Btn variant="ghost" onClick={()=>onBriefing(c)} style={{padding:"6px 12px",fontSize:11}}>Config</Btn>
-                    <Btn onClick={()=>onPortal(c)} style={{padding:"6px 12px",fontSize:11}}>Portal</Btn>
-                  </div>
-                </td>
+      <div className="bg-surface border border-border-subtle rounded-[32px] overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-surface-soft/50 border-b border-border-subtle">
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-tertiary">Cliente / Clínica</th>
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-tertiary">WhatsApp</th>
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-tertiary">Plano</th>
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-tertiary">Status</th>
+                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-tertiary text-right">Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-border-subtle/50">
+              {clients.map(c=>(
+                <tr key={c.id} className="group hover:bg-surface-up transition-colors duration-300">
+                  <td className="px-8 py-5">
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20 shadow-inner">
+                        {c.avatar}
+                      </div>
+                      <span className="text-sm font-bold text-main">{c.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-5 text-sm font-medium text-secondary">{c.phone}</td>
+                  <td className="px-8 py-5">
+                    <span className="px-3 py-1 rounded-full bg-surface-soft border border-border-subtle text-[10px] font-black uppercase tracking-tighter text-secondary group-hover:border-primary/20 transition-colors">
+                      {c.plan}
+                    </span>
+                  </td>
+                  <td className="px-8 py-5">
+                    <div className="flex items-center gap-2">
+                       <div className={`h-1.5 w-1.5 rounded-full ${c.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-tertiary'}`} />
+                       <span className="text-[11px] font-bold text-secondary uppercase tracking-tight">{c.status === 'active' ? 'Ativo' : 'Pausado'}</span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-5 text-right">
+                    <div className="flex gap-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={()=>onBriefing(c)} className="h-9 w-9 flex items-center justify-center rounded-lg bg-surface-up border border-border-subtle text-secondary hover:text-primary hover:border-primary/30 transition-all">
+                        <Settings size={14} />
+                      </button>
+                      <button onClick={()=>onPortal(c)} className="h-9 px-4 flex items-center justify-center rounded-lg bg-primary text-black text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/10 hover:scale-105 active:scale-95 transition-all">
+                        Portal
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -901,35 +920,45 @@ function StatsView({clients}){
   const avgMsgs = clients.length ? (totalMsgs/clients.length).toFixed(0) : 0;
   
   return(
-    <div style={{animation:"fadeIn 300ms ease"}}>
-      <h1 style={{margin:"0 0 4px",fontSize:22,fontWeight:700,color:T.ink}}>📊 Estatísticas de Performance</h1>
-      <p style={{margin:"0 0 24px",fontSize:13,color:T.inkTert}}>Métricas agregadas do sistema SecretarIA</p>
+    <div className="space-y-8 animate-fade-in">
+      <div>
+        <h1 className="text-3xl font-black tracking-tighter text-main">Estatísticas</h1>
+        <p className="text-secondary font-medium mt-1">Análise de performance e volume de interações.</p>
+      </div>
       
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20,marginBottom:32}}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          {l:"Total de Mensagens (Mês)",v:totalMsgs.toLocaleString(),i:"💬",c:T.green},
-          {l:"Média por Cliente",v:avgMsgs,i:"📈",c:T.cyan},
-          {l:"Taxa de Atividade",v:"94%",i:"⚡",c:T.amber},
+          { label: "Volume Total (Mês)", value: totalMsgs.toLocaleString(), icon: MessageSquare, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+          { label: "Média por Unidade", value: avgMsgs, icon: TrendingUp, color: "text-blue-500", bg: "bg-blue-500/10" },
+          { label: "Uptime do Sistema", value: "99.9%", icon: Activity, color: "text-amber-500", bg: "bg-amber-500/10" },
         ].map(s=>(
-          <div key={s.l} style={{background:"var(--color-surface)",border:`1px solid var(--color-border)`,borderRadius:16,padding:24}}>
-            <div style={{fontSize:24,marginBottom:8}}>{s.i}</div>
-            <div style={{fontSize:32,fontWeight:700,color:s.c,marginBottom:4}}>{s.v}</div>
-            <div style={{fontSize:12,color:T.inkTert,textTransform:"uppercase",letterSpacing:0.5}}>{s.l}</div>
+          <div key={s.label} className="p-8 rounded-[32px] bg-surface border border-border-subtle hover:border-primary/20 transition-all">
+            <div className={`h-12 w-12 rounded-2xl ${s.bg} flex items-center justify-center ${s.color} mb-6`}>
+              <s.icon size={24} />
+            </div>
+            <h4 className="text-4xl font-black tracking-tight text-main">{s.value}</h4>
+            <p className="text-[10px] text-tertiary font-black uppercase tracking-widest mt-2">{s.label}</p>
           </div>
         ))}
       </div>
 
-      <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,padding:24}}>
-        <div style={{fontWeight:600,marginBottom:20,fontSize:15}}>Uso de Mensagens por Cliente</div>
-        <div style={{display:"flex",flexDirection:"column",gap:16}}>
-          {clients.slice(0,5).map(c=>(
-            <div key={c.id}>
-              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:6}}>
-                <span>{c.name}</span>
-                <span style={{color:T.inkTert}}>{c.msgs_month || 0} msgs</span>
+      <div className="p-8 rounded-[32px] bg-surface border border-border-subtle">
+        <h3 className="text-lg font-black tracking-tight mb-8">Uso de Mensagens por Cliente</h3>
+        <div className="space-y-8">
+          {clients.slice(0,6).map(c=>(
+            <div key={c.id} className="space-y-3">
+              <div className="flex justify-between items-end">
+                <div className="flex items-center gap-3">
+                   <div className="h-6 w-6 rounded-md" style={{ background: c.color + '33', border: `1px solid ${c.color}66` }} />
+                   <span className="text-sm font-bold text-main">{c.name}</span>
+                </div>
+                <span className="text-xs font-black text-tertiary uppercase">{c.msgs_month || 0} interações</span>
               </div>
-              <div style={{height:6,background:T.bg,borderRadius:3,overflow:"hidden"}}>
-                <div style={{height:6,background:c.color,width:`${Math.min(100,(c.msgs_month||0)/10)}%`,transition:"width 1s ease"}}/>
+              <div className="h-2 w-full bg-background rounded-full overflow-hidden">
+                <div 
+                  className="h-full rounded-full transition-all duration-1000" 
+                  style={{ background: c.color, width: `${Math.min(100,(c.msgs_month||0)/10)}%` }}
+                />
               </div>
             </div>
           ))}
@@ -948,64 +977,59 @@ function SettingsView({user}){
 
   const save = () => {
     setIsEditing(false);
-    alert("Perfil atualizado com sucesso!");
+    alert("Perfil administrativo atualizado.");
   };
 
   return(
-    <div style={{animation:"fadeIn 300ms ease"}}>
-      <h1 style={{margin:"0 0 4px",fontSize:22,fontWeight:700,color:T.ink}}>⚙️ Configurações do Sistema</h1>
-      <p style={{margin:"0 0 24px",fontSize:13,color:T.inkTert}}>Gerenciamento administrativo e conta</p>
+    <div className="space-y-8 animate-fade-in">
+      <div>
+        <h1 className="text-3xl font-black tracking-tighter text-main">Configurações</h1>
+        <p className="text-secondary font-medium mt-1">Gerenciamento da conta administrativa e sistema.</p>
+      </div>
       
-      <div style={{maxWidth:600,display:"flex",flexDirection:"column",gap:20}}>
-        <div style={{background:"var(--color-surface)",border:`1px solid var(--color-border)`,borderRadius:16,padding:24}}>
-          <div style={{fontWeight:600,marginBottom:16,fontSize:15}}>Perfil do Administrador</div>
+      <div className="max-w-2xl space-y-6">
+        <div className="p-8 rounded-[32px] bg-surface border border-border-subtle">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-lg font-black tracking-tight">Perfil Administrativo</h3>
+            <button onClick={() => setIsEditing(!isEditing)} className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">
+              {isEditing ? 'Cancelar' : 'Editar Perfil'}
+            </button>
+          </div>
           
           {isEditing ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <label style={{ fontSize: 11, color: T.inkTert, fontWeight: 700, textTransform: "uppercase" }}>Nome de Exibição</label>
-                <input value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} style={{ background: T.bg, border: `1px solid ${T.border}`, padding: "10px 14px", borderRadius: 10, color: T.ink, fontFamily: "inherit" }} />
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-tertiary uppercase tracking-widest ml-1">Nome Completo</label>
+                <input value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} className="w-full px-5 py-4 bg-background border border-border-subtle rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-main" />
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <label style={{ fontSize: 11, color: T.inkTert, fontWeight: 700, textTransform: "uppercase" }}>E-mail Administrativo</label>
-                <input value={profile.email} disabled style={{ background: T.bg, border: `1px solid ${T.border}`, padding: "10px 14px", borderRadius: 10, color: T.inkSec, fontFamily: "inherit", opacity: 0.7 }} />
-              </div>
-              <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
-                <Btn onClick={save}>Salvar Alterações</Btn>
-                <Btn variant="ghost" onClick={() => setIsEditing(false)}>Cancelar</Btn>
-              </div>
+              <button onClick={save} className="w-full py-4 rounded-2xl bg-primary text-black text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">Salvar Alterações</button>
             </div>
           ) : (
-            <>
-              <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
-                <div style={{width:64,height:64,borderRadius:16,background:T.greenDim,color:T.green,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,fontWeight:700}}>
-                  {profile.name[0].toUpperCase()}
-                </div>
-                <div>
-                  <div style={{fontSize:16,fontWeight:600}}>{profile.name}</div>
-                  <div style={{fontSize:12,color:T.inkTert}}>{profile.email}</div>
-                </div>
+            <div className="flex items-center gap-6 p-6 rounded-2xl bg-surface-soft border border-border-subtle">
+              <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl font-black border border-primary/20">
+                {profile.name[0].toUpperCase()}
               </div>
-              <Btn variant="ghost" onClick={() => setIsEditing(true)}>Editar Perfil</Btn>
-            </>
+              <div>
+                <h4 className="text-lg font-black text-main">{profile.name}</h4>
+                <p className="text-sm text-secondary font-medium">{profile.email}</p>
+              </div>
+            </div>
           )}
         </div>
 
-        <div style={{background:"var(--color-surface)",border:`1px solid var(--color-border)`,borderRadius:16,padding:24}}>
-          <div style={{fontWeight:600,marginBottom:16,fontSize:15}}>Infraestrutura</div>
-          <div style={{display:"flex",flexDirection:"column",gap:12}}>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:13}}>
-              <span style={{color:T.inkTert}}>Ambiente</span>
-              <span style={{color:T.green,fontWeight:600}}>Produção</span>
-            </div>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:13}}>
-              <span style={{color:T.inkTert}}>Banco de Dados</span>
-              <span style={{color:T.inkSec}}>Firestore (v2)</span>
-            </div>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:13}}>
-              <span style={{color:T.inkTert}}>Versão do Sistema</span>
-              <span style={{color:T.inkSec}}>v4.2.0-stable</span>
-            </div>
+        <div className="p-8 rounded-[32px] bg-surface border border-border-subtle space-y-6">
+          <h3 className="text-lg font-black tracking-tight">Infraestrutura & Segurança</h3>
+          <div className="space-y-4 divide-y divide-border-subtle/50">
+            {[
+              { label: "Ambiente", value: "Produção", color: "text-emerald-500" },
+              { label: "Segurança", value: "Ativa (Zero Trust)", color: "text-primary" },
+              { label: "Versão", value: "v5.0.0-gold", color: "text-tertiary" },
+            ].map((item, i) => (
+              <div key={i} className="flex justify-between items-center pt-4 first:pt-0">
+                <span className="text-xs font-bold text-secondary uppercase tracking-tight">{item.label}</span>
+                <span className={`text-xs font-black uppercase tracking-widest ${item.color}`}>{item.value}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -1013,167 +1037,212 @@ function SettingsView({user}){
   );
 }
 
-// ── Visão de Vendas / Alertas ─────────────────────────────────────────────────
 function AlertsView({ alerts, markRead }) {
   return (
-    <div style={{ animation: "fadeIn 300ms ease" }}>
-      <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 700, color: T.ink }}>🔔 Alertas de Venda</h1>
-      <p style={{ margin: "0 0 24px", fontSize: 13, color: T.inkTert }}>Notificações de novos pagamentos (Asaas) e provisionamentos</p>
+    <div className="space-y-8 animate-fade-in">
+      <div>
+        <h1 className="text-3xl font-black tracking-tighter text-main">Central de Alertas</h1>
+        <p className="text-secondary font-medium mt-1">Histórico completo de eventos e disparos do sistema.</p>
+      </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 800 }}>
-        {alerts.length === 0 && (
-          <div style={{ background: T.surface, padding: 32, borderRadius: 16, border: `1px solid ${T.border}`, textAlign: "center", color: T.inkTert }}>
-            Nenhum alerta no momento.
+      <div className="max-w-4xl space-y-3">
+        {alerts.length === 0 ? (
+          <div className="p-20 rounded-[40px] border border-dashed border-border-subtle flex flex-col items-center justify-center text-center opacity-50">
+             <Bell size={48} className="text-tertiary mb-4" />
+             <p className="text-sm font-medium">Nenhum alerta pendente.</p>
           </div>
-        )}
-        {alerts.map(a => (
-          <div key={a.id} style={{ background: T.surface, border: `1px solid ${a.read ? T.border : T.cyan}`, borderRadius: 16, padding: "20px 24px", display: "flex", gap: 20, alignItems: "center", opacity: a.read ? 0.7 : 1, transition:"all 200ms" }}>
-            <div style={{ fontSize: 32 }}>{a.type === "SALE" ? "🎉" : "🔔"}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: a.read ? T.inkSec : T.ink, marginBottom: 4 }}>
-                {a.title} {a.read || <Tag color="var(--color-cta)" bg="var(--color-surface-soft)">NOVO</Tag>}
+        ) : (
+          alerts.map(a => (
+            <div key={a.id} className={`p-6 rounded-[28px] border transition-all duration-300 flex items-center gap-6 ${a.read ? 'bg-surface/50 border-border-subtle opacity-60' : 'bg-surface border-primary/20 shadow-lg shadow-primary/5'}`}>
+              <div className="h-14 w-14 rounded-2xl bg-surface-up flex items-center justify-center text-3xl shadow-inner">
+                {a.type === "SALE" ? "🎉" : "🔔"}
               </div>
-              <div style={{ fontSize: 13, color: T.inkSec, marginBottom: 8, whiteSpace: "pre-wrap" }}>{a.message}</div>
-              <div style={{ fontSize: 11, color: T.inkTert }}>{new Date(a.created_at).toLocaleString('pt-BR')} • {a.data?.email}</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                   <h4 className={`text-sm font-black truncate ${a.read ? 'text-secondary' : 'text-main'}`}>{a.title}</h4>
+                   {!a.read && <span className="h-2 w-2 rounded-full bg-primary animate-ping" />}
+                </div>
+                <p className="text-xs text-tertiary font-medium truncate mb-2">{a.message}</p>
+                <div className="flex items-center gap-3 text-[10px] font-black text-tertiary uppercase tracking-widest">
+                   <span>{new Date(a.created_at).toLocaleDateString('pt-BR')}</span>
+                   <div className="h-1 w-1 rounded-full bg-border-subtle" />
+                   <span>{new Date(a.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+              </div>
+              {!a.read && (
+                <button onClick={() => markRead(a.id)} className="px-4 py-2 rounded-xl bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20 hover:bg-primary hover:text-black transition-all">
+                  Lido
+                </button>
+              )}
             </div>
-            {!a.read && (
-              <Btn onClick={() => markRead(a.id)} variant="ghost" style={{ fontSize: 11, padding: "8px 12px" }}>Marcar como lido</Btn>
-            )}
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
 }
 
-// ── Admin Dashboard ────────────────────────────────────────────────────────────
-// DashboardView agora está em arquivo separado
-
-// ── Vendas Admin ───────────────────────────────────────────────────────────────
 function VendasAdminView({ clients, alerts }) {
   const vendas = alerts.filter(a => a.type === "SALE");
   const totalVendas = vendas.length;
   const unread = vendas.filter(a => !a.read).length;
+
   return (
-    <div style={{ display:"flex", flexDirection:"column", gap:20, animation:"fadeIn 300ms ease" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:800, color:T.ink }}>🛒 Vendas & Pipeline</h1>
-          <p style={{ margin:0, fontSize:13, color:T.inkTert }}>Novos cadastros e pagamentos recebidos.</p>
+          <h1 className="text-3xl font-black tracking-tighter text-main">Vendas & Pipeline</h1>
+          <p className="text-secondary font-medium mt-1">Acompanhamento em tempo real de novos assinantes.</p>
         </div>
-        <Btn variant="ghost" size="sm" onClick={() => {
-          const csv = ["Data,Título,Mensagem"];
-          alerts.forEach(a => csv.push(`"${new Date(a.created_at).toLocaleString()}","${a.title}","${a.message.replace(/"/g, '""')}"`));
-          const blob = new Blob([csv.join("\n")], { type: 'text/csv' });
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `relatorio-vendas-${new Date().toISOString().slice(0,10)}.csv`;
-          a.click();
-        }}>📥 Exportar Relatório</Btn>
+        <button 
+          onClick={() => {
+             const csv = ["Data,Cliente,Plano"];
+             vendas.forEach(v => csv.push(`${new Date(v.created_at).toLocaleDateString()},"${v.title}","${v.message}"`));
+             const blob = new Blob([csv.join("\n")], { type: 'text/csv' });
+             const url = window.URL.createObjectURL(blob);
+             const a = document.createElement('a');
+             a.href = url; a.download = 'vendas-secretaria.csv'; a.click();
+          }}
+          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface border border-border-subtle text-secondary text-[10px] font-black uppercase tracking-widest hover:text-primary hover:border-primary/30 transition-all"
+        >
+          Exportar CSV
+        </button>
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
-        {[["Total de Vendas", totalVendas, T.green],["Novas (não lidas)", unread, T.cyan],["Clientes", clients.length, T.amber]].map(([l,v,c]) => (
-          <div key={l} style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:14, padding:"18px 20px" }}>
-            <div style={{ fontSize:26, fontWeight:800, color:c }}>{v}</div>
-            <div style={{ fontSize:11, color:T.inkTert, textTransform:"uppercase", letterSpacing:0.5 }}>{l}</div>
-          </div>
-        ))}
-      </div>
-      <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-        {alerts.length === 0 && <div style={{ background:T.surface, border:`1px solid ${T.border}`, borderRadius:14, padding:32, textAlign:"center", color:T.inkTert }}>Nenhuma venda registrada ainda.</div>}
-        {alerts.map(a => (
-          <div key={a.id} style={{ background:T.surface, border:`1px solid ${a.read ? T.border : T.cyan}44`, borderRadius:14, padding:"16px 20px", display:"flex", gap:16, alignItems:"center", opacity: a.read ? 0.7 : 1 }}>
-            <div style={{ fontSize:28 }}>{a.type === "SALE" ? "🎉" : "🔔"}</div>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:14, fontWeight:700, color:T.ink, marginBottom:4 }}>{a.title} {!a.read && <Tag color={T.cyan} bg="rgba(0,209,255,0.1)">NOVO</Tag>}</div>
-              <div style={{ fontSize:12, color:T.inkSec }}>{a.message}</div>
-              <div style={{ fontSize:11, color:T.inkTert, marginTop:4 }}>{new Date(a.created_at).toLocaleString("pt-BR")}</div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { label: "Vendas Totais", value: totalVendas, icon: ShoppingCart, color: "text-emerald-500" },
+          { label: "Aguardando Leitura", value: unread, icon: Bell, color: "text-blue-500" },
+          { label: "Taxa de Conversão", value: "14.2%", icon: Target, color: "text-amber-500" },
+        ].map(s=>(
+          <div key={s.label} className="p-8 rounded-[32px] bg-surface border border-border-subtle relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 opacity-5 group-hover:scale-110 transition-transform duration-700">
+               <s.icon size={100} />
             </div>
-            {!a.read && <Btn onClick={() => Alerts.markRead(a.id)} variant="ghost" style={{ fontSize:11, padding:"7px 12px" }}>Marcar como lido</Btn>}
+            <h4 className="text-4xl font-black tracking-tight text-main relative z-10">{s.value}</h4>
+            <p className="text-[10px] text-tertiary font-black uppercase tracking-widest mt-2 relative z-10">{s.label}</p>
           </div>
         ))}
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-lg font-black tracking-tight px-2">Pipeline Recente</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+           {vendas.length === 0 ? (
+             <div className="md:col-span-2 p-12 text-center text-tertiary font-medium bg-surface/50 rounded-[32px] border border-dashed border-border-subtle">
+                Nenhuma venda registrada no pipeline.
+             </div>
+           ) : (
+             vendas.map(v => (
+               <div key={v.id} className="p-6 rounded-[28px] bg-surface border border-border-subtle flex items-center gap-5">
+                  <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shadow-inner">
+                     <Plus size={20} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                     <p className="text-sm font-bold text-main truncate">{v.title}</p>
+                     <p className="text-[10px] text-tertiary font-black uppercase tracking-widest mt-0.5">{new Date(v.created_at).toLocaleDateString('pt-BR')}</p>
+                  </div>
+                  <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+               </div>
+             ))
+           )}
+        </div>
       </div>
     </div>
   );
 }
 
-// ── Paywall View ─────────────────────────────────────────────────────────────
 function PaywallView({ user, onPlanSelected }) {
   const plans = [
     {
       id: "starter",
       name: "Plano Slim",
       price: "197",
-      desc: "Ideal para nutris que atuam sozinhas.",
-      features: ["Clone da sua Personalidade", "Atendimento WhatsApp Automático", "500 interações/mês"]
+      desc: "Essencial para nutris que atuam sozinhas e buscam o primeiro nível de automação.",
+      features: ["Clone da sua Personalidade", "Atendimento WhatsApp Automático", "500 interações/mês", "Dashboard de Gestão"]
     },
     {
       id: "pro",
       name: "Plano Clinic",
       price: "497",
-      desc: "A verdadeira máquina de conversão.",
+      desc: "A escolha definitiva para quem busca escala e conversão agressiva.",
       isPopular: true,
-      features: ["Tudo do Slim", "Agendamento automático via IA", "2.000 interações/mês"]
+      features: ["Tudo do Slim", "Agendamento Inteligente via IA", "2.000 interações/mês", "Follow-up de Leads Perdidos"]
     },
     {
       id: "enterprise",
       name: "Smart VIP",
       price: "997",
-      desc: "Automação total para clínicas.",
-      features: ["Tudo do Clinic", "Interações Ilimitadas", "Suporte Dedicado"]
+      desc: "A arquitetura suprema para clínicas multiprofissionais e redes.",
+      features: ["Tudo do Clinic", "Interações Ilimitadas", "Suporte 24h Dedicado", "Multi-Agentes Customizados"]
     }
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center p-6 font-sans">
-      <div className="max-w-5xl w-full space-y-12 animate-in fade-in zoom-in duration-700">
-        <div className="text-center space-y-4">
-          <div className="flex justify-center mb-6">
-            <Logo size={64} />
+    <div className="min-h-screen bg-background flex items-center justify-center p-8 font-sans relative overflow-hidden text-main">
+      {/* Glow Effects */}
+      <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-blue-500/5 blur-[120px] rounded-full pointer-events-none" />
+
+      <div className="max-w-6xl w-full space-y-16 animate-fade-in relative z-10">
+        <div className="text-center space-y-6">
+          <div className="flex justify-center mb-4">
+            <Logo size={80} />
           </div>
-          <h2 className="text-4xl font-bold text-white font-syncopate">Escolha seu Plano</h2>
-          <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-            Sua conta foi criada com sucesso! Agora, escolha o plano ideal para liberar o acesso total à sua SecretarIA.
+          <h2 className="text-5xl md:text-6xl font-black tracking-tighter">Escolha seu Nível.</h2>
+          <p className="text-secondary max-w-2xl mx-auto text-lg font-medium">
+            Sua conta está ativa e protegida. Agora, selecione a potência da sua <span className="text-primary font-bold">SecretarIA</span>.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {plans.map((plan) => (
-            <div key={plan.id} className={`glass-card p-8 rounded-3xl relative flex flex-col transition-all hover:translate-y-[-8px] ${plan.isPopular ? 'ring-2 ring-[var(--color-cta)] scale-105 shadow-2xl shadow-[var(--color-cta)]/10' : ''}`}>
-              {plan.isPopular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[var(--color-cta)] text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-                  Mais Popular
+            <div key={plan.id} className={`group p-10 rounded-[40px] bg-surface border transition-all duration-500 flex flex-col hover:translate-y-[-8px] ${plan.isPopular ? 'border-primary/40 shadow-2xl shadow-primary/10 ring-1 ring-primary/20' : 'border-border-subtle'}`}>
+              <div className="flex justify-between items-start mb-8">
+                <div>
+                  <h3 className="text-2xl font-black tracking-tight">{plan.name}</h3>
+                  <p className="text-xs text-tertiary font-bold uppercase tracking-widest mt-1">{plan.id}</p>
                 </div>
-              )}
-              <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-              <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-4xl font-bold text-white">R$ {plan.price}</span>
-                <span className="text-slate-500 text-sm">/mês</span>
+                {plan.isPopular && (
+                  <div className="px-3 py-1 rounded-full bg-primary text-black text-[9px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">
+                    Popular
+                  </div>
+                )}
               </div>
-              <p className="text-slate-400 text-sm mb-8 flex-1">{plan.desc}</p>
+
+              <div className="flex items-baseline gap-1 mb-8">
+                <span className="text-sm font-bold text-tertiary">R$</span>
+                <span className="text-5xl font-black tracking-tighter">{plan.price}</span>
+                <span className="text-tertiary font-bold text-xs uppercase tracking-widest">/mês</span>
+              </div>
               
-              <ul className="space-y-4 mb-8">
+              <p className="text-secondary text-sm font-medium mb-10 leading-relaxed flex-1">{plan.desc}</p>
+              
+              <div className="space-y-4 mb-12">
                 {plan.features.map(f => (
-                  <li key={f} className="flex items-center gap-3 text-xs text-slate-300">
-                    <Zap size={14} className="text-[var(--color-cta)]" /> {f}
-                  </li>
+                  <div key={f} className="flex items-center gap-3">
+                    <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                      <Zap size={10} className="fill-current" />
+                    </div>
+                    <span className="text-xs text-secondary font-bold">{f}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
 
               <button 
                 onClick={() => onPlanSelected(plan)}
-                className={`w-full py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${plan.isPopular ? 'bg-[var(--color-cta)] text-black shadow-lg shadow-[var(--color-cta)]/20' : 'bg-slate-800 text-white border border-slate-700 hover:border-[var(--color-cta)]'}`}
+                className={`w-full py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-xl ${plan.isPopular ? 'bg-primary text-black shadow-primary/20' : 'bg-surface-up text-main border border-border-subtle hover:border-primary/30 shadow-none'}`}
               >
-                Selecionar Plano
+                Ativar Plano
               </button>
             </div>
           ))}
         </div>
 
         <div className="text-center">
-          <button onClick={() => signOut(auth)} className="text-slate-500 hover:text-white transition-colors text-xs font-medium uppercase tracking-widest flex items-center gap-2 mx-auto justify-center">
-            ← Sair da conta
+          <button onClick={() => signOut(auth)} className="text-tertiary hover:text-main transition-colors text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-3 mx-auto justify-center">
+            <ArrowRight size={14} className="rotate-180" />
+            Sair da Conta
           </button>
         </div>
       </div>
@@ -1201,6 +1270,7 @@ export default function App(){
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.classList.toggle('dark', theme === 'dark');
     localStorage.setItem("theme", theme);
   }, [theme]);
 

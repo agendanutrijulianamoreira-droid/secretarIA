@@ -1,5 +1,6 @@
 import { ManagerAgent } from './manager.js';
 import { FAQAgent } from './faq.js';
+import { SchedulingAgent } from './scheduling.js';
 import { ClinicContext, PatientContext, ChatMessage, AgentResponse } from './types.js';
 import { query } from '../lib/db.js';
 import { notifyHandoff } from '../services/notifier.js';
@@ -7,6 +8,7 @@ import { notifyHandoff } from '../services/notifier.js';
 export class Orchestrator {
   private manager = new ManagerAgent();
   private faq = new FAQAgent();
+  private scheduler = new SchedulingAgent();
 
   async processMessage(
     message: string,
@@ -33,10 +35,7 @@ export class Orchestrator {
         break;
 
       case 'scheduling':
-        response = {
-          content: 'Entendi que você deseja agendar. Vou verificar a disponibilidade e já te retorno!',
-          intent: 'scheduling'
-        };
+        response = await this.scheduler.handle(message, clinic, patient, history);
         break;
 
       case 'billing':
