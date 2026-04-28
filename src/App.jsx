@@ -1207,16 +1207,14 @@ export default function App(){
   const toggleTheme = () => setTheme(prev => prev === "dark" ? "light" : "dark");
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
+    const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       setAuthLoading(false);
       
       // Detecção automática de portal para clientes
       if(u && u.email !== ADMIN_EMAIL) {
-        Clientes.onList(data => {
-          const match = data.find(c => c.email?.toLowerCase() === u.email.toLowerCase());
-          if(match) setPortal(match);
-        });
+        const match = await Clientes.getByEmail(u.email);
+        if(match) setPortal(match);
       }
     });
     return unsub;
@@ -1235,20 +1233,27 @@ export default function App(){
   // Realtime listener do Firebase
   useEffect(()=>{
     if (!user) return;
-    const unsub = Clientes.onList(data=>{
-      const enriched = data.map((c,i)=>({
-        ...c,
-        avatar: c.avatar || c.name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase(),
-        color:  c.color  || COLORS[i % COLORS.length],
-      }));
-      setClients(enriched);
-      setLoading(false);
-    });
     
-    // Escutar alertas caso seja admin
+    let unsub = () => {};
     let unsubAlerts = () => {};
+
     if (user.email === ADMIN_EMAIL) {
+      unsub = Clientes.onList(data=>{
+        const enriched = data.map((c,i)=>({
+          ...c,
+          avatar: c.avatar || c.name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase(),
+          color:  c.color  || COLORS[i % COLORS.length],
+        }));
+        setClients(enriched);
+        setLoading(false);
+      });
       unsubAlerts = Alerts.onList(data => setAlerts(data));
+    } else {
+      // Cliente comum só escuta a si mesmo
+      unsub = Clientes.onMyClient(user.email, data => {
+        if (data) setPortal(data);
+        setLoading(false);
+      });
     }
 
     return () => { unsub(); unsubAlerts(); };

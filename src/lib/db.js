@@ -41,6 +41,12 @@ export const Clientes = {
     return listToJS(snap);
   },
 
+  async getByEmail(email) {
+    const q = query(col("clients"), where("email", "==", email), limit(1));
+    const snap = await getDocs(q);
+    return snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() };
+  },
+
   async get(id) {
     return toJS(await getDoc(ref("clients", id)));
   },
@@ -68,6 +74,14 @@ export const Clientes = {
 
   onList(callback) {
     return onSnapshot(col("clients"), snap => callback(listToJS(snap)));
+  },
+
+  onMyClient(email, callback) {
+    const q = query(col("clients"), where("email", "==", email), limit(1));
+    return onSnapshot(q, snap => {
+      const data = listToJS(snap);
+      callback(data.length > 0 ? data[0] : null);
+    });
   },
 };
 
