@@ -1018,7 +1018,7 @@ function ClientsView({ clients, onPortal, onBriefing, onNewClient }) {
                     </div>
                   </td>
                   <td className="px-10 py-6 text-right">
-                    <div className="flex gap-4 justify-end opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <div className="flex gap-4 justify-end transition-all duration-300">
                       <button onClick={() => onBriefing(c)} className="h-11 w-11 flex items-center justify-center rounded-2xl bg-surface-up border border-border-subtle text-tertiary hover:text-primary hover:border-primary/40 transition-all cursor-pointer">
                         <Settings size={18} />
                       </button>
