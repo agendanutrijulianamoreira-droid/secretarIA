@@ -369,108 +369,124 @@ function LoginView({ theme = 'dark', toggleTheme }) {
           </button>
         )}
 
-        <div className="w-full max-w-md space-y-10 animate-fade-in">
-          <div className="space-y-2">
-            <h2 className="text-4xl font-black text-main tracking-tight">
-              {isRegister ? "Criar Conta" : "Bem-vinda"}
-            </h2>
-            <p className="text-secondary font-medium">
-              Acesse o núcleo de inteligência da sua clínica.
-            </p>
-          </div>
+        <div className="w-full max-w-md animate-fade-in">
+          {/* Floating card */}
+          <div className="bg-surface rounded-3xl shadow-2xl border border-border-subtle p-10 space-y-8 transition-colors duration-300">
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-5">
-              {isRegister && (
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-tertiary uppercase tracking-widest ml-1">Nome da Clínica</label>
-                  <input 
-                    type="text" 
-                    value={name} 
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full px-5 py-4 bg-surface border border-border-subtle rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-main placeholder:text-tertiary/30"
-                    placeholder="Ex: Clínica Equilíbrio"
-                    required={isRegister}
+            {/* Header with lock icon */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                  <Shield size={18} className="text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-black text-main tracking-tight leading-none">
+                    {isRegister ? "Criar Conta" : "Bem-vinda"}
+                  </h2>
+                  <p className="text-secondary text-sm font-medium mt-0.5">
+                    Acesse o núcleo de inteligência da sua clínica.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-4">
+                {isRegister && (
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-tertiary uppercase tracking-widest ml-1">Nome da Clínica</label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full px-5 py-4 bg-background border border-border-subtle rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all duration-200 text-main placeholder:text-tertiary text-sm"
+                      placeholder="Ex: Clínica Equilíbrio"
+                      required={isRegister}
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-tertiary uppercase tracking-widest ml-1">E-mail de Acesso</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-5 py-4 bg-background border border-border-subtle rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all duration-200 text-main placeholder:text-tertiary text-sm"
+                    placeholder="seu@email.com"
+                    required
                   />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-tertiary uppercase tracking-widest ml-1">Senha</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-5 py-4 bg-background border border-border-subtle rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all duration-200 text-main placeholder:text-tertiary text-sm"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="bg-red-500/5 text-red-500 p-4 rounded-2xl text-xs font-bold border border-red-500/10 flex items-center gap-2">
+                  <Shield size={14} /> {error}
                 </div>
               )}
 
-              <div className="space-y-2">
-                <label className="text-[11px] font-bold text-tertiary uppercase tracking-widest ml-1">E-mail de Acesso</label>
-                <input 
-                  type="email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-5 py-4 bg-surface border border-border-subtle rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-main placeholder:text-tertiary/30"
-                  placeholder="seu@email.com"
-                  required
-                />
-              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-premium w-full bg-primary text-black py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {loading ? "Verificando..." : (isRegister ? "Começar Agora" : "Entrar no Sistema")}
+              </button>
+            </form>
 
-              <div className="space-y-2">
-                <div className="flex justify-between items-center px-1">
-                  <label className="text-[11px] font-bold text-tertiary uppercase tracking-widest">Sua Senha</label>
-                </div>
-                <input 
-                  type="password" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-5 py-4 bg-surface border border-border-subtle rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-main placeholder:text-tertiary/30"
-                  placeholder="••••••••"
-                  required
-                />
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border-subtle" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-surface px-4 text-tertiary font-black tracking-widest transition-colors duration-300">Ou continue com</span>
               </div>
             </div>
 
-            {error && (
-              <div className="bg-red-500/5 text-red-500 p-4 rounded-2xl text-xs font-bold border border-red-500/10 flex items-center gap-3">
-                <Shield size={16} /> {error}
-              </div>
-            )}
-
-            <button 
-              type="submit" 
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
               disabled={loading}
-              className="w-full bg-primary text-black py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+              className="w-full bg-background border border-border-subtle text-main py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-primary/30 transition-all duration-200 flex items-center justify-center gap-3"
             >
-              {loading ? "Verificando..." : (isRegister ? "Começar Agora" : "Entrar no Sistema")}
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              Google Account
             </button>
-          </form>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border-subtle"></div>
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-4 text-tertiary font-black tracking-widest">Ou continue com</span>
+            <div className="text-center">
+              <p className="text-sm text-secondary font-medium">
+                {isRegister ? "Já possui conta?" : "Ainda não faz parte?"}
+                <button
+                  onClick={() => setIsRegister(!isRegister)}
+                  className="ml-2 text-primary font-black hover:underline underline-offset-4"
+                >
+                  {isRegister ? "Fazer Login" : "Criar Conta Grátis"}
+                </button>
+              </p>
             </div>
           </div>
 
-          <button 
-            type="button"
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            className="w-full bg-surface border border-border-subtle text-main py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:border-primary/30 transition-all flex items-center justify-center gap-3 shadow-sm"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            Google Account
-          </button>
-
-          <div className="text-center pt-4">
-            <p className="text-sm text-secondary font-medium">
-              {isRegister ? "Já possui conta?" : "Ainda não faz parte?"} 
-              <button 
-                onClick={() => setIsRegister(!isRegister)}
-                className="ml-2 text-primary font-black hover:underline underline-offset-8"
-              >
-                {isRegister ? "Fazer Login" : "Criar Conta Grátis"}
-              </button>
-            </p>
+          {/* Security badge below card */}
+          <div className="flex items-center justify-center gap-1.5 mt-5">
+            <Shield size={11} className="text-tertiary" />
+            <span className="text-[10px] text-tertiary font-medium">Zero Trust · LGPD · SSL 256-bit</span>
           </div>
         </div>
       </div>
