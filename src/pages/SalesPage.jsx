@@ -70,7 +70,7 @@ export default function SalesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 selection:bg-primary/20 selection:text-primary font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-background text-slate-50 selection:bg-primary/20 selection:text-primary font-sans overflow-x-hidden">
       {/* Cinematic Background */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-0 left-1/4 w-[1200px] h-[800px] bg-primary/10 blur-[160px] rounded-full opacity-40 animate-pulse" />
@@ -78,7 +78,7 @@ export default function SalesPage() {
       </div>
 
       {/* Premium Navbar */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${scrolled ? 'bg-slate-950/80 backdrop-blur-2xl border-b border-slate-900 py-5' : 'py-10'}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${scrolled ? 'bg-background/80 backdrop-blur-2xl border-b border-border py-5' : 'py-10'}`}>
         <div className="max-w-7xl mx-auto px-10 flex justify-between items-center">
           <div className="flex items-center gap-4 group">
             <Logo size={36} className="group-hover:rotate-12 transition-transform duration-500" />
@@ -106,7 +106,7 @@ export default function SalesPage() {
             QUE <span className="text-primary shadow-glow">ESCALA</span> O SEU <br/> CONSULTÓRIO.
           </h1>
           
-          <p className="max-w-3xl mx-auto text-xl md:text-2xl text-slate-400 font-medium leading-relaxed opacity-80">
+          <p className="max-w-3xl mx-auto text-xl md:text-2xl text-secondary font-medium leading-relaxed opacity-80">
             O primeiro sistema operacional de atendimento para profissionais de saúde de alto ticket. Automatize, venda e agende com precisão cirúrgica.
           </p>
           
@@ -115,7 +115,7 @@ export default function SalesPage() {
               Iniciar Implantação
               <ArrowRight size={22} className="group-hover:translate-x-2 transition-transform" />
             </a>
-            <button className="w-full sm:w-auto px-16 py-7 rounded-[28px] bg-slate-900 border border-slate-800 text-white font-black text-xs uppercase tracking-[0.3em] hover:bg-slate-800 transition-all">
+            <button className="w-full sm:w-auto px-16 py-7 rounded-[28px] bg-surface border border-border-subtle text-white font-black text-xs uppercase tracking-[0.3em] hover:bg-surface-up transition-all">
               Ver Manifesto
             </button>
           </div>
@@ -123,12 +123,12 @@ export default function SalesPage() {
       </header>
 
       {/* Bento Framework Section */}
-      <section id="recursos" className="relative z-10 py-48 px-10 bg-slate-900/20 backdrop-blur-3xl border-y border-slate-900">
+      <section id="recursos" className="relative z-10 py-48 px-10 bg-surface/20 backdrop-blur-3xl border-y border-border">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col items-center text-center mb-32 space-y-6">
             <div className="h-1 w-20 bg-primary/40 rounded-full" />
             <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">Engenharia de Performance.</h2>
-            <p className="text-slate-400 text-lg font-medium opacity-60">Arquitetura robusta para quem exige resultados de elite.</p>
+            <p className="text-secondary text-lg font-medium opacity-60">Arquitetura robusta para quem exige resultados de elite.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 auto-rows-[320px]">
@@ -141,7 +141,7 @@ export default function SalesPage() {
                    </div>
                    <div>
                      <h3 className="text-2xl font-black tracking-tight uppercase italic mb-2">{item.title}</h3>
-                     <p className="text-sm text-slate-400 font-medium leading-relaxed opacity-70">{item.desc}</p>
+                     <p className="text-sm text-secondary font-medium leading-relaxed opacity-70">{item.desc}</p>
                    </div>
                 </div>
               </div>
@@ -155,11 +155,11 @@ export default function SalesPage() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-20">
           {features.map((f, i) => (
             <div key={i} className="space-y-8 group">
-              <div className="w-20 h-20 rounded-3xl bg-slate-900 border border-slate-800 flex items-center justify-center group-hover:border-primary/40 transition-all duration-500 shadow-2xl">
+              <div className="w-20 h-20 rounded-3xl bg-surface border border-border-subtle flex items-center justify-center group-hover:border-primary/40 transition-all duration-500 shadow-2xl">
                 <f.icon size={40} strokeWidth={1.5} style={{ color: f.color }} />
               </div>
               <h3 className="text-2xl font-black tracking-tighter uppercase italic">{f.title}</h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-medium opacity-60">{f.desc}</p>
+              <p className="text-secondary text-sm leading-relaxed font-medium opacity-60">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -199,14 +199,14 @@ export default function SalesPage() {
               { q: "Qual a precisão do reconhecimento de voz?", a: "Utilizamos processamento neural de última geração com 99.8% de acurácia em contextos clínicos e técnicos." },
               { q: "A implantação é complexa?", a: "Nossa equipe de engenharia realiza o setup completo e a sincronização do seu 'Cérebro Digital' em menos de 48 horas." }
             ].map((item, i) => (
-              <div key={i} className="p-10 rounded-[40px] bg-slate-900/30 border border-slate-800 hover:border-primary/20 transition-all duration-500 group">
+              <div key={i} className="p-10 rounded-[40px] bg-surface/30 border border-border-subtle hover:border-primary/20 transition-all duration-500 group">
                 <h4 className="text-lg font-black text-main mb-4 flex items-center gap-4 uppercase italic tracking-tight">
                   <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 group-hover:rotate-12 transition-transform">
                      <CheckCircle2 size={18} />
                   </div>
                   {item.q}
                 </h4>
-                <p className="text-base text-slate-400 font-medium pl-12 leading-relaxed opacity-70">{item.a}</p>
+                <p className="text-base text-secondary font-medium pl-12 leading-relaxed opacity-70">{item.a}</p>
               </div>
             ))}
           </div>
@@ -214,7 +214,7 @@ export default function SalesPage() {
       </section>
 
       {/* Minimal Footer */}
-      <footer className="py-32 px-10 border-t border-slate-900 bg-slate-950 relative z-10">
+      <footer className="py-32 px-10 border-t border-border bg-background relative z-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
            <div className="flex items-center gap-6">
               <Logo size={48} />
@@ -225,7 +225,7 @@ export default function SalesPage() {
            </div>
            
            <div className="flex flex-col items-center md:items-end gap-2 text-center md:text-right">
-              <p className="text-slate-500 font-black uppercase tracking-[0.3em] text-[10px] italic">© 2026 SecretarIA Ecosystem — A Nova Era da Gestão Clínica</p>
+              <p className="text-tertiary font-black uppercase tracking-[0.3em] text-[10px] italic">© 2026 SecretarIA Ecosystem — A Nova Era da Gestão Clínica</p>
               <div className="flex gap-6 mt-4">
                  <a href="#" className="text-[10px] font-black text-tertiary hover:text-primary transition-colors uppercase tracking-widest">Privacidade</a>
                  <a href="#" className="text-[10px] font-black text-tertiary hover:text-primary transition-colors uppercase tracking-widest">Termos</a>

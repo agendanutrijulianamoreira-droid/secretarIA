@@ -25,7 +25,7 @@ function PacienteModal({ clientId, initial, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[300] flex items-center justify-center p-8">
+    <div className="fixed inset-0 bg-background/90 backdrop-blur-md z-[300] flex items-center justify-center p-8">
       <Card className="w-full max-w-2xl animate-fade-in p-0 overflow-hidden shadow-2xl border-primary/20">
         <div className="px-10 py-8 border-b border-border-subtle flex items-center justify-between bg-surface-up/30">
            <div>
@@ -72,7 +72,7 @@ function CampanhaModal({ clientId, pacientes, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[300] flex items-center justify-center p-8">
+    <div className="fixed inset-0 bg-background/90 backdrop-blur-md z-[300] flex items-center justify-center p-8">
       <Card className="w-full max-w-3xl animate-fade-in p-0 overflow-hidden shadow-2xl border-primary/20 max-h-[90vh] flex flex-col">
         <div className="px-10 py-8 border-b border-border-subtle flex items-center justify-between bg-surface-up/30">
            <div>

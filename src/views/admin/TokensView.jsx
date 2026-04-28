@@ -23,7 +23,7 @@ function TokenField({ label, hint, value, onChange, icon: Icon }) {
           type={show ? "text" : "password"} 
           value={value} 
           onChange={e => onChange(e.target.value)} 
-          className="w-full pl-14 pr-14 py-4 bg-slate-900/50 border border-slate-800 rounded-2xl text-main text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all duration-300 font-medium tracking-wider"
+          className="w-full pl-14 pr-14 py-4 bg-surface/50 border border-border-subtle rounded-2xl text-main text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all duration-300 font-medium tracking-wider"
         />
         <button 
           onClick={() => setShow(s => !s)} 
@@ -60,7 +60,7 @@ function ClientTokenPanel({ client }) {
     <div className={`bento-card p-0 overflow-hidden transition-all duration-500 ${open ? 'border-primary/30 shadow-[0_0_50px_rgba(16,185,129,0.1)]' : 'border-border-subtle hover:border-slate-700'}`}>
       <button 
         onClick={() => setOpen(o => !o)} 
-        className="w-full px-10 py-8 flex items-center gap-8 bg-transparent hover:bg-slate-900/30 transition-all cursor-pointer text-left"
+        className="w-full px-10 py-8 flex items-center gap-8 bg-transparent hover:bg-surface/30 transition-all cursor-pointer text-left"
       >
         <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-lg border border-primary/20 shadow-2xl transition-transform group-hover:rotate-6">
           {client.avatar || client.name?.slice(0, 2).toUpperCase()}
@@ -75,7 +75,7 @@ function ClientTokenPanel({ client }) {
       </button>
 
       {open && (
-        <div className="px-10 pb-10 space-y-10 animate-fade-in border-t border-slate-900/50 pt-10">
+        <div className="px-10 pb-10 space-y-10 animate-fade-in border-t border-border/50 pt-10">
           <div className="premium-glow opacity-10" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10">
              <div className="space-y-10">
@@ -126,7 +126,7 @@ export default function TokensView({ clients }) {
       <div className="space-y-6">
         {clients.map(c => <ClientTokenPanel key={c.id} client={c} />)}
         {clients.length === 0 && (
-          <div className="py-40 text-center opacity-30 border border-dashed border-slate-800 rounded-[48px]">
+          <div className="py-40 text-center opacity-30 border border-dashed border-border-subtle rounded-[48px]">
             <Key size={64} strokeWidth={1} className="mx-auto mb-6" />
             <p className="text-[10px] font-black uppercase tracking-[0.3em]">Nenhum ecossistema provisionado</p>
           </div>

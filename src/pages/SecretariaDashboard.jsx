@@ -23,7 +23,7 @@ function NavItem({ icon: Icon, label, active, onClick, badge }) {
         w-full group flex items-center gap-5 px-6 py-4.5 rounded-[20px] transition-all duration-500 relative overflow-hidden
         ${active 
           ? 'bg-primary/10 text-primary shadow-2xl shadow-primary/5 border border-primary/20' 
-          : 'text-tertiary hover:text-secondary hover:bg-slate-900/50'
+          : 'text-tertiary hover:text-secondary hover:bg-surface/50'
         }
       `}
     >
@@ -52,9 +52,9 @@ export default function SecretariaDashboard({ user, logout, setView, activeView,
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-main selection:bg-primary/20 selection:text-primary font-sans overflow-hidden">
+    <div className="flex min-h-screen bg-bg text-main selection:bg-primary/20 selection:text-primary font-sans overflow-hidden">
       {/* Sidebar Obsidian */}
-      <aside className="fixed left-0 top-0 z-50 h-screen w-[320px] flex flex-col bg-slate-950 border-r border-slate-900 overflow-hidden">
+      <aside className="fixed left-0 top-0 z-50 h-screen w-[320px] flex flex-col bg-bg border-r border-border overflow-hidden">
         <div className="absolute inset-0 opacity-10 pointer-events-none">
            <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(16,185,129,0.1),transparent)]" />
         </div>
@@ -83,8 +83,8 @@ export default function SecretariaDashboard({ user, logout, setView, activeView,
           ))}
         </nav>
 
-        <div className="p-10 border-t border-slate-900 bg-slate-950/80 backdrop-blur-xl relative z-10">
-          <div className="flex items-center gap-5 p-5 rounded-[24px] bg-slate-900/50 border border-slate-800 mb-6 group hover:border-primary/20 transition-all duration-500">
+        <div className="p-10 border-t border-border bg-bg/80 backdrop-blur-xl relative z-10">
+          <div className="flex items-center gap-5 p-5 rounded-[24px] bg-surface/50 border border-border-subtle mb-6 group hover:border-primary/20 transition-all duration-500">
             <div className="h-12 w-12 rounded-[14px] bg-primary/10 flex items-center justify-center text-primary font-black text-base border border-primary/20 shadow-2xl group-hover:rotate-6 transition-all duration-500">
               {user?.email?.[0]?.toUpperCase() || 'A'}
             </div>
@@ -105,7 +105,7 @@ export default function SecretariaDashboard({ user, logout, setView, activeView,
 
       {/* Main Framework Area */}
       <main className="flex-1 ml-[320px] flex flex-col h-screen overflow-hidden relative">
-        <header className="sticky top-0 z-40 h-24 flex items-center justify-between px-16 bg-slate-950/80 backdrop-blur-2xl border-b border-slate-900">
+        <header className="sticky top-0 z-40 h-24 flex items-center justify-between px-16 bg-bg/80 backdrop-blur-2xl border-b border-border">
           <div className="flex items-center gap-10">
              <div className="flex flex-col">
                <h2 className="text-2xl font-black text-main tracking-tighter uppercase italic">
@@ -126,18 +126,18 @@ export default function SecretariaDashboard({ user, logout, setView, activeView,
                <input 
                  type="text" 
                  placeholder="COMANDAR SISTEMA..." 
-                 className="bg-slate-900/50 border border-slate-800 rounded-full py-3.5 pl-12 pr-6 text-[10px] font-black tracking-[0.2em] text-main placeholder:text-tertiary/40 focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all w-64"
+                 className="bg-surface/50 border border-border-subtle rounded-full py-3.5 pl-12 pr-6 text-[10px] font-black tracking-[0.2em] text-main placeholder:text-tertiary/40 focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all w-64"
                />
             </div>
 
             <button 
               onClick={toggleTheme}
-              className="h-12 w-12 flex items-center justify-center rounded-2xl bg-slate-900/50 border border-slate-800 text-tertiary hover:text-primary hover:border-primary/40 transition-all duration-500 shadow-xl"
+              className="h-12 w-12 flex items-center justify-center rounded-2xl bg-surface/50 border border-border-subtle text-tertiary hover:text-primary hover:border-primary/40 transition-all duration-500 shadow-xl"
             >
               {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             
-            <div className="h-10 w-[1px] bg-slate-900" />
+            <div className="h-10 w-[1px] bg-surface" />
             
             <button className="flex items-center gap-4 px-8 py-4 rounded-2xl bg-primary text-black text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:scale-[1.05] active:scale-[0.95] transition-all duration-500 group cursor-pointer">
               <ShieldCheck size={18} className="group-hover:rotate-12 transition-transform" />

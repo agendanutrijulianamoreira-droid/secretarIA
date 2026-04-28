@@ -26,7 +26,7 @@ export default function DashboardView({ clients, alerts, onPortal }) {
               <input 
                 type="text" 
                 placeholder="LOCALIZAR PROTOCOLO..." 
-                className="bg-slate-900/50 border border-slate-800 rounded-2xl py-4 pl-14 pr-6 text-[10px] font-black tracking-[0.2em] text-main placeholder:text-tertiary/40 focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all w-64 uppercase"
+                className="bg-surface/50 border border-border-subtle rounded-2xl py-4 pl-14 pr-6 text-[10px] font-black tracking-[0.2em] text-main placeholder:text-tertiary/40 focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all w-64 uppercase"
               />
            </div>
            <Btn 
@@ -117,17 +117,17 @@ export default function DashboardView({ clients, alerts, onPortal }) {
 
           <div className="space-y-4">
             {unreadAlerts.length === 0 ? (
-              <div className="py-32 rounded-[48px] border border-dashed border-slate-800 bg-surface-up/10 flex flex-col items-center justify-center text-center opacity-40">
-                <div className="h-24 w-24 rounded-full bg-slate-900 flex items-center justify-center text-tertiary mb-6 shadow-inner">
+              <div className="py-32 rounded-[48px] border border-dashed border-border-subtle bg-surface-up/10 flex flex-col items-center justify-center text-center opacity-40">
+                <div className="h-24 w-24 rounded-full bg-surface flex items-center justify-center text-tertiary mb-6 shadow-inner">
                    <ShieldCheck size={48} strokeWidth={1} />
                 </div>
                 <p className="text-[10px] font-black uppercase tracking-[0.3em]">Ambiente Estéril: Sem Alertas Pendentes</p>
               </div>
             ) : (
               unreadAlerts.slice(0, 4).map(alert => (
-                <div key={alert.id} className="bento-card group p-8 flex items-center gap-8 transition-all duration-500 hover:bg-slate-900/50">
+                <div key={alert.id} className="bento-card group p-8 flex items-center gap-8 transition-all duration-500 hover:bg-surface/50">
                   <div className="relative">
-                    <div className={`h-16 w-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner border transition-all ${alert.type === "SALE" ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-surface-up border-slate-800 text-tertiary'}`}>
+                    <div className={`h-16 w-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner border transition-all ${alert.type === "SALE" ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-surface-up border-border-subtle text-tertiary'}`}>
                       {alert.type === "SALE" ? <ShoppingCart size={28} /> : <Bell size={28} />}
                     </div>
                     {alert.type === "SALE" && <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-primary flex items-center justify-center text-black font-black text-[9px] shadow-lg animate-bounce">!</div>}
@@ -157,7 +157,7 @@ export default function DashboardView({ clients, alerts, onPortal }) {
                    { label: "WhatsApp Gateway", status: "Synched", icon: Smartphone },
                    { label: "Database Shard", status: "Protected", icon: ShieldCheck }
                  ].map((s, i) => (
-                   <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-slate-900/50 border border-slate-800/50 group hover:border-primary/20 transition-all cursor-default">
+                   <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-surface/50 border border-border-subtle/50 group hover:border-primary/20 transition-all cursor-default">
                       <div className="flex items-center gap-4">
                          <s.icon size={16} className="text-tertiary group-hover:text-primary transition-colors" />
                          <span className="text-[10px] font-black text-secondary uppercase tracking-[0.2em]">{s.label}</span>
@@ -170,11 +170,11 @@ export default function DashboardView({ clients, alerts, onPortal }) {
                  ))}
               </div>
               
-              <div className="pt-10 border-t border-slate-900">
-                 <div className="p-8 rounded-[32px] bg-slate-900/30 border border-slate-800 flex flex-col items-center gap-6 relative overflow-hidden group">
+              <div className="pt-10 border-t border-border">
+                 <div className="p-8 rounded-[32px] bg-surface/30 border border-border-subtle flex flex-col items-center gap-6 relative overflow-hidden group">
                     <div className="premium-glow opacity-10" />
                     <span className="text-[10px] text-tertiary font-black uppercase tracking-[0.3em] relative z-10">Consumo de Threads</span>
-                    <div className="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden shadow-inner p-0.5 relative z-10">
+                    <div className="w-full h-2.5 bg-background rounded-full overflow-hidden shadow-inner p-0.5 relative z-10">
                        <div className="w-[12%] h-full bg-primary rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)] animate-pulse" />
                     </div>
                     <div className="flex items-center gap-3 relative z-10">

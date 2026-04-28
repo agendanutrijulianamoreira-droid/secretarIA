@@ -46,8 +46,9 @@
 
 @layer base {
   body {
-    @apply bg-slate-950 text-main font-sans antialiased selection:bg-primary/20 selection:text-primary;
+    @apply text-main font-sans antialiased selection:bg-primary/20 selection:text-primary;
     background-color: var(--color-bg);
+    color: var(--color-text-main);
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -61,7 +62,9 @@
   }
   
   .bento-card {
-    @apply relative overflow-hidden rounded-[40px] bg-slate-900/50 p-8 border border-slate-800 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] transition-all duration-700 hover:border-primary/30 hover:-translate-y-2 cursor-pointer;
+    @apply relative overflow-hidden rounded-[40px] p-8 border shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] transition-all duration-700 hover:border-primary/30 hover:-translate-y-2 cursor-pointer;
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
   }
   
   .premium-glow {

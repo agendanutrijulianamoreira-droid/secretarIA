@@ -183,7 +183,7 @@ export default function EquipeView({ client }) {
 
       {/* Modal CRUD Profissional Refactored */}
       {showModal && (
-        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[200] flex items-center justify-center p-8">
+        <div className="fixed inset-0 bg-background/90 backdrop-blur-md z-[200] flex items-center justify-center p-8">
           <Card className="w-full max-w-xl animate-fade-in p-0">
             <div className="px-10 py-8 border-b border-border-subtle flex justify-between items-center bg-surface-up/30">
               <h4 className="text-xl font-black text-main tracking-tighter uppercase">{editing ? "Editar Perfil" : "Novo Especialista"}</h4>

@@ -7,7 +7,7 @@ import {
 } from "../lib/db";
 import {
   ClientDashboardView, WhatsAppView,
-  T, Btn, Card, NAV, NavItem, PageTitle
+  Btn, Card, NAV, NavItem, PageTitle
 } from "./ClientPortal";
 import CRM1View from "../views/client/CRM1View";
 import CRM2View from "../views/client/CRM2View";

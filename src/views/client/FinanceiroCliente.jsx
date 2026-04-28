@@ -26,7 +26,7 @@ function ServicoModal({ clientId, initial, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[300] flex items-center justify-center p-8">
+    <div className="fixed inset-0 bg-background/90 backdrop-blur-md z-[300] flex items-center justify-center p-8">
       <Card className="w-full max-w-xl animate-fade-in p-0 overflow-hidden shadow-2xl border-primary/20">
         <div className="px-10 py-8 border-b border-border-subtle flex items-center justify-between bg-surface-up/30">
            <h4 className="text-xl font-black text-main tracking-tighter uppercase">{f.id ? "Ajustar Serviço" : "Novo Item de Portfólio"}</h4>
@@ -72,7 +72,7 @@ function VendaModal({ clientId, servicos, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[300] flex items-center justify-center p-8">
+    <div className="fixed inset-0 bg-background/90 backdrop-blur-md z-[300] flex items-center justify-center p-8">
       <Card className="w-full max-w-xl animate-fade-in p-0 overflow-hidden shadow-2xl border-primary/20">
         <div className="px-10 py-8 border-b border-border-subtle flex items-center justify-between bg-surface-up/30">
            <h4 className="text-xl font-black text-main tracking-tighter uppercase">Protocolar Recebimento</h4>

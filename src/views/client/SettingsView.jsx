@@ -74,7 +74,7 @@ export default function SettingsView({ client }) {
                 </button>
                 {/* Tooltip */}
                 <div className="absolute left-1/2 -translate-x-1/2 -top-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                  <div className="bg-slate-800 text-slate-200 text-[10px] py-1.5 px-3 rounded shadow-xl whitespace-nowrap border border-slate-700">
+                  <div className="bg-surface-up text-slate-200 text-[10px] py-1.5 px-3 rounded shadow-xl whitespace-nowrap border border-slate-700">
                     Integração (Embedded Signup) em fase de homologação pela Meta.
                   </div>
                 </div>

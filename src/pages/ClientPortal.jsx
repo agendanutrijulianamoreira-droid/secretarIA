@@ -179,7 +179,7 @@ function ClientDashboardView({ client, leads, pacientes, whatsappNums }) {
     { l: "Agendamentos", v: convertidos, Icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
     { l: "Total Pacientes", v: pacientes.length, Icon: Users, color: "text-purple-500", bg: "bg-purple-500/10" },
     { l: "Canais WhatsApp", v: numAtivos, Icon: Smartphone, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { l: "Interações Hoje", v: client.msgs_today||0, Icon: MessageCircle, color: "text-slate-500", bg: "bg-slate-500/10" },
+    { l: "Interações Hoje", v: client.msgs_today||0, Icon: MessageCircle, color: "text-tertiary", bg: "bg-slate-500/10" },
   ];
 
   const briefing = client.briefing || {};
@@ -371,7 +371,7 @@ function WhatsAppView({ client, numbers, reload }) {
       </div>
 
       {showAdd && (
-        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[200] flex items-center justify-center p-8">
+        <div className="fixed inset-0 bg-background/90 backdrop-blur-md z-[200] flex items-center justify-center p-8">
            <Card className="w-full max-w-xl animate-fade-in p-0 overflow-hidden shadow-2xl border-primary/20">
               <div className="px-10 py-8 border-b border-border-subtle flex items-center justify-between bg-surface-up/30">
                  <h4 className="text-xl font-black text-main tracking-tighter uppercase">{editing ? "Refinar Canal" : "Novo Canal Enterprise"}</h4>
