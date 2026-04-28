@@ -1516,17 +1516,13 @@ export default function App(){
       console.warn("Bypass Firestore: Criando cliente localmente", e);
       cid = "demo-client-" + Date.now();
       newClientData.id = cid;
-      setClients(prev => [...prev, newClientData]);
     }
     
     // Se não foi passado briefing, é a criação direta -> Abre o ShareModal
     if(!briefing.description) {
       setAddedClient({id:cid, ...base});
     }
-    // Injeção de estado local unificada (Zero Trust)
-    if (!clients.find(c => c.id === cid)) {
-      setClients(prev => [...prev, { ...newClientData, id: cid }]);
-    }
+    setClients(prev => [...prev, { id: cid, ...base, avatar: av, color, briefing, plan, status: "setup" }]);
 
     setPending(null);
   },[clients.length]);
