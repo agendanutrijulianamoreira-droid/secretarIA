@@ -973,10 +973,15 @@ function ShareModal({ client, onClose }) {
   );
 }
 
-function ClientsView({ clients, onPortal, onBriefing }) {
+function ClientsView({ clients, onPortal, onBriefing, onNewClient }) {
   return (
     <div className="space-y-12 animate-fade-in">
-      <PageTitle icon={User} title="Gestão de Portfólios" subtitle="Controle centralizado de acessos, planos e configurações de clínicas." />
+      <div className="flex justify-between items-center">
+        <PageTitle icon={User} title="Gestão de Portfólios" subtitle="Controle centralizado de acessos, planos e configurações de clínicas." />
+        <button onClick={onNewClient} className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-primary text-black font-black uppercase tracking-[0.2em] hover:scale-105 transition-all text-[11px] shadow-xl shadow-primary/20 cursor-pointer">
+          <Plus size={16} strokeWidth={3} /> Novo Cliente
+        </button>
+      </div>
       
       <div className="bento-card p-0 overflow-hidden shadow-2xl">
         <div className="premium-glow opacity-30" />
@@ -1606,7 +1611,7 @@ export default function App(){
       >
         <div style={{ padding: "0" }}>
           {view === "dashboard" && <DashboardView clients={clients} alerts={alerts} onPortal={setPortal} />}
-          {view === "clients" && <ClientsView clients={clients} onPortal={setPortal} onBriefing={setBriefCl}/>}
+          {view === "clients" && <ClientsView clients={clients} onPortal={setPortal} onBriefing={setBriefCl} onNewClient={() => setShowNew(true)} />}
           {view === "fluxos" && <FluxosView clients={clients} />}
           {view === "tokens" && <TokensView clients={clients} />}
           {view === "financeiro" && <FinanceiroAdminView clients={clients} />}
