@@ -16,7 +16,7 @@ import FluxosView from "./views/admin/FluxosView";
 import TokensView from "./views/admin/TokensView";
 import FinanceiroAdminView from "./views/admin/FinanceiroAdmin";
 import DashboardView from "./views/admin/DashboardView";
-import { Bot, Zap, Activity, TrendingUp, Target, Smartphone, MessageSquare, Plus, ArrowRight, Shield, Settings, Bell } from "lucide-react";
+import { Bot, Zap, Activity, TrendingUp, Target, Smartphone, MessageSquare, Plus, ArrowRight, Shield, Settings, Bell, Sun, Moon } from "lucide-react";
 import { Logo, Badge } from "./components/UI";
 
 
@@ -268,7 +268,7 @@ function BriefingWizard({initial,planInit,onSave,onCancel}){
 }
 
 // ── Login Page ───────────────────────────────────────────────────────────────
-function LoginView() {
+function LoginView({ theme = 'dark', toggleTheme }) {
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -347,10 +347,27 @@ function LoginView() {
         </div>
       </div>
 
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative bg-background">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative bg-background transition-colors duration-300">
         <div className="absolute top-8 left-8 lg:hidden">
           <Logo size={32} />
         </div>
+
+        {/* Theme toggle — top-right corner */}
+        {toggleTheme && (
+          <button
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
+            className="absolute top-8 right-8 relative h-9 w-[72px] rounded-full bg-surface-up border border-border-subtle hover:border-primary/30 transition-all duration-300 overflow-hidden shadow-inner"
+          >
+            <Sun  size={11} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-amber-400 opacity-50 pointer-events-none" />
+            <Moon size={11} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-blue-400 opacity-50 pointer-events-none" />
+            <span className={`absolute top-1 h-7 w-7 rounded-full flex items-center justify-center shadow-md transition-all duration-300 ease-in-out ${
+              theme === 'dark' ? 'left-[38px] bg-slate-800 text-blue-300' : 'left-1 bg-white text-amber-500'
+            }`}>
+              {theme === 'dark' ? <Moon size={13} /> : <Sun size={13} />}
+            </span>
+          </button>
+        )}
 
         <div className="w-full max-w-md space-y-10 animate-fade-in">
           <div className="space-y-2">
@@ -1400,15 +1417,15 @@ export default function App(){
   };
 
   if(authLoading) return <div style={{ background: "var(--color-bg)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-sec)" }}>🤖 Carregando sistema...</div>;
-  if(!user) return <LoginView />;
+  if(!user) return <LoginView theme={theme} toggleTheme={toggleTheme} />;
 
   if (showPaywall) return <PaywallView user={user} onPlanSelected={handlePlanSelection} />;
 
   // Cliente autenticado → vai direto para o portal do cliente
-  if(portal) return <ClientPortalMain client={portal} onBack={null} />;
+  if(portal) return <ClientPortalMain client={portal} onBack={null} theme={theme} toggleTheme={toggleTheme} />;
 
   return (
-    <div style={{ background: "var(--color-bg)", color: "var(--color-text)", minHeight: "100vh" }}>
+    <div style={{ background: "var(--color-bg)", color: "var(--color-text)", minHeight: "100vh", transition: "background-color 300ms ease, color 300ms ease" }}>
       <SecretariaDashboard 
         user={user} 
         logout={logout} 

@@ -16,7 +16,27 @@ import IAAprendizadosView from "../views/client/IAAprendizados";
 import EquipeView from "../views/client/EquipeView";
 import OnboardingChat from "../views/client/OnboardingChat";
 import { Logo } from "../components/UI";
-import { Zap, Star, Settings, Power, ChevronRight, Bell, Activity, Brain } from "lucide-react";
+import { Zap, Star, Settings, Power, ChevronRight, Bell, Activity, Brain, Sun, Moon } from "lucide-react";
+
+/* Premium pill toggle */
+function ThemeToggle({ theme, toggleTheme }) {
+  const isDark = theme === 'dark';
+  return (
+    <button
+      onClick={toggleTheme}
+      title={isDark ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
+      className="relative h-9 w-[72px] rounded-full bg-surface-up border border-border-subtle hover:border-primary/30 transition-all duration-300 overflow-hidden shadow-inner"
+    >
+      <Sun  size={11} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-amber-400 opacity-50 pointer-events-none" />
+      <Moon size={11} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-blue-400 opacity-50 pointer-events-none" />
+      <span className={`absolute top-1 h-7 w-7 rounded-full flex items-center justify-center shadow-md transition-all duration-300 ease-in-out ${
+        isDark ? 'left-[38px] bg-slate-800 text-blue-300' : 'left-1 bg-white text-amber-500'
+      }`}>
+        {isDark ? <Moon size={13} /> : <Sun size={13} />}
+      </span>
+    </button>
+  );
+}
 
 const PLAN_META = {
   Starter: { color: "#94A3B8", bg: "rgba(148,163,184,0.1)" },
@@ -111,7 +131,7 @@ function PlanoView({ client, invoices }) {
 }
 
 // ── Main Portal ────────────────────────────────────────────────────────────
-export default function ClientPortalMain({ client, onBack }) {
+export default function ClientPortalMain({ client, onBack, theme = 'light', toggleTheme }) {
   const [view, setView]           = useState("dashboard");
   const [leads, setLeads]         = useState([]);
   const [pacientes, setPacientes] = useState([]);
@@ -150,9 +170,9 @@ export default function ClientPortalMain({ client, onBack }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-background text-main selection:bg-primary/20 selection:text-primary">
+    <div className="flex min-h-screen bg-background text-main transition-colors duration-300 selection:bg-primary/20 selection:text-primary">
       {/* Sidebar */}
-      <aside className="w-[280px] bg-surface border-r border-border-subtle flex flex-col fixed h-screen z-[100]">
+      <aside className="w-[280px] bg-surface border-r border-border-subtle flex flex-col fixed h-screen z-[100] transition-colors duration-300">
         <div className="p-8 border-b border-border-subtle flex items-center justify-between">
            <Logo size={28} />
            <div className="flex gap-1.5">
@@ -203,17 +223,18 @@ export default function ClientPortalMain({ client, onBack }) {
       {/* Main Content */}
       <main className="flex-1 ml-[280px] min-h-screen flex flex-col">
         {/* Top Header */}
-        <header className="h-20 bg-background/80 backdrop-blur-xl border-b border-border-subtle sticky top-0 z-90 px-10 flex items-center justify-between">
+        <header className="h-20 bg-background/80 backdrop-blur-xl border-b border-border-subtle sticky top-0 z-90 px-10 flex items-center justify-between transition-colors duration-300">
            <div>
               <h2 className="text-sm font-black text-main uppercase tracking-[0.2em]">{VIEW_LABELS[view]}</h2>
            </div>
-           <div className="flex items-center gap-6">
+           <div className="flex items-center gap-4">
               {numbers.some(n => n.status === "ativo") && (
                 <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                    <span className="text-[10px] font-black uppercase tracking-widest">WhatsApp Ativo</span>
                 </div>
               )}
+              {toggleTheme && <ThemeToggle theme={theme} toggleTheme={toggleTheme} />}
               <div className="h-10 w-10 rounded-xl bg-surface border border-border-subtle flex items-center justify-center text-secondary hover:text-primary transition-colors cursor-pointer relative">
                  <Bell size={18} />
                  <div className="absolute top-0 right-0 h-2 w-2 rounded-full bg-primary" />
