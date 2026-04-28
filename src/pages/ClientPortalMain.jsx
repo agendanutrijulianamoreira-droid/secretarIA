@@ -18,7 +18,7 @@ import MarketingView from "../views/client/MarketingView";
 import SettingsView from "../views/client/SettingsView";
 import OnboardingChat from "../views/client/OnboardingChat";
 import { Logo } from "../components/UI";
-import { Zap, Star, Settings, Power, ChevronRight, Bell, Activity, Brain, CheckCircle2 } from "lucide-react";
+import { Zap, Star, Settings, Power, ChevronRight, Bell, Activity, Brain, CheckCircle2, LayoutDashboard, AlertCircle, Sparkles, Bot, TrendingUp, Users, Smartphone, MessageCircle, ShieldCheck, User, Plus, Edit2, X } from "lucide-react";
 
 const PLAN_META = {
   Starter: { color: "#94A3B8", bg: "rgba(148,163,184,0.1)" },

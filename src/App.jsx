@@ -1616,7 +1616,7 @@ export default function App(){
           {view === "settings" && <SettingsView user={user}/>}
         </div>
       </SecretariaDashboard>
-      {showNew && <NewModal onClose={() => setShowNew(false)} onNext={f => { setPending(f); setShowNew(false); }} />}
+      {showNew && <NewModal onClose={() => setShowNew(false)} onNext={f => { setPending(f); setShowNew(false); }} onFinish={f => { addClient(f, EMPTY_B, f.plan); setShowNew(false); }} />}
       {pending && <BriefingWizard initial={EMPTY_B} planInit={pending.plan} onSave={(b, p) => addClient(pending, b, p)} onCancel={() => setPending(null)} />}
       {briefCl && <BriefingWizard initial={briefCl.briefing || {}} planInit={briefCl.plan} onSave={(b, p) => updateBriefing(briefCl.id, b, p)} onCancel={() => setBriefCl(null)} />}
     </div>
