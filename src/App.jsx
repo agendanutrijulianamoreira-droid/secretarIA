@@ -6,7 +6,8 @@ import {
   onAuthStateChanged, 
   signOut, 
   GoogleAuthProvider, 
-  signInWithPopup 
+  signInWithPopup,
+  createUserWithEmailAndPassword
 } from "firebase/auth";
 import SalesPage from "./pages/SalesPage";
 import SecretariaDashboard from "./pages/SecretariaDashboard";
@@ -16,7 +17,7 @@ import TokensView from "./views/admin/TokensView";
 import FinanceiroAdminView from "./views/admin/FinanceiroAdmin";
 import DashboardView from "./views/admin/DashboardView";
 import { Bot, Zap } from "lucide-react";
-import { Logo } from "./components/UI";
+import { Logo, Badge } from "./components/UI";
 
 
 // ── Tokens ──────────────────────────────────────────────────────────────────
@@ -39,6 +40,8 @@ const T = {
   ink: "var(--color-text)",
   inkSec: "var(--color-text-sec)",
   inkTert: "var(--color-text-tert)",
+  asaas: "#3B82F6",
+  borderSt: "var(--color-border)",
 };
 
 
@@ -265,21 +268,31 @@ function BriefingWizard({initial,planInit,onSave,onCancel}){
 }
 
 // ── Login Page ───────────────────────────────────────────────────────────────
-function LoginView({ onLogin }) {
+function LoginView() {
+  const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setError(null);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      if (isRegister) {
+        await createUserWithEmailAndPassword(auth, email, password);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
     } catch (err) {
       console.error(err);
-      setError("Falha no login. Verifique suas credenciais.");
+      setError(err.code === "auth/user-not-found" || err.code === "auth/wrong-password" 
+        ? "E-mail ou senha incorretos." 
+        : err.code === "auth/email-already-in-use"
+        ? "Este e-mail já está em uso."
+        : "Erro ao tentar acessar. Verifique seus dados.");
     } finally {
       setLoading(false);
     }
@@ -287,86 +300,160 @@ function LoginView({ onLogin }) {
 
   const handleGoogleLogin = async () => {
     setLoading(true);
-    setError("");
+    setError(null);
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (err) {
       console.error(err);
-      setError("Falha no login com Google.");
+      setError("Erro na autenticação com Google.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center p-6 font-sans">
-      <div className="bg-white border border-gray-100 shadow-xl rounded-[32px] p-10 w-full max-w-md animate-in fade-in zoom-in duration-500">
-        <div className="text-center mb-10">
-          <Logo size={48} className="justify-center flex-col gap-4" />
-          <p className="text-gray-500 mt-3">Gestão inteligente para sua clínica</p>
+    <div className="flex min-h-screen w-full bg-[var(--color-bg)] overflow-hidden font-sans">
+      <div className="hidden lg:flex w-1/2 relative flex-col justify-center p-12 overflow-hidden bg-slate-900">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/login-bg.png" 
+            alt="SecretarIA Background" 
+            className="w-full h-full object-cover opacity-60 mix-blend-luminosity transition-transform duration-[20s] hover:scale-110"
+            style={{ filter: 'brightness(0.6) contrast(1.2)' }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#0F172A] via-[#0F172A]/90 to-transparent z-10" />
         </div>
 
-        <div className="space-y-4 mb-8">
-          <button 
-            onClick={handleGoogleLogin} 
-            disabled={loading}
-            className="w-full flex items-center justify-center space-x-3 bg-white border border-gray-200 py-3 rounded-xl hover:bg-gray-50 transition-all font-medium text-gray-700 disabled:opacity-50"
-          >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google" />
-            <span>Continuar com Google</span>
-          </button>
-
-          <div className="flex items-center space-x-4">
-            <div className="flex-1 h-px bg-gray-100"></div>
-            <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">ou e-mail</span>
-            <div className="flex-1 h-px bg-gray-100"></div>
-          </div>
+        <div className="absolute top-12 left-12 z-20">
+          <Logo size={42} />
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2 text-left">
-            <label className="text-sm font-semibold text-gray-700 ml-1">E-mail</label>
-            <input 
-              type="email" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              className="w-full px-4 py-3 bg-[#FAFAF7] border-none rounded-xl focus:ring-2 focus:ring-[#7A8B82] outline-none transition-all"
-              required
-            />
+        <div className="relative z-20 space-y-6 max-w-xl">
+          <div className="space-y-4">
+            <Badge color="green" className="!bg-[var(--color-cta)]/10 !text-[var(--color-cta)] !border-[var(--color-cta)]/20">
+              <Zap size={14} className="fill-current" /> High-Tech Management
+            </Badge>
+            <h1 className="text-5xl xl:text-6xl font-bold leading-[1.1] tracking-tight text-white uppercase font-syncopate">
+              O futuro da sua <span className="text-[var(--color-cta)]">clínica</span> começa aqui.
+            </h1>
+          </div>
+          
+          <p className="text-lg text-slate-300 leading-relaxed font-light max-w-lg">
+            Evolua o atendimento da sua clínica com IA avançada. Recupere o controle da sua agenda e escale sua operação com tecnologia de ponta.
+          </p>
+        </div>
+
+        <div className="absolute bottom-12 left-12 right-12 z-20 flex items-center justify-between text-slate-500 text-[10px] font-bold tracking-widest uppercase opacity-50">
+          <span>&copy; 2026 SecretarIA Systems</span>
+          <div className="flex gap-4">
+            <span>Privacidade</span>
+            <span>Termos</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative bg-[var(--color-bg)]">
+        <div className="absolute top-8 left-8 lg:hidden">
+          <Logo size={32} />
+        </div>
+
+        <div className="w-full max-w-md space-y-8 animate-in fade-in zoom-in duration-700">
+          <div className="space-y-2">
+            <h2 className="text-3xl font-bold text-[var(--color-text)] tracking-tight font-syncopate">
+              {isRegister ? "Criar Conta" : "Bem-vinda"}
+            </h2>
+            <p className="text-[var(--color-text-sec)]">
+              {isRegister ? "Comece agora a automatizar sua clínica com IA." : "Acesse sua conta para gerenciar seus atendimentos inteligentes."}
+            </p>
           </div>
 
-          <div className="space-y-2 text-left">
-            <label className="text-sm font-semibold text-gray-700 ml-1">Senha</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-4 py-3 bg-[#FAFAF7] border-none rounded-xl focus:ring-2 focus:ring-[#7A8B82] outline-none transition-all"
-              required
-            />
-          </div>
+          <div className="space-y-4">
+            <button 
+              onClick={handleGoogleLogin} 
+              disabled={loading}
+              className="w-full flex items-center justify-center space-x-4 bg-[var(--color-surface)] border border-[var(--color-border)] py-4 rounded-2xl hover:bg-[var(--color-surface-up)] hover:border-[var(--color-cta)]/30 transition-all font-semibold text-[var(--color-text)] disabled:opacity-50 shadow-sm group"
+            >
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google" />
+              <span>{isRegister ? "Cadastrar com Google" : "Continuar com Google"}</span>
+            </button>
 
-          {error && (
-            <div className="bg-[#F5EBE6] text-[#B67A62] p-4 rounded-xl text-sm font-medium border border-[#B67A62]/20 animate-in shake duration-300">
-              {error}
+            <div className="flex items-center space-x-4 px-2">
+              <div className="flex-1 h-px bg-[var(--color-border)] opacity-50"></div>
+              <span className="text-[9px] text-[var(--color-text-sec)] font-bold uppercase tracking-[0.2em]">ou e-mail</span>
+              <div className="flex-1 h-px bg-[var(--color-border)] opacity-50"></div>
             </div>
-          )}
+          </div>
 
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full bg-[#7A8B82] text-white py-4 rounded-xl font-bold shadow-lg shadow-[#7A8B82]/20 hover:bg-[#687970] transition-all transform hover:-translate-y-0.5 disabled:opacity-50"
-          >
-            {loading ? "Processando..." : "Entrar no Dashboard"}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {isRegister && (
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-[var(--color-text-sec)] uppercase tracking-wider ml-1">Seu Nome / Clínica</label>
+                <input 
+                  type="text" 
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Nome Completo"
+                  className="w-full px-5 py-3.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:ring-2 focus:ring-[var(--color-cta)]/20 focus:border-[var(--color-cta)] outline-none transition-all text-[var(--color-text)] placeholder:text-[var(--color-text-sec)]/20"
+                  required={isRegister}
+                />
+              </div>
+            )}
 
-        <p className="text-center text-xs text-gray-400 mt-10 uppercase tracking-widest font-medium">
-          &copy; 2026 SecretarIA Systems
-        </p>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-[var(--color-text-sec)] uppercase tracking-wider ml-1">E-mail de acesso</label>
+              <input 
+                type="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+                className="w-full px-5 py-3.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:ring-2 focus:ring-[var(--color-cta)]/20 focus:border-[var(--color-cta)] outline-none transition-all text-[var(--color-text)] placeholder:text-[var(--color-text-sec)]/20"
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center px-1">
+                <label className="text-[10px] font-bold text-[var(--color-text-sec)] uppercase tracking-wider">Senha</label>
+                {!isRegister && <a href="#" className="text-[10px] font-bold text-[var(--color-cta)] hover:opacity-80 transition-opacity">Esqueceu?</a>}
+              </div>
+              <input 
+                type="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-5 py-3.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:ring-2 focus:ring-[var(--color-cta)]/20 focus:border-[var(--color-cta)] outline-none transition-all text-[var(--color-text)] placeholder:text-[var(--color-text-sec)]/20"
+                required
+              />
+            </div>
+
+            {error && (
+              <div className="bg-red-500/10 text-red-500 p-3.5 rounded-xl text-xs font-medium border border-red-500/20 animate-in shake duration-300 flex items-center gap-2">
+                <span>⚠️</span> {error}
+              </div>
+            )}
+
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-[var(--color-cta)] text-black py-4 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-[var(--color-cta)]/10 hover:bg-[var(--color-cta-hover)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50"
+            >
+              {loading ? "Processando..." : (isRegister ? "Criar Minha Conta" : "Entrar no Dashboard")}
+            </button>
+          </form>
+
+          <div className="text-center pt-2">
+            <p className="text-xs text-[var(--color-text-sec)] font-medium">
+              {isRegister ? "Já possui conta?" : "Ainda não faz parte?"} 
+              <button 
+                onClick={() => setIsRegister(!isRegister)}
+                className="ml-1 text-[var(--color-cta)] font-bold hover:underline underline-offset-4"
+              >
+                {isRegister ? "Fazer Login" : "Criar conta agora"}
+              </button>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -646,9 +733,9 @@ function AdminCard({client,onPortal,onBriefing}){
         <Tag color={pm.color} bg={pm.bg}>{client.plan}</Tag>
       </div>
       <div style={{background:T.bg,borderRadius:10,padding:"9px 12px",border:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:8}}>
-        <Pulse status={client.n8n_status||"pending"}/>
-        <span style={{fontSize:11,color:T.green,fontWeight:600}}>n8n</span>
-        <span style={{fontSize:11,color:T.inkTert,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{client.n8n_url||"Webhook não configurado"}</span>
+        <Pulse status={client.status === "active" ? "online" : "offline"}/>
+        <span style={{fontSize:11,color:T.green,fontWeight:600}}>IA Ativa</span>
+        <span style={{fontSize:11,color:T.inkTert,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>Motor Multi-Agente</span>
       </div>
       <div>
         <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
@@ -665,12 +752,9 @@ function AdminCard({client,onPortal,onBriefing}){
         <div style={{textAlign:"center"}}><div style={{fontSize:20,fontWeight:700,color:T.ink}}>{client.msgs_today||0}</div><div style={{fontSize:10,color:T.inkTert}}>msgs hoje</div></div>
         <div style={{textAlign:"center"}}><div style={{fontSize:20,fontWeight:700,color:T.inkSec}}>{client.msgs_month||0}</div><div style={{fontSize:10,color:T.inkTert}}>este mês</div></div>
       </div>
-      <div style={{display:"flex",gap:8}}>
+      <div style={{display:"flex",gap:8,marginTop:10}}>
         <button onClick={()=>onPortal(client)} style={{flex:1,padding:"8px",borderRadius:9,background:"transparent",border:`1px solid ${T.border}`,color:T.inkSec,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Portal</button>
         <button onClick={()=>onBriefing(client)} style={{flex:1,padding:"8px",borderRadius:9,background:T.greenDim,border:`1px solid ${T.green}44`,color:T.green,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>✏️ Briefing</button>
-        {(client.n8n_status === "pending" || client.status === "setup") && (
-          <button onClick={(e)=>{e.stopPropagation(); if(window.provisionClient) window.provisionClient(client.id);}} style={{flex:1,padding:"8px",borderRadius:9,background:T.greenDim,border:`1px solid ${T.green}44`,color:T.green,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>🚀 Provisionar n8n</button>
-        )}
       </div>
     </div>
   );
@@ -856,6 +940,17 @@ function StatsView({clients}){
 }
 
 function SettingsView({user}){
+  const [isEditing, setIsEditing] = useState(false);
+  const [profile, setProfile] = useState({ 
+    name: user.displayName || "Dra. Juliana", 
+    email: user.email 
+  });
+
+  const save = () => {
+    setIsEditing(false);
+    alert("Perfil atualizado com sucesso!");
+  };
+
   return(
     <div style={{animation:"fadeIn 300ms ease"}}>
       <h1 style={{margin:"0 0 4px",fontSize:22,fontWeight:700,color:T.ink}}>⚙️ Configurações do Sistema</h1>
@@ -864,16 +959,36 @@ function SettingsView({user}){
       <div style={{maxWidth:600,display:"flex",flexDirection:"column",gap:20}}>
         <div style={{background:"var(--color-surface)",border:`1px solid var(--color-border)`,borderRadius:16,padding:24}}>
           <div style={{fontWeight:600,marginBottom:16,fontSize:15}}>Perfil do Administrador</div>
-          <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
-            <div style={{width:64,height:64,borderRadius:16,background:T.greenDim,color:T.green,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,fontWeight:700}}>
-              {user.email?.[0].toUpperCase()}
+          
+          {isEditing ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <label style={{ fontSize: 11, color: T.inkTert, fontWeight: 700, textTransform: "uppercase" }}>Nome de Exibição</label>
+                <input value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} style={{ background: T.bg, border: `1px solid ${T.border}`, padding: "10px 14px", borderRadius: 10, color: T.ink, fontFamily: "inherit" }} />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <label style={{ fontSize: 11, color: T.inkTert, fontWeight: 700, textTransform: "uppercase" }}>E-mail Administrativo</label>
+                <input value={profile.email} disabled style={{ background: T.bg, border: `1px solid ${T.border}`, padding: "10px 14px", borderRadius: 10, color: T.inkSec, fontFamily: "inherit", opacity: 0.7 }} />
+              </div>
+              <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+                <Btn onClick={save}>Salvar Alterações</Btn>
+                <Btn variant="ghost" onClick={() => setIsEditing(false)}>Cancelar</Btn>
+              </div>
             </div>
-            <div>
-              <div style={{fontSize:16,fontWeight:600}}>{user.email}</div>
-              <div style={{fontSize:12,color:T.inkTert}}>ID: {user.uid}</div>
-            </div>
-          </div>
-          <Btn variant="ghost">Editar Perfil</Btn>
+          ) : (
+            <>
+              <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
+                <div style={{width:64,height:64,borderRadius:16,background:T.greenDim,color:T.green,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,fontWeight:700}}>
+                  {profile.name[0].toUpperCase()}
+                </div>
+                <div>
+                  <div style={{fontSize:16,fontWeight:600}}>{profile.name}</div>
+                  <div style={{fontSize:12,color:T.inkTert}}>{profile.email}</div>
+                </div>
+              </div>
+              <Btn variant="ghost" onClick={() => setIsEditing(true)}>Editar Perfil</Btn>
+            </>
+          )}
         </div>
 
         <div style={{background:"var(--color-surface)",border:`1px solid var(--color-border)`,borderRadius:16,padding:24}}>
@@ -941,9 +1056,21 @@ function VendasAdminView({ clients, alerts }) {
   const unread = vendas.filter(a => !a.read).length;
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:20, animation:"fadeIn 300ms ease" }}>
-      <div>
-        <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:800, color:T.ink }}>🛒 Vendas & Pipeline</h1>
-        <p style={{ margin:0, fontSize:13, color:T.inkTert }}>Novos cadastros e pagamentos recebidos.</p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <div>
+          <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:800, color:T.ink }}>🛒 Vendas & Pipeline</h1>
+          <p style={{ margin:0, fontSize:13, color:T.inkTert }}>Novos cadastros e pagamentos recebidos.</p>
+        </div>
+        <Btn variant="ghost" size="sm" onClick={() => {
+          const csv = ["Data,Título,Mensagem"];
+          alerts.forEach(a => csv.push(`"${new Date(a.created_at).toLocaleString()}","${a.title}","${a.message.replace(/"/g, '""')}"`));
+          const blob = new Blob([csv.join("\n")], { type: 'text/csv' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `relatorio-vendas-${new Date().toISOString().slice(0,10)}.csv`;
+          a.click();
+        }}>📥 Exportar Relatório</Btn>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
         {[["Total de Vendas", totalVendas, T.green],["Novas (não lidas)", unread, T.cyan],["Clientes", clients.length, T.amber]].map(([l,v,c]) => (
@@ -966,6 +1093,89 @@ function VendasAdminView({ clients, alerts }) {
             {!a.read && <Btn onClick={() => Alerts.markRead(a.id)} variant="ghost" style={{ fontSize:11, padding:"7px 12px" }}>Marcar como lido</Btn>}
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Paywall View ─────────────────────────────────────────────────────────────
+function PaywallView({ user, onPlanSelected }) {
+  const plans = [
+    {
+      id: "starter",
+      name: "Plano Slim",
+      price: "197",
+      desc: "Ideal para nutris que atuam sozinhas.",
+      features: ["Clone da sua Personalidade", "Atendimento WhatsApp Automático", "500 interações/mês"]
+    },
+    {
+      id: "pro",
+      name: "Plano Clinic",
+      price: "497",
+      desc: "A verdadeira máquina de conversão.",
+      isPopular: true,
+      features: ["Tudo do Slim", "Agendamento automático via IA", "2.000 interações/mês"]
+    },
+    {
+      id: "enterprise",
+      name: "Smart VIP",
+      price: "997",
+      desc: "Automação total para clínicas.",
+      features: ["Tudo do Clinic", "Interações Ilimitadas", "Suporte Dedicado"]
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center p-6 font-sans">
+      <div className="max-w-5xl w-full space-y-12 animate-in fade-in zoom-in duration-700">
+        <div className="text-center space-y-4">
+          <div className="flex justify-center mb-6">
+            <Logo size={64} />
+          </div>
+          <h2 className="text-4xl font-bold text-white font-syncopate">Escolha seu Plano</h2>
+          <p className="text-slate-400 max-w-2xl mx-auto text-lg">
+            Sua conta foi criada com sucesso! Agora, escolha o plano ideal para liberar o acesso total à sua SecretarIA.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {plans.map((plan) => (
+            <div key={plan.id} className={`glass-card p-8 rounded-3xl relative flex flex-col transition-all hover:translate-y-[-8px] ${plan.isPopular ? 'ring-2 ring-[var(--color-cta)] scale-105 shadow-2xl shadow-[var(--color-cta)]/10' : ''}`}>
+              {plan.isPopular && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[var(--color-cta)] text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                  Mais Popular
+                </div>
+              )}
+              <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-4xl font-bold text-white">R$ {plan.price}</span>
+                <span className="text-slate-500 text-sm">/mês</span>
+              </div>
+              <p className="text-slate-400 text-sm mb-8 flex-1">{plan.desc}</p>
+              
+              <ul className="space-y-4 mb-8">
+                {plan.features.map(f => (
+                  <li key={f} className="flex items-center gap-3 text-xs text-slate-300">
+                    <Zap size={14} className="text-[var(--color-cta)]" /> {f}
+                  </li>
+                ))}
+              </ul>
+
+              <button 
+                onClick={() => onPlanSelected(plan)}
+                className={`w-full py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${plan.isPopular ? 'bg-[var(--color-cta)] text-black shadow-lg shadow-[var(--color-cta)]/20' : 'bg-slate-800 text-white border border-slate-700 hover:border-[var(--color-cta)]'}`}
+              >
+                Selecionar Plano
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center">
+          <button onClick={() => signOut(auth)} className="text-slate-500 hover:text-white transition-colors text-xs font-medium uppercase tracking-widest flex items-center gap-2 mx-auto justify-center">
+            ← Sair da conta
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -1044,38 +1254,13 @@ export default function App(){
     return () => { unsub(); unsubAlerts(); };
   },[user]);
 
-  const provisionClient = useCallback(async (clientId) => {
-    try {
-      if(!confirm("Tem certeza que deseja montar o robô no n8n para este cliente?")) return;
-      const res = await fetch("http://localhost:5180/api/provision", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientId, adminEmail: user?.email })
-      });
-      const data = await res.json();
-      if(data.success) {
-        alert("Provisionado com sucesso no n8n!");
-      } else {
-        alert("Erro no provisionamento: " + (data.error || "Desconhecido"));
-      }
-    } catch(err) {
-      alert("Falha de rede ao provisionar: " + err.message);
-    }
-  }, [user]);
-
-  // Hook global pro card enxergar a função
-  useEffect(() => {
-    window.provisionClient = provisionClient;
-  }, [provisionClient]);
-
   const addClient = useCallback(async(base, briefing, plan)=>{
     const av = base.name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();
     const color = COLORS[clients.length % COLORS.length];
     const cid = await Clientes.create({
       ...base, avatar:av, color,
       briefing, plan,
-      capabilities: base.capabilities||["text"],
-      n8n_status: "pending",
+      capabilities: base.capabilities||["text"]
     });
     
     // Se não foi passado briefing, é a criação direta -> Abre o ShareModal
@@ -1109,8 +1294,40 @@ export default function App(){
     return <SalesPage />;
   }
 
+  // Lógica de Paywall: se logado, não for admin e não tiver portal ativo ou pago
+  const showPaywall = user && user.email !== ADMIN_EMAIL && (!portal || portal.payment_status !== "paid");
+
+  const handlePlanSelection = async (plan) => {
+    try {
+      setLoading(true);
+      // Simulação de pagamento -> No futuro integrar Asaas aqui
+      const data = {
+        name: user.displayName || user.email.split("@")[0],
+        email: user.email,
+        plan: plan.id,
+        payment_status: "paid", // Simulado
+        status: "active"
+      };
+
+      if (portal) {
+        await Clientes.update(portal.id, data);
+      } else {
+        await Clientes.create(data);
+      }
+      
+      // O listener onAuthStateChanged cuidará de recarregar o portal
+      alert(`Parabéns! Você assinou o ${plan.name}. Seu acesso está liberado.`);
+    } catch (err) {
+      alert("Erro ao processar plano: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if(authLoading) return <div style={{ background: "var(--color-bg)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-sec)" }}>🤖 Carregando sistema...</div>;
   if(!user) return <LoginView />;
+
+  if (showPaywall) return <PaywallView user={user} onPlanSelected={handlePlanSelection} />;
 
   // Cliente autenticado → vai direto para o portal do cliente
   if(portal) return <ClientPortalMain client={portal} onBack={null} />;

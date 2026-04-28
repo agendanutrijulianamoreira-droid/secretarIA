@@ -195,7 +195,7 @@ export default function OnboardingChat({ client, onComplete }) {
       height: "100vh",
       background: "var(--color-bg)",
       color: "var(--color-text)",
-      fontFamily: "'Outfit', sans-serif",
+      fontFamily: "inherit",
     }}>
       <style>{`
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }

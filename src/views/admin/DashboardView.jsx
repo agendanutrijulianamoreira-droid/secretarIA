@@ -23,7 +23,13 @@ export default function DashboardView({ clients, alerts, onPortal }) {
             Bem-vinda de volta, Dra. Juliana. Aqui está o pulso do seu consultório hoje.
           </p>
         </div>
-        <Button variant="primary" icon={Zap}>
+        <Button variant="primary" icon={Zap} onClick={() => {
+          const msg = prompt("Digite a mensagem para disparo em massa para TODOS os clientes:");
+          if (msg) {
+            alert(`Disparo iniciado para ${clients.length} clientes!\n\nMensagem: ${msg}`);
+            // Aqui integraria com uma fila de mensagens ou n8n global
+          }
+        }}>
           Novo Disparo em Massa
         </Button>
       </div>

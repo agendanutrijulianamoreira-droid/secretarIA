@@ -114,6 +114,16 @@ export default function FinanceiroClienteView({ client, servicos, vendas, invoic
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <PageTitle icon={Wallet} iconColor={T.green} title="Financeiro" subtitle="Serviços, vendas e cobranças do seu plano." />
         <div style={{ display: "flex", gap: 10 }}>
+          <Btn size="sm" variant="ghost" onClick={() => {
+            const csv = ["Data,Paciente,Serviço,Valor,Forma,Status"];
+            vendas.forEach(v => csv.push(`"${new Date(v.created_at).toLocaleDateString()}","${v.paciente_nome}","${v.servico_nome || '—'}","${v.valor}","${v.forma_pagamento}","${v.status}"`));
+            const blob = new Blob([csv.join("\n")], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `meu-relatorio-financeiro-${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+          }}>📥 Exportar</Btn>
           <Btn size="sm" variant="ghost" onClick={() => setShowVenda(true)}>+ Registrar Venda</Btn>
           <Btn size="sm" onClick={() => setEditServ({})}>+ Serviço</Btn>
         </div>

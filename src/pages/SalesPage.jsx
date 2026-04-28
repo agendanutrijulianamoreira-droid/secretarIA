@@ -36,7 +36,7 @@ export default function SalesPage() {
         "Até 500 interações/mês",
         "Respostas básicas de cardápio"
       ],
-      link: "https://sandbox.asaas.com/c/placeholder_starter"
+      link: "https://sandbox.asaas.com/c/secretaria_starter"
     },
     {
       id: "pro",
@@ -51,7 +51,7 @@ export default function SalesPage() {
         "Até 2.000 interações/mês",
         "Integração Google Calendar"
       ],
-      link: "https://sandbox.asaas.com/c/placeholder_pro"
+      link: "https://sandbox.asaas.com/c/secretaria_pro"
     },
     {
       id: "enterprise",
@@ -65,12 +65,12 @@ export default function SalesPage() {
         "Criação Fluxo n8n Avançado",
         "Gerente de Suporte Dedicado"
       ],
-      link: "https://sandbox.asaas.com/c/placeholder_enterprise"
+      link: "https://sandbox.asaas.com/c/secretaria_enterprise"
     }
   ];
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", background: T.bg, minHeight: "100vh", color: T.ink, overflowX: "hidden" }}>
+    <div style={{ background: T.bg, minHeight: "100vh", color: T.ink, overflowX: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         * { box-sizing: border-box; }
@@ -134,7 +134,7 @@ export default function SalesPage() {
           color: #E0E0E0;
           padding: 16px 24px;
           border-radius: 20px 20px 20px 4px;
-          font-family: "Inter", sans-serif;
+          font-family: inherit;
           font-size: 14px;
           font-weight: 500;
           box-shadow: 0 20px 40px rgba(0, 230, 118, 0.08);
@@ -264,7 +264,7 @@ export default function SalesPage() {
           <div style={{ display: "inline-block", background: T.greenDim, color: T.green, padding: "8px 20px", borderRadius: 100, fontSize: 12, fontWeight: 800, marginBottom: 40, border: `1px solid ${T.green}66`, letterSpacing: "2px", textTransform:"uppercase" }}>
             The Health-Tech Core #1
           </div>
-          <h1 className="text-gradient" style={{ fontSize: 72, fontWeight: 900, lineHeight: 1, marginBottom: 24, letterSpacing: "-4px", fontFamily: "'Syncopate', sans-serif" }}>
+          <h1 className="text-gradient" style={{ fontSize: 72, fontWeight: 900, lineHeight: 1, marginBottom: 24, letterSpacing: "-4px" }}>
             A INTELIGÊNCIA QUE DOMINA SEU CONSULTÓRIO.
           </h1>
           <p style={{ fontSize: 20, color: T.inkSec, lineHeight: 1.6, marginBottom: 48, maxWidth: 800, margin: "0 auto 48px", fontWeight: 500 }}>

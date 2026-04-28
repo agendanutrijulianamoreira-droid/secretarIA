@@ -1,8 +1,7 @@
 @import "tailwindcss";
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
-
 :root {
+  color-scheme: dark;
   /* Cores - Premium Dark Tech (Padrão) */
   --color-bg: #0F172A;
   --color-surface: #1E293B;
@@ -46,7 +45,7 @@
 body { 
   background-color: var(--color-bg); 
   color: var(--color-text); 
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -54,9 +53,9 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Syncopate', sans-serif;
-  letter-spacing: -0.05em;
-  text-transform: uppercase;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.02em;
+  font-weight: 700;
 }
 
 /* Classes Utilitárias de Design System */

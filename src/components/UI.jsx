@@ -141,7 +141,7 @@ export const Logo = ({ size = 32, className = "" }) => (
         fontSize: size * 0.75, 
         fontWeight: 900, 
         letterSpacing: '-0.04em',
-        fontFamily: "'Syncopate', sans-serif",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
         textTransform: "uppercase",
         color: 'var(--color-text)'
       }}>

@@ -49,9 +49,23 @@ export default function FinanceiroAdminView({ clients }) {
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:24, animation:"fadeIn 300ms ease" }}>
-      <div>
-        <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:800, color:T.ink }}>💰 Financeiro Admin</h1>
-        <p style={{ margin:0, fontSize:13, color:T.inkTert }}>Receita recorrente, cobranças e análise de custos.</p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <div>
+          <h1 style={{ margin:"0 0 4px", fontSize:22, fontWeight:800, color:T.ink }}>💰 Financeiro Admin</h1>
+          <p style={{ margin:0, fontSize:13, color:T.inkTert }}>Receita recorrente, cobranças e análise de custos.</p>
+        </div>
+        <button onClick={() => {
+          const csv = ["Cliente,Plano,Status,MRR"];
+          clients.forEach(c => csv.push(`"${c.name}","${c.plan}","${c.status}","${c.status === 'active' ? PLAN_PRICES[c.plan] : 0}"`));
+          const blob = new Blob([csv.join("\n")], { type: 'text/csv' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `relatorio-financeiro-admin-${new Date().toISOString().slice(0,10)}.csv`;
+          a.click();
+        }} style={{ padding: "8px 16px", borderRadius: 10, background: T.surface, border: `1px solid ${T.border}`, color: T.ink, fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+          📥 Exportar CSV
+        </button>
       </div>
 
       {/* KPIs principais */}

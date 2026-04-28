@@ -148,7 +148,7 @@ export default function ClientPortalMain({ client, onBack }) {
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: T.bg, color: T.ink, fontFamily: "'Outfit', sans-serif" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: T.bg, color: T.ink }}>
       <style>{`
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse  { 0%,100% { transform: scale(1); opacity: 0.25; } 50% { transform: scale(1.5); opacity: 0.1; } }
