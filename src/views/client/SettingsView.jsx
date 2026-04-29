@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Settings, Smartphone, MessageCircle, AlertTriangle, ShieldCheck, Key, Save, ChevronDown, ChevronUp, CheckCircle2, XCircle } from "lucide-react";
 import { PageTitle, Card, Btn, Inp, Pulse } from "../../pages/ClientPortal";
+import { Tokens } from "../../lib/db";
 
 export default function SettingsView({ client }) {
   const [loading, setLoading] = useState(false);
@@ -11,17 +12,41 @@ export default function SettingsView({ client }) {
     wabaId: ""
   });
   
-  // Simulando status de conexão do banco
   const [isConnected, setIsConnected] = useState(false);
 
-  const handleSaveCredentials = () => {
+  useEffect(() => {
+    if (!client?.id) return;
+    Tokens.get(client.id).then(t => {
+      if (t) {
+        setCredentials({
+          accessToken: t.waba_token || "",
+          phoneNumberId: t.phone_number_id || "",
+          wabaId: t.waba_id || ""
+        });
+        if (t.waba_token && t.phone_number_id && t.waba_id) {
+          setIsConnected(true);
+        }
+      }
+    });
+  }, [client?.id]);
+
+  const handleSaveCredentials = async () => {
     setLoading(true);
-    // Simula chamada de API para salvar tokens no banco
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await Tokens.update(client.id, {
+        waba_token: credentials.accessToken,
+        phone_number_id: credentials.phoneNumberId,
+        waba_id: credentials.wabaId
+      });
       setIsConnected(true);
       alert("Credenciais salvas com sucesso! O WhatsApp Cloud API está conectado.");
-    }, 1200);
+    } catch (e) {
+      console.error("Erro ao salvar tokens:", e);
+      alert("Falha ao salvar credenciais. Tente novamente.");
+    } finally {
+      setLoading(true); // Manter o loading por um momento para feedback visual
+      setTimeout(() => setLoading(false), 800);
+    }
   };
 
   return (
