@@ -23,7 +23,7 @@ export class SalesAgent {
       
       if (promoResult.rows.length > 0) {
         promotionsContext = `\nPROMOÇÕES ATIVAS (Use apenas como argumento de fechamento/urgência se o cliente hesitar pelo preço):\n`;
-        promoResult.rows.forEach(p => {
+        promoResult.rows.forEach((p: Record<string, any>) => {
           promotionsContext += `- ${p.title}: ${p.description}. Regras: ${p.discount_rules}. Válido até: ${p.valid_until ? p.valid_until.toISOString().split('T')[0] : 'Indeterminado'}\n`;
         });
       }
