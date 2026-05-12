@@ -1,7 +1,11 @@
 [build]
-builder = "nixpacks"
+builder = "RAILPACK"
 buildCommand = "npm install && npm run build"
+
+[build.env]
+RAILPACK_NODE_VERSION = "20"
 
 [deploy]
 startCommand = "npx serve dist --single -l $PORT"
-restartPolicyType = "on_failure"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
