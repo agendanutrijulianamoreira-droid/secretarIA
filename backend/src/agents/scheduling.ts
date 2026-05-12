@@ -31,7 +31,7 @@ DADOS DA CLÍNICA:
 
 EQUIPE DE PROFISSIONAIS:
 ${professionals.length > 0 
-  ? professionals.map(p => `- ${p.name} (ID: ${p.id})`).join('\n')
+  ? professionals.map((p: any) => `- ${p.name} (ID: ${p.id})`).join('\n')
   : 'Nenhum profissional cadastrado no momento. Informe ao paciente que a recepção entrará em contato.'}
 
 INSTRUÇÕES DE FLUXO:
