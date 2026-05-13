@@ -1,9 +1,10 @@
 import OpenAI from 'openai';
 import { ClinicContext, ChatMessage, AgentResponse } from './types.js';
 
-const openai = new OpenAI();
-
 export class FAQAgent {
+  private get openai() {
+    return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
   async handle(
     message: string, 
     clinic: ClinicContext, 
@@ -28,7 +29,7 @@ MENSAGEM DO PACIENTE:
 `;
 
     try {
-      const response = await openai.chat.completions.create({
+      const response = await this.openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [
           { role: 'system', content: prompt },

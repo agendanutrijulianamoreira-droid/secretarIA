@@ -2,9 +2,10 @@ import OpenAI from 'openai';
 import { ClinicContext, PatientContext, ChatMessage, AgentResponse } from './types.js';
 import { query } from '../lib/db.js';
 
-const openai = new OpenAI();
-
 export class SalesAgent {
+  private get openai() {
+    return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
   async handle(
     message: string,
     clinic: ClinicContext,
@@ -57,7 +58,7 @@ ${promotionsContext}
 `;
 
     try {
-      const completion = await openai.chat.completions.create({
+      const completion = await this.openai.chat.completions.create({
         model: 'gpt-4o', // Usando gpt-4o para maior capacidade persuasiva
         messages: [
           { role: 'system', content: systemPrompt },

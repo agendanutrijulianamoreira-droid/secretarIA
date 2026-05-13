@@ -3,13 +3,15 @@ import { ClinicContext, PatientContext, ChatMessage, AgentResponse } from './typ
 import { calendarService } from '../services/calendarService.js';
 import { query } from '../lib/db.js';
 
-const openai = new OpenAI();
-
 /**
  * Agente especialista em agendamentos.
  * Responsável por gerenciar o fluxo de escolha de profissionais, verificação de datas e criação de compromissos.
  */
 export class SchedulingAgent {
+  private get openai() {
+    return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+
   async handle(
     message: string,
     clinic: ClinicContext,
@@ -49,7 +51,7 @@ MENSAGEM DO PACIENTE:
 `;
 
     try {
-      const completion = await openai.chat.completions.create({
+      const completion = await this.openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [
           { role: 'system', content: systemPrompt },

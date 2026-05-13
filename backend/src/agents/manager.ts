@@ -1,9 +1,10 @@
 import OpenAI from 'openai';
 import { AgentIntent, ClinicContext, ChatMessage } from './types.js';
 
-const openai = new OpenAI();
-
 export class ManagerAgent {
+  private get openai() {
+    return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
   async classifyIntent(
     message: string, 
     clinic: ClinicContext, 
@@ -34,7 +35,7 @@ MENSAGEM DO PACIENTE:
 `;
 
     try {
-      const response = await openai.chat.completions.create({
+      const response = await this.openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: prompt },
