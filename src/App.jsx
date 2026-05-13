@@ -365,7 +365,19 @@ function LoginView() {
       }
     } catch (err) {
       console.error(err);
-      setError("Credenciais inválidas ou falha na conexão.");
+      const msgs = {
+        "auth/invalid-api-key":         "Chave Firebase inválida. Verifique as variáveis de ambiente no Railway.",
+        "auth/user-not-found":           "Nenhuma conta com este e-mail. Use 'Criar conta' para se registrar.",
+        "auth/wrong-password":           "Senha incorreta. Tente novamente.",
+        "auth/invalid-credential":       "E-mail ou senha incorretos.",
+        "auth/email-already-in-use":     "Este e-mail já está cadastrado. Faça login.",
+        "auth/weak-password":            "Senha muito fraca. Use ao menos 6 caracteres.",
+        "auth/too-many-requests":        "Muitas tentativas. Aguarde alguns minutos.",
+        "auth/network-request-failed":   "Sem conexão com a internet.",
+        "auth/operation-not-allowed":    "Método de login não habilitado no Firebase Console.",
+        "auth/configuration-not-found":  "Firebase não configurado. Adicione as variáveis VITE_FIREBASE_* no Railway.",
+      };
+      setError(msgs[err.code] || `Erro: ${err.code || err.message}`);
     } finally {
       setLoading(false);
     }
@@ -379,7 +391,14 @@ function LoginView() {
       await signInWithPopup(auth, provider);
     } catch (err) {
       console.error(err);
-      setError("Falha na autenticação via Google Cloud.");
+      const msgs = {
+        "auth/popup-blocked":            "Popup bloqueado pelo navegador. Permita popups para este site.",
+        "auth/popup-closed-by-user":     "Login cancelado.",
+        "auth/invalid-api-key":          "Chave Firebase inválida. Verifique as variáveis de ambiente.",
+        "auth/operation-not-allowed":    "Login com Google não habilitado no Firebase Console.",
+        "auth/unauthorized-domain":      "Domínio não autorizado no Firebase Console. Adicione a URL do Railway em Authentication → Settings → Authorized domains.",
+      };
+      setError(msgs[err.code] || `Erro Google: ${err.code || err.message}`);
     } finally {
       setLoading(false);
     }
