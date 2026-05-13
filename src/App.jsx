@@ -33,7 +33,7 @@ const T = {
   surface: "var(--color-surface)",
   up: "var(--color-surface-up)",
   border: "var(--color-border)",
-  borderSt: "var(--color-border)",
+  borderSt: "var(--color-border-subtle)",
   green: "var(--color-cta)",
   greenDim: "var(--color-surface-soft)",
   amber: "#B67A62",
@@ -44,11 +44,10 @@ const T = {
   cyanDim: "rgba(59, 130, 246, 0.1)",
   purple: "#8B5CF6",
   purpleDim: "rgba(139,92,246,0.1)",
-  ink: "var(--color-text)",
-  inkSec: "var(--color-text-sec)",
-  inkTert: "var(--color-text-tert)",
+  ink: "var(--color-text-main)",
+  inkSec: "var(--color-text-secondary)",
+  inkTert: "var(--color-text-tertiary)",
   asaas: "#3B82F6",
-  borderSt: "var(--color-border)",
 };
 
 
@@ -404,7 +403,7 @@ function LoginView() {
               <ShieldCheck size={14} className="text-primary" />
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Sistema Autenticado (E2E)</span>
             </div>
-            <h1 className="text-7xl font-black leading-none tracking-tighter text-white">
+            <h1 className="text-7xl font-black leading-none tracking-tighter text-main">
               Inteligência <br/>
               <span className="text-primary">Cognitiva</span> <br/>
               para Clínicas.
@@ -1589,7 +1588,17 @@ export default function App(){
     }
   };
 
-  if(authLoading) return <div style={{ background: "var(--color-bg)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-sec)" }}>🤖 Carregando sistema...</div>;
+  if(authLoading) return (
+    <div style={{ background: "var(--color-bg)", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "24px" }}>
+      <Logo size={48} />
+      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+        {[0,1,2].map(i => (
+          <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--color-primary)", opacity: 0.3, animation: `glow-pulse 1.2s ease-in-out ${i * 0.2}s infinite` }} />
+        ))}
+      </div>
+      <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--color-text-tertiary)" }}>Inicializando sistema</span>
+    </div>
+  );
   if(!user) return <LoginView />;
 
   if (showPaywall) return <PaywallView user={user} onPlanSelected={handlePlanSelection} />;
@@ -1598,7 +1607,7 @@ export default function App(){
   if(portal) return <ClientPortalMain client={portal} onBack={() => setPortal(null)} />;
 
   return (
-    <div style={{ background: "var(--color-bg)", color: "var(--color-text)", minHeight: "100vh" }}>
+    <div style={{ background: "var(--color-bg)", color: "var(--color-text-main)", minHeight: "100vh" }}>
       <SecretariaDashboard 
         user={user} 
         logout={logout} 

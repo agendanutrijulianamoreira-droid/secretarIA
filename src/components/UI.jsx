@@ -41,12 +41,12 @@ export const Button = ({ children, variant = 'primary', className = "", onClick,
     },
     secondary: {
       background: 'var(--color-surface-up)',
-      color: 'var(--color-text)',
+      color: 'var(--color-text-main)',
       border: '1px solid var(--color-border)',
     },
     ghost: {
       background: 'transparent',
-      color: 'var(--color-text-sec)',
+      color: 'var(--color-text-secondary)',
       border: '1px solid var(--color-border)',
       boxShadow: 'none',
     },
@@ -109,7 +109,7 @@ export const Logo = ({ size = 32, className = "" }) => (
         <path 
           d="M50 10 C30 10 15 25 15 50 C15 75 30 90 50 90" 
           fill="none" 
-          stroke="var(--color-text)" 
+          stroke="var(--color-text-main)"
           strokeWidth="7" 
           strokeLinecap="round" 
         />
@@ -143,7 +143,7 @@ export const Logo = ({ size = 32, className = "" }) => (
         letterSpacing: '-0.04em',
         fontFamily: "'Plus Jakarta Sans', sans-serif",
         textTransform: "uppercase",
-        color: 'var(--color-text)'
+        color: 'var(--color-text-main)'
       }}>
         Secretár<span style={{ color: 'var(--color-cta)' }}>IA</span>
       </span>

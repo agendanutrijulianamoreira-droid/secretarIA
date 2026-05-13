@@ -21,6 +21,7 @@
   --color-bg: #FAFAF9;
   --color-surface: #FFFFFF;
   --color-surface-up: #F5F5F4;
+  --color-surface-soft: #F0F0EE;
   --color-border: #E7E5E4;
   --color-border-subtle: #F5F5F4;
   --color-primary: #10B981; /* Emerald */
@@ -28,6 +29,13 @@
   --color-text-main: #0C0A09;
   --color-text-secondary: #44403C;
   --color-text-tertiary: #A8A29E;
+  /* Short aliases for inline styles */
+  --color-text: var(--color-text-main);
+  --color-text-sec: var(--color-text-secondary);
+  --color-text-tert: var(--color-text-tertiary);
+  /* Glass card tokens (light) */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.08);
 }
 
 [data-theme="dark"] {
@@ -35,6 +43,7 @@
   --color-bg: #020617;      /* Slate 950 */
   --color-surface: #0F172A; /* Slate 900 */
   --color-surface-up: #1E293B; /* Slate 800 */
+  --color-surface-soft: #162032;
   --color-border: #1E293B;  /* Slate 800 */
   --color-border-subtle: #334155; /* Slate 700 */
   --color-primary: #10B981; /* Emerald 500 */
@@ -42,6 +51,13 @@
   --color-text-main: #F8FAFC;
   --color-text-secondary: #94A3B8;
   --color-text-tertiary: #475569;
+  /* Short aliases for inline styles */
+  --color-text: var(--color-text-main);
+  --color-text-sec: var(--color-text-secondary);
+  --color-text-tert: var(--color-text-tertiary);
+  /* Glass card tokens (dark) */
+  --glass-bg: rgba(15, 23, 42, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.06);
 }
 
 @layer base {
@@ -58,31 +74,38 @@
 
 @layer components {
   .glass-card {
-    @apply bg-slate-900/80 backdrop-blur-2xl border border-slate-800 shadow-2xl;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    background-color: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    @apply shadow-2xl;
   }
-  
+
   .bento-card {
     @apply relative overflow-hidden rounded-[40px] p-8 border shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] transition-all duration-700 hover:border-primary/30 hover:-translate-y-2 cursor-pointer;
     background-color: var(--color-surface);
     border-color: var(--color-border);
   }
-  
+
   .premium-glow {
     @apply absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-primary/10 rounded-full blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000;
   }
-  
+
   .btn-premium {
-    @apply relative px-8 py-4 rounded-2xl font-black uppercase tracking-[0.2em] transition-all duration-500 active:scale-95 disabled:opacity-50 overflow-hidden cursor-pointer flex items-center justify-center gap-3 text-[10px];
+    @apply relative px-8 py-4 rounded-2xl font-black uppercase tracking-[0.2em] transition-all duration-300 active:scale-95 disabled:opacity-50 overflow-hidden cursor-pointer flex items-center justify-center gap-3 text-[10px];
   }
-  
+
   .btn-premium-primary {
     @apply bg-primary text-black shadow-[0_20px_40px_-10px_rgba(16,185,129,0.3)] hover:shadow-primary/50 hover:-translate-y-1;
   }
-  
+
   .btn-premium-ghost {
-    @apply bg-slate-900/50 text-secondary border border-slate-800 hover:border-primary/30 hover:bg-slate-800 hover:text-primary;
+    background-color: var(--color-surface-up);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    @apply hover:border-primary/40 hover:text-primary;
   }
-  
+
   .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
   }
@@ -90,14 +113,24 @@
     @apply bg-transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-slate-800 rounded-full hover:bg-primary transition-colors;
+    background-color: var(--color-border);
+    @apply rounded-full hover:bg-primary transition-colors;
   }
 }
 
 /* Animations */
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(32px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes progress-fast {
