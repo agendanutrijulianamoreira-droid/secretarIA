@@ -1437,26 +1437,37 @@ export default function App(){
   const toggleTheme = () => setTheme(prev => prev === "dark" ? "light" : "dark");
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
-      setUser(u);
+    // Timeout de segurança: se Firebase não responder em 8s, sai do loading
+    const timeout = setTimeout(() => {
       setAuthLoading(false);
-      
-      // Detecção automática de portal para clientes
-      if(u && u.email !== ADMIN_EMAIL) {
-        try {
-          const match = await Clientes.getByEmail(u.email);
-          if(match) setPortal(match);
-          else {
-            // Cria um portal automático para teste
+    }, 8000);
+
+    let unsub = () => {};
+    try {
+      unsub = onAuthStateChanged(auth, async (u) => {
+        clearTimeout(timeout);
+        setUser(u);
+        setAuthLoading(false);
+
+        if(u && u.email !== ADMIN_EMAIL) {
+          try {
+            const match = await Clientes.getByEmail(u.email);
+            if(match) setPortal(match);
+            else {
+              setPortal({ id: "demo-id", name: u.email.split("@")[0], email: u.email, payment_status: "paid", status: "active" });
+            }
+          } catch (e) {
+            console.warn("Firestore bloqueado. Injetando Portal Mock:", e);
             setPortal({ id: "demo-id", name: u.email.split("@")[0], email: u.email, payment_status: "paid", status: "active" });
           }
-        } catch (e) {
-          console.warn("Firestore bloqueado. Injetando Portal Mock para testes de UI:", e);
-          setPortal({ id: "demo-id", name: u.email.split("@")[0], email: u.email, payment_status: "paid", status: "active" });
         }
-      }
-    });
-    return unsub;
+      });
+    } catch (e) {
+      clearTimeout(timeout);
+      console.error("[Auth] Firebase Auth não disponível:", e);
+      setAuthLoading(false);
+    }
+    return () => { clearTimeout(timeout); unsub(); };
   }, []);
 
   // Suporte a ?client=ID na URL
