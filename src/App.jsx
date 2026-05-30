@@ -312,11 +312,11 @@ function BriefingWizard({ initial, planInit, onSave, onCancel }) {
   return (
     <div className="fixed inset-0 bg-background/95 backdrop-blur-xl z-[400] flex items-center justify-center p-8">
       <Card className="w-full max-w-4xl animate-fade-in p-0 overflow-hidden shadow-2xl border-primary/20 flex flex-col max-h-[90vh]">
-        <div className="px-10 py-10 border-b border-border-subtle bg-surface-up/30 flex items-center justify-between">
+        <div className="px-10 py-8 border-b border-border-subtle bg-surface-up/20 flex items-center justify-between">
           <div>
-            <h4 className="text-2xl font-black text-main tracking-tighter uppercase">Onboarding de Inteligência</h4>
-            <p className="text-[10px] text-tertiary font-black uppercase tracking-[0.3em] mt-2 flex items-center gap-2">
-              <Activity size={12} className="text-primary" /> Módulo de Calibragem {STEPS[step].label}
+            <h4 className="text-xl font-bold text-main">Configurar IA</h4>
+            <p className="text-sm text-tertiary mt-1">
+              {STEPS[step].label}
             </p>
           </div>
           <button onClick={onCancel} className="h-12 w-12 rounded-2xl bg-surface-up flex items-center justify-center text-tertiary hover:text-main transition-all cursor-pointer"><X size={24} /></button>
@@ -332,11 +332,11 @@ function BriefingWizard({ initial, planInit, onSave, onCancel }) {
         </div>
         <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">{pages[step]}</div>
         <div className="p-10 border-t border-border-subtle bg-surface-up/30 flex justify-between items-center">
-          <div className="text-[10px] font-black text-tertiary uppercase tracking-[0.4em]">Fase {step + 1} de {STEPS.length}</div>
+          <div className="text-sm text-tertiary">Passo {step + 1} de {STEPS.length}</div>
           <div className="flex gap-4">
             {step > 0 && <button onClick={() => setStep(s => s - 1)} className="px-8 py-4 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-black text-[10px] uppercase tracking-widest hover:bg-surface transition-all cursor-pointer flex items-center gap-2"><ArrowLeft size={14} /> Voltar</button>}
             {step < STEPS.length - 1 && <Btn onClick={() => setStep(s => s + 1)} className="px-10" icon={ArrowRight}>Próximo Passo</Btn>}
-            {step === STEPS.length - 1 && <Btn onClick={handleSave} disabled={saving} icon={CheckCircle2}>{saving ? "Sincronizando..." : "Concluir Setup"}</Btn>}
+            {step === STEPS.length - 1 && <Btn onClick={handleSave} disabled={saving} icon={CheckCircle2}>{saving ? "Salvando..." : "Concluir"}</Btn>}
           </div>
         </div>
       </Card>
@@ -399,17 +399,13 @@ function LoginView() {
 
         <div className="relative z-20 space-y-16">
           <div className="space-y-8">
-            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 shadow-2xl shadow-primary/10">
-              <ShieldCheck size={14} className="text-primary" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Sistema Autenticado (E2E)</span>
-            </div>
-            <h1 className="text-7xl font-black leading-none tracking-tighter text-main">
-              Inteligência <br/>
-              <span className="text-primary">Cognitiva</span> <br/>
-              para Clínicas.
+            <h1 className="text-5xl font-bold leading-tight tracking-tight text-main">
+              Sua secretária<br/>
+              <span className="text-primary">virtual</span> para<br/>
+              clínicas e consultórios.
             </h1>
-            <p className="text-xl text-secondary leading-relaxed max-w-lg font-medium opacity-80">
-              Transforme o atendimento da sua clínica com automação de elite e gestão orientada a dados.
+            <p className="text-lg text-secondary leading-relaxed max-w-lg font-medium">
+              Atendimento automático pelo WhatsApp, agendamentos e CRM de pacientes — tudo em um só lugar.
             </p>
           </div>
 
@@ -430,43 +426,43 @@ function LoginView() {
         </div>
 
         <div className="w-full max-w-md space-y-12 animate-fade-in">
-          <div className="space-y-4 text-center lg:text-left">
-            <h2 className="text-5xl font-black text-main tracking-tighter uppercase italic">
-              {isRegister ? "Nova Conta" : "Bem-vinda"}
+          <div className="space-y-3 text-center lg:text-left">
+            <h2 className="text-3xl font-bold text-main tracking-tight">
+              {isRegister ? "Criar conta" : "Bem-vinda de volta"}
             </h2>
-            <p className="text-secondary font-medium tracking-tight opacity-70">
-              Acesse a central de comando da sua clínica.
+            <p className="text-secondary font-medium">
+              {isRegister ? "Preencha os dados abaixo para começar." : "Acesse sua conta para continuar."}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="space-y-6">
               {isRegister && (
-                <Inp 
-                  label="Nome da Organização *" 
-                  value={name} 
+                <Inp
+                  label="Nome da clínica *"
+                  value={name}
                   onChange={setName}
-                  placeholder="Ex: Clínica Alpha Saúde"
+                  placeholder="Ex: Clínica Juliana Moreira"
                   icon={Briefcase}
                   required
                 />
               )}
 
-              <Inp 
-                label="Identificador (E-mail) *" 
-                value={email} 
+              <Inp
+                label="E-mail *"
+                value={email}
                 onChange={setEmail}
-                placeholder="seu@dominio.com.br"
+                placeholder="seu@email.com.br"
                 icon={User}
                 type="email"
                 required
               />
 
-              <Inp 
-                label="Chave de Acesso *" 
-                value={password} 
+              <Inp
+                label="Senha *"
+                value={password}
                 onChange={setPassword}
-                placeholder="••••••••••••"
+                placeholder="••••••••"
                 icon={Shield}
                 type="password"
                 required
@@ -485,7 +481,7 @@ function LoginView() {
               className="w-full py-6"
               icon={isRegister ? Sparkles : ChevronRight}
             >
-              {loading ? "Processando..." : (isRegister ? "Criar Ecossistema" : "Entrar no Sistema")}
+              {loading ? "Aguarde..." : (isRegister ? "Criar conta" : "Entrar")}
             </Btn>
           </form>
 
@@ -493,8 +489,8 @@ function LoginView() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-border"></div>
             </div>
-            <div className="relative flex justify-center text-[10px] uppercase font-black tracking-[0.4em]">
-              <span className="bg-background px-6 text-tertiary">Cloud Auth</span>
+            <div className="relative flex justify-center text-xs text-tertiary font-medium">
+              <span className="bg-background px-4">ou</span>
             </div>
           </div>
 
@@ -510,17 +506,17 @@ function LoginView() {
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>
-            Google Connect
+            Entrar com Google
           </button>
 
-          <div className="text-center pt-8">
-            <p className="text-xs text-secondary font-black uppercase tracking-widest">
-              {isRegister ? "Já possui credenciais?" : "Nova por aqui?"} 
-              <button 
+          <div className="text-center pt-4">
+            <p className="text-sm text-secondary">
+              {isRegister ? "Já tem uma conta?" : "Ainda não tem conta?"}
+              <button
                 onClick={() => setIsRegister(!isRegister)}
-                className="ml-3 text-primary hover:underline underline-offset-8 cursor-pointer"
+                className="ml-2 text-primary font-medium hover:underline underline-offset-4 cursor-pointer"
               >
-                {isRegister ? "Fazer Login" : "Criar Nova Clínica"}
+                {isRegister ? "Entrar" : "Criar conta"}
               </button>
             </p>
           </div>
@@ -817,15 +813,15 @@ function AdminCard({ client, onPortal, onBriefing }) {
         <div className="mt-8 flex items-center gap-4 p-4 rounded-2xl bg-surface-up/30 border border-border-subtle group-hover:border-primary/20 transition-all">
            <Pulse status={client.status === "active" ? "online" : "offline"} />
            <div className="flex-1">
-              <div className="text-[10px] font-black text-secondary uppercase tracking-widest">Motor IA Ativo</div>
-              <div className="text-[9px] text-tertiary font-black uppercase tracking-[0.2em] mt-0.5">Sincronização em tempo real</div>
+              <div className="text-xs font-semibold text-secondary">IA ativa</div>
+              <div className="text-xs text-tertiary mt-0.5">Operando normalmente</div>
            </div>
            <Activity size={18} className="text-primary opacity-40 group-hover:scale-110 transition-transform" />
         </div>
 
         <div className="mt-8 space-y-3">
           <div className="flex justify-between items-end">
-            <span className="text-[10px] font-black text-tertiary uppercase tracking-[0.2em]">Briefing de Calibragem</span>
+            <span className="text-xs text-tertiary font-medium">Configuração</span>
             <span className={`text-[10px] font-black tracking-widest ${pct >= 80 ? 'text-primary' : 'text-cta'}`}>{pct}%</span>
           </div>
           <div className="h-2 w-full bg-surface-up rounded-full overflow-hidden shadow-inner">
@@ -852,17 +848,17 @@ function AdminCard({ client, onPortal, onBriefing }) {
 
         <div className="mt-auto pt-8 border-t border-border-subtle grid grid-cols-2 gap-8 text-center">
            <div>
-              <div className="text-2xl font-black text-main tracking-tighter">{client.msgs_today || 0}</div>
-              <div className="text-[9px] text-tertiary font-black uppercase tracking-[0.2em] mt-1">Interações hoje</div>
+              <div className="text-2xl font-bold text-main">{client.msgs_today || 0}</div>
+              <div className="text-xs text-tertiary mt-1">Mensagens hoje</div>
            </div>
            <div>
-              <div className="text-2xl font-black text-secondary tracking-tighter">{client.msgs_month || 0}</div>
-              <div className="text-[9px] text-tertiary font-black uppercase tracking-[0.2em] mt-1">Acúmulo mensal</div>
+              <div className="text-2xl font-bold text-secondary">{client.msgs_month || 0}</div>
+              <div className="text-xs text-tertiary mt-1">Mensagens no mês</div>
            </div>
         </div>
 
         <div className="mt-8 flex gap-4">
-          <button onClick={() => onPortal(client)} className="flex-1 py-4 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-black text-[10px] uppercase tracking-[0.2em] hover:bg-surface hover:text-main transition-all cursor-pointer">Portal</button>
+          <button onClick={() => onPortal(client)} className="flex-1 py-3 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-medium text-sm hover:bg-surface hover:text-main transition-all cursor-pointer">Ver portal</button>
           <button onClick={() => onBriefing(client)} className="flex-1 py-4 rounded-2xl bg-primary/10 border border-primary/30 text-primary font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary hover:text-black transition-all cursor-pointer flex items-center justify-center gap-2">
             <Edit2 size={12} /> Briefing
           </button>
@@ -883,17 +879,17 @@ function NewModal({ onClose, onNext, onFinish }) {
   return (
     <div className="fixed inset-0 bg-background/95 backdrop-blur-xl z-[400] flex items-center justify-center p-8">
       <Card className="w-full max-w-xl animate-fade-in p-0 overflow-hidden shadow-2xl border-primary/20">
-        <div className="px-10 py-10 border-b border-border-subtle bg-surface-up/30 flex items-center justify-between">
-           <h4 className="text-2xl font-black text-main tracking-tighter uppercase italic">Nova Implementação</h4>
+        <div className="px-10 py-8 border-b border-border-subtle bg-surface-up/20 flex items-center justify-between">
+           <h4 className="text-xl font-bold text-main">Novo cliente</h4>
            <button onClick={onClose} className="h-12 w-12 rounded-2xl bg-surface-up flex items-center justify-center text-tertiary hover:text-main transition-all cursor-pointer"><X size={24} /></button>
         </div>
         <div className="p-12 space-y-8">
-          <Inp label="Nomenclatura da Clínica *" value={f.name} onChange={upd("name")} placeholder="Ex: Instituto Vitality" icon={Briefcase} />
-          <Inp label="Terminal de Acesso (WhatsApp) *" value={f.phone} onChange={upd("phone")} placeholder="+55 11 9 0000-0000" icon={Smartphone} />
-          <Inp label="Identificador de Gestão (E-mail) *" value={f.email} onChange={upd("email")} placeholder="gestao@clinica.com" icon={User} />
-          
+          <Inp label="Nome da clínica *" value={f.name} onChange={upd("name")} placeholder="Ex: Clínica Juliana Moreira" icon={Briefcase} />
+          <Inp label="WhatsApp *" value={f.phone} onChange={upd("phone")} placeholder="+55 11 9 0000-0000" icon={Smartphone} />
+          <Inp label="E-mail *" value={f.email} onChange={upd("email")} placeholder="gestao@clinica.com" icon={User} />
+
           <div className="space-y-4">
-            <label className="text-[10px] font-black text-tertiary uppercase tracking-[0.3em] ml-1">Capacidades Cognitivas</label>
+            <label className="text-sm font-medium text-secondary ml-1">Funcionalidades</label>
             <div className="flex flex-wrap gap-3">
               {Object.entries(CAP_META).map(([c, m]) => (
                 <Chip key={c} active={f.capabilities.includes(c)} onClick={() => tc(c)} icon={m.icon}>{m.label}</Chip>
@@ -902,7 +898,7 @@ function NewModal({ onClose, onNext, onFinish }) {
           </div>
 
           <div className="space-y-4">
-            <label className="text-[10px] font-black text-tertiary uppercase tracking-[0.3em] ml-1">Escalonamento de Plano</label>
+            <label className="text-sm font-medium text-secondary ml-1">Plano</label>
             <div className="flex gap-4">
               {["Starter", "Pro", "Enterprise"].map(p => (
                 <Chip key={p} active={f.plan === p} onClick={() => upd("plan")(p)} icon={Star}>{p}</Chip>
@@ -911,10 +907,10 @@ function NewModal({ onClose, onNext, onFinish }) {
           </div>
           
           <div className="pt-8 flex gap-6">
-             <button onClick={onClose} className="flex-1 py-5 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-black text-[10px] uppercase tracking-[0.3em] hover:bg-surface hover:text-main transition-all cursor-pointer">Abortar</button>
+             <button onClick={onClose} className="flex-1 py-4 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-medium text-sm hover:bg-surface hover:text-main transition-all cursor-pointer">Cancelar</button>
              <div className="flex-[1.5] flex flex-col gap-3">
-                <Btn disabled={!isValid} onClick={() => onFinish(f)} className="w-full py-5" icon={Zap}>Ativar Ecossistema</Btn>
-                <button onClick={() => { if(isValid) onNext(f); }} disabled={!isValid} className="w-full py-3 rounded-xl bg-surface-up/50 border border-border-subtle text-tertiary font-black text-[9px] uppercase tracking-widest hover:text-primary transition-all cursor-pointer">Seguir para Calibragem →</button>
+                <Btn disabled={!isValid} onClick={() => onFinish(f)} className="w-full py-4" icon={Zap}>Criar cliente</Btn>
+                <button onClick={() => { if(isValid) onNext(f); }} disabled={!isValid} className="w-full py-2.5 rounded-xl bg-surface-up/50 border border-border-subtle text-tertiary text-xs font-medium hover:text-primary transition-all cursor-pointer">Ir para configuração →</button>
              </div>
           </div>
         </div>
@@ -945,12 +941,12 @@ function ShareModal({ client, onClose }) {
           <div className="h-24 w-24 rounded-[32px] bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-8 shadow-2xl animate-bounce-subtle">
              <CheckCircle2 size={56} strokeWidth={1} />
           </div>
-          <h2 className="text-3xl font-black text-main tracking-tighter uppercase italic">Implementação Concluída</h2>
-          <p className="text-sm text-secondary font-medium opacity-70 mt-3">O ecossistema de <b>{client.name}</b> foi provisionado com sucesso.</p>
+          <h2 className="text-2xl font-bold text-main">Cliente cadastrado!</h2>
+          <p className="text-sm text-secondary font-medium mt-2"><b>{client.name}</b> foi cadastrada com sucesso.</p>
           
           <div className="w-full mt-10 p-8 rounded-[32px] bg-surface-up/30 border border-border-subtle text-left space-y-4">
-            <div className="text-[10px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-2">
-               <MessageSquare size={14} /> Mensagem de Onboarding
+            <div className="text-xs font-semibold text-primary flex items-center gap-2">
+               <MessageSquare size={14} /> Mensagem de boas-vindas
             </div>
             <div className="text-xs text-secondary font-medium leading-relaxed italic opacity-80 whitespace-pre-wrap select-all">
               {msg}
@@ -958,10 +954,10 @@ function ShareModal({ client, onClose }) {
           </div>
 
           <div className="w-full pt-10 flex flex-col gap-4">
-            <Btn onClick={shareWa} icon={Smartphone}>Disparar via WhatsApp</Btn>
+            <Btn onClick={shareWa} icon={Smartphone}>Enviar pelo WhatsApp</Btn>
             <div className="flex gap-4">
-              <button onClick={copy} className="flex-1 py-4 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-black text-[10px] uppercase tracking-widest hover:text-primary transition-all cursor-pointer flex items-center justify-center gap-2">
-                <Download size={14} /> Copiar Dados
+              <button onClick={copy} className="flex-1 py-3 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-medium text-sm hover:text-primary transition-all cursor-pointer flex items-center justify-center gap-2">
+                <Download size={14} /> Copiar mensagem
               </button>
               <button onClick={onClose} className="flex-1 py-4 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-black text-[10px] uppercase tracking-widest hover:bg-surface transition-all cursor-pointer">Fechar</button>
             </div>
@@ -976,7 +972,7 @@ function ClientsView({ clients, onPortal, onBriefing, onNewClient }) {
   return (
     <div className="space-y-12 animate-fade-in">
       <div className="flex justify-between items-center">
-        <PageTitle icon={User} title="Gestão de Portfólios" subtitle="Controle centralizado de acessos, planos e configurações de clínicas." />
+        <PageTitle icon={User} title="Clientes" subtitle="Gerencie suas clínicas e as configurações de cada IA." />
         <button onClick={onNewClient} className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-primary text-black font-black uppercase tracking-[0.2em] hover:scale-105 transition-all text-[11px] shadow-xl shadow-primary/20 cursor-pointer">
           <Plus size={16} strokeWidth={3} /> Novo Cliente
         </button>
@@ -988,11 +984,11 @@ function ClientsView({ clients, onPortal, onBriefing, onNewClient }) {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-up/30 border-b border-border-subtle">
-                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Entidade / Clínica</th>
-                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Terminal WA</th>
-                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Escalonamento</th>
-                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary">Status Operacional</th>
-                <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.3em] text-tertiary text-right">Comandos</th>
+                <th className="px-10 py-5 text-xs font-semibold text-tertiary">Clínica</th>
+                <th className="px-10 py-5 text-xs font-semibold text-tertiary">WhatsApp</th>
+                <th className="px-10 py-5 text-xs font-semibold text-tertiary">Plano</th>
+                <th className="px-10 py-5 text-xs font-semibold text-tertiary">Status</th>
+                <th className="px-10 py-5 text-xs font-semibold text-tertiary text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle/50">
@@ -1011,9 +1007,9 @@ function ClientsView({ clients, onPortal, onBriefing, onNewClient }) {
                     </div>
                   </td>
                   <td className="px-10 py-6">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                        <Pulse status={c.status === 'active' ? 'online' : 'offline'} />
-                       <span className="text-[10px] font-black text-secondary uppercase tracking-widest">{c.status === 'active' ? 'Operante' : 'Suspenso'}</span>
+                       <span className="text-sm text-secondary">{c.status === 'active' ? 'Ativo' : 'Pausado'}</span>
                     </div>
                   </td>
                   <td className="px-10 py-6 text-right">
@@ -1042,13 +1038,13 @@ function StatsView({ clients }) {
   
   return (
     <div className="space-y-12 animate-fade-in">
-      <PageTitle icon={PieChart} title="Inteligência de Dados" subtitle="Análise volumétrica de interações e métricas de engajamento do ecossistema." />
+      <PageTitle icon={PieChart} title="Relatórios" subtitle="Resumo de uso e atividade das suas clínicas." />
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {[
-          { label: "Tráfego Mensal Consolidado", value: totalMsgs.toLocaleString(), icon: MessageSquare, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-          { label: "Performance Média / Unidade", value: avgMsgs, icon: TrendingUp, color: "text-primary", bg: "bg-primary/10" },
-          { label: "Uptime do Core Cognitivo", value: "99.99%", icon: Activity, color: "text-blue-500", bg: "bg-blue-500/10" },
+          { label: "Mensagens no mês", value: totalMsgs.toLocaleString(), icon: MessageSquare, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+          { label: "Média por clínica", value: avgMsgs, icon: TrendingUp, color: "text-primary", bg: "bg-primary/10" },
+          { label: "Disponibilidade do sistema", value: "99.99%", icon: Activity, color: "text-blue-500", bg: "bg-blue-500/10" },
         ].map(s => (
           <div key={s.label} className="bento-card group">
             <div className="premium-glow" />
@@ -1065,8 +1061,8 @@ function StatsView({ clients }) {
 
       <div className="bento-card p-12">
         <div className="premium-glow opacity-30" />
-        <h3 className="text-xl font-black tracking-tighter text-main uppercase italic mb-12 flex items-center gap-4">
-           <ActivitySquare size={24} className="text-primary" /> Distribuição de Carga Cognitiva
+        <h3 className="text-base font-semibold text-main mb-8 flex items-center gap-3">
+           <ActivitySquare size={20} className="text-primary" /> Uso por clínica
         </h3>
         <div className="space-y-12">
           {clients.slice(0, 8).map(c => (
@@ -1110,23 +1106,23 @@ function SettingsView({ user }) {
 
   return (
     <div className="space-y-12 animate-fade-in">
-      <PageTitle icon={Settings} title="Configurações do Núcleo" subtitle="Gerenciamento da conta administrativa e parâmetros globais do sistema." />
+      <PageTitle icon={Settings} title="Configurações" subtitle="Gerencie sua conta e preferências do sistema." />
       
       <div className="max-w-3xl space-y-8">
         <div className="bento-card p-12">
           <div className="premium-glow opacity-30" />
           <div className="relative z-10 flex items-center justify-between mb-12">
-            <h3 className="text-xl font-black text-main tracking-tighter uppercase italic">Identidade Administrativa</h3>
-            <button onClick={() => setIsEditing(!isEditing)} className="text-[10px] font-black text-primary uppercase tracking-[0.3em] hover:underline cursor-pointer">
-              {isEditing ? 'Cancelar Protocolo' : 'Ajustar Perfil'}
+            <h3 className="text-lg font-semibold text-main">Meu perfil</h3>
+            <button onClick={() => setIsEditing(!isEditing)} className="text-sm font-medium text-primary hover:underline cursor-pointer">
+              {isEditing ? 'Cancelar' : 'Editar'}
             </button>
           </div>
           
           <div className="relative z-10">
             {isEditing ? (
               <div className="space-y-8">
-                <Inp label="Nomenclatura Completa" value={profile.name} onChange={v => setProfile({...profile, name: v})} icon={User} />
-                <Btn onClick={save} className="w-full py-5" icon={CheckCircle2}>Salvar Atributos</Btn>
+                <Inp label="Nome completo" value={profile.name} onChange={v => setProfile({...profile, name: v})} icon={User} />
+                <Btn onClick={save} className="w-full py-4" icon={CheckCircle2}>Salvar</Btn>
               </div>
             ) : (
               <div className="flex items-center gap-10 p-8 rounded-[32px] bg-surface-up/30 border border-border-subtle group hover:border-primary/20 transition-all">
@@ -1137,8 +1133,8 @@ function SettingsView({ user }) {
                   <h4 className="text-2xl font-black text-main tracking-tight uppercase italic">{profile.name}</h4>
                   <p className="text-base text-secondary font-medium opacity-60 mt-1">{profile.email}</p>
                   <div className="flex items-center gap-3 mt-4">
-                     <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-2">
-                        <ShieldCheck size={10} /> Root Access
+                     <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-medium text-emerald-500 flex items-center gap-2">
+                        <ShieldCheck size={10} /> Administradora
                      </div>
                   </div>
                 </div>
@@ -1149,14 +1145,14 @@ function SettingsView({ user }) {
 
         <div className="bento-card p-12 space-y-10">
           <div className="premium-glow opacity-20" />
-          <h3 className="relative z-10 text-xl font-black text-main tracking-tighter uppercase italic flex items-center gap-4">
-            <ShieldCheck size={24} className="text-primary" /> Infraestrutura & Encriptação
+          <h3 className="relative z-10 text-lg font-semibold text-main flex items-center gap-3">
+            <ShieldCheck size={20} className="text-primary" /> Informações do sistema
           </h3>
           <div className="relative z-10 space-y-6">
             {[
-              { label: "Cluster Operacional", value: "CLOUD-PROD-BRAZIL", color: "text-emerald-500", icon: Layout },
-              { label: "Segurança de Camada", value: "ZERO TRUST ACTIVATED", color: "text-primary", icon: ShieldCheck },
-              { label: "Versão do Engine", value: "v5.4.2-STABLE", color: "text-tertiary", icon: Activity },
+              { label: "Servidor", value: "Brasil", color: "text-emerald-500", icon: Layout },
+              { label: "Segurança", value: "Ativa", color: "text-primary", icon: ShieldCheck },
+              { label: "Versão", value: "v5.4.2", color: "text-tertiary", icon: Activity },
             ].map((item, i) => (
               <div key={i} className="flex justify-between items-center p-6 rounded-2xl bg-surface-up/20 border border-border-subtle/50 group hover:bg-surface-up/40 transition-all cursor-default">
                 <div className="flex items-center gap-4">
@@ -1176,13 +1172,13 @@ function SettingsView({ user }) {
 function AlertsView({ alerts, markRead }) {
   return (
     <div className="space-y-12 animate-fade-in">
-      <PageTitle icon={Bell} title="Monitoramento de Eventos" subtitle="Logs em tempo real de disparos, conversões e alertas críticos do sistema." />
+      <PageTitle icon={Bell} title="Alertas" subtitle="Notificações de novas conversões e eventos importantes." />
 
       <div className="max-w-4xl space-y-6">
         {alerts.length === 0 ? (
           <div className="py-40 rounded-[48px] border border-dashed border-border-subtle flex flex-col items-center justify-center text-center opacity-30">
              <Bell size={80} strokeWidth={1} className="text-tertiary mb-6" />
-             <p className="text-sm font-black uppercase tracking-[0.3em]">Nenhum evento protocolado</p>
+             <p className="text-sm text-tertiary font-medium">Nenhum alerta ainda</p>
           </div>
         ) : (
           alerts.map(a => (
@@ -1210,8 +1206,8 @@ function AlertsView({ alerts, markRead }) {
               </div>
               {!a.read && (
                 <div className="relative z-10">
-                  <button onClick={() => markRead(a.id)} className="px-6 py-3 rounded-2xl bg-primary/10 text-primary text-[10px] font-black uppercase tracking-[0.2em] border border-primary/30 hover:bg-primary hover:text-black transition-all cursor-pointer">
-                    Arquivar
+                  <button onClick={() => markRead(a.id)} className="px-5 py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-medium border border-primary/30 hover:bg-primary hover:text-black transition-all cursor-pointer">
+                    Marcar como lido
                   </button>
                 </div>
               )}
@@ -1231,7 +1227,7 @@ function VendasAdminView({ clients, alerts }) {
   return (
     <div className="space-y-12 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-        <PageTitle icon={TrendingUp} title="Pipeline de Aquisição" subtitle="Monitoramento em tempo real de novos assinantes e conversões de alto ticket." />
+        <PageTitle icon={TrendingUp} title="Vendas" subtitle="Acompanhe as novas assinaturas e conversões." />
         <button 
           onClick={() => {
              const csv = ["Data,Cliente,Plano"];
@@ -1241,17 +1237,17 @@ function VendasAdminView({ clients, alerts }) {
              const a = document.createElement('a');
              a.href = url; a.download = 'vendas-secretaria.csv'; a.click();
           }}
-          className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-surface-up border border-border-subtle text-secondary text-[10px] font-black uppercase tracking-[0.2em] hover:text-primary hover:border-primary/40 transition-all cursor-pointer shadow-xl"
+          className="flex items-center gap-3 px-6 py-3 rounded-xl bg-surface-up border border-border-subtle text-secondary text-sm font-medium hover:text-primary hover:border-primary/40 transition-all cursor-pointer"
         >
-          <Download size={14} /> Exportar Ledger
+          <Download size={14} /> Exportar CSV
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {[
-          { label: "Volume Consolidado", value: totalVendas, icon: ShoppingCart, color: "text-emerald-500" },
-          { label: "Leads em Verificação", value: unread, icon: Bell, color: "text-blue-500" },
-          { label: "Taxa de Conversão", value: "14.2%", icon: Target, color: "text-primary" },
+          { label: "Total de vendas", value: totalVendas, icon: ShoppingCart, color: "text-emerald-500" },
+          { label: "Novos (não vistos)", value: unread, icon: Bell, color: "text-blue-500" },
+          { label: "Taxa de conversão", value: "14.2%", icon: Target, color: "text-primary" },
         ].map(s => (
           <div key={s.label} className="bento-card group overflow-hidden">
             <div className="premium-glow" />
@@ -1269,14 +1265,14 @@ function VendasAdminView({ clients, alerts }) {
       </div>
 
       <div className="space-y-6">
-        <h3 className="text-xl font-black tracking-tighter text-main uppercase italic px-4 flex items-center gap-3">
-           <Zap size={20} className="text-primary" /> Atividade de Pipeline
+        <h3 className="text-base font-semibold text-main px-1 flex items-center gap-3">
+           <Zap size={18} className="text-primary" /> Histórico de assinaturas
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
            {vendas.length === 0 ? (
              <div className="md:col-span-2 py-24 text-center bg-surface-up/20 rounded-[48px] border border-dashed border-border-subtle opacity-30">
                 <ShoppingCart size={48} strokeWidth={1} className="mx-auto mb-4" />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em]">Nenhuma transação detectada</p>
+                <p className="text-sm text-tertiary font-medium">Nenhuma venda ainda</p>
              </div>
            ) : (
              vendas.map(v => (
@@ -1289,7 +1285,7 @@ function VendasAdminView({ clients, alerts }) {
                      <div className="flex items-center gap-3 mt-1.5">
                         <span className="text-[10px] text-tertiary font-black uppercase tracking-widest">{new Date(v.created_at).toLocaleDateString('pt-BR')}</span>
                         <div className="h-1 w-1 rounded-full bg-border-subtle" />
-                        <span className="text-[9px] text-primary font-black uppercase tracking-widest">Ativação Instantânea</span>
+                        <span className="text-xs text-primary font-medium">Nova assinatura</span>
                      </div>
                   </div>
                   <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)] animate-pulse" />
@@ -1342,12 +1338,11 @@ function PaywallView({ user, onPlanSelected }) {
           <div className="flex justify-center mb-6">
             <Logo size={100} />
           </div>
-          <h2 className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic leading-none">
-             Escolha sua <br/>
-             <span className="text-primary">Potência.</span>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight leading-tight">
+             Escolha seu plano
           </h2>
-          <p className="text-secondary max-w-2xl mx-auto text-xl font-medium opacity-70">
-            Sua conta está ativa e protegida. Agora, selecione a arquitetura da sua <span className="text-primary font-bold">SecretarIA</span>.
+          <p className="text-secondary max-w-xl mx-auto text-lg font-medium">
+            Sua conta está pronta. Selecione o plano ideal para a sua clínica.
           </p>
         </div>
 
@@ -1371,7 +1366,7 @@ function PaywallView({ user, onPlanSelected }) {
                 <div className="flex items-baseline gap-2 mb-10">
                   <span className="text-lg font-black text-tertiary">R$</span>
                   <span className="text-7xl font-black tracking-tighter text-main">{plan.price}</span>
-                  <span className="text-tertiary font-black text-[10px] uppercase tracking-[0.3em]">/ ciclo mensal</span>
+                  <span className="text-tertiary font-medium text-sm">/ mês</span>
                 </div>
                 
                 <p className="text-secondary text-base font-medium mb-12 leading-relaxed flex-1 opacity-80">{plan.desc}</p>
@@ -1392,7 +1387,7 @@ function PaywallView({ user, onPlanSelected }) {
                   className={`w-full py-6 text-[11px] tracking-[0.3em] ${plan.isPopular ? '' : 'bg-surface-up text-main border-border-subtle'}`}
                   icon={Sparkles}
                 >
-                  Ativar Ecossistema
+                  Assinar agora
                 </Btn>
               </div>
             </div>
@@ -1402,7 +1397,7 @@ function PaywallView({ user, onPlanSelected }) {
         <div className="text-center">
           <button onClick={() => signOut(auth)} className="text-tertiary hover:text-primary transition-all text-[11px] font-black uppercase tracking-[0.4em] flex items-center gap-4 mx-auto justify-center group cursor-pointer">
             <ArrowLeft size={16} className="group-hover:-translate-x-2 transition-transform" />
-            Abortar Acesso e Sair
+            Sair
           </button>
         </div>
       </div>
@@ -1596,7 +1591,7 @@ export default function App(){
           <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--color-primary)", opacity: 0.3, animation: `glow-pulse 1.2s ease-in-out ${i * 0.2}s infinite` }} />
         ))}
       </div>
-      <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.3em", textTransform: "uppercase", color: "var(--color-text-tertiary)" }}>Inicializando sistema</span>
+      <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-text-tertiary)" }}>Carregando...</span>
     </div>
   );
   if(!user) return <LoginView />;
