@@ -1,14 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Clientes, Invoices, PortalMessages, Contatos, Alerts } from "./lib/db";
-import { auth } from "./lib/firebase";
-import { 
-  signInWithEmailAndPassword, 
-  onAuthStateChanged, 
-  signOut, 
-  GoogleAuthProvider, 
-  signInWithPopup,
-  createUserWithEmailAndPassword
-} from "firebase/auth";
+import { supabase } from "./lib/supabase";
 import SalesPage from "./pages/SalesPage";
 import SecretariaDashboard from "./pages/SecretariaDashboard";
 import ClientPortalMain from "./pages/ClientPortalMain";
@@ -359,13 +351,15 @@ function LoginView() {
     setError(null);
     try {
       if (isRegister) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const { error } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
+        if (error) throw error;
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
       }
     } catch (err) {
       console.error(err);
-      setError("Credenciais inválidas ou falha na conexão.");
+      setError("E-mail ou senha inválidos.");
     } finally {
       setLoading(false);
     }
@@ -375,11 +369,11 @@ function LoginView() {
     setLoading(true);
     setError(null);
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
+      if (error) throw error;
     } catch (err) {
       console.error(err);
-      setError("Falha na autenticação via Google Cloud.");
+      setError("Falha na autenticação com Google.");
     } finally {
       setLoading(false);
     }
@@ -1395,7 +1389,7 @@ function PaywallView({ user, onPlanSelected }) {
         </div>
 
         <div className="text-center">
-          <button onClick={() => signOut(auth)} className="text-tertiary hover:text-primary transition-all text-[11px] font-black uppercase tracking-[0.4em] flex items-center gap-4 mx-auto justify-center group cursor-pointer">
+          <button onClick={() => supabase.auth.signOut()} className="text-tertiary hover:text-primary transition-all text-sm font-medium flex items-center gap-3 mx-auto justify-center group cursor-pointer">
             <ArrowLeft size={16} className="group-hover:-translate-x-2 transition-transform" />
             Sair
           </button>
@@ -1432,26 +1426,35 @@ export default function App(){
   const toggleTheme = () => setTheme(prev => prev === "dark" ? "light" : "dark");
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
+    // Verifica sessão inicial
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const u = session?.user ?? null;
       setUser(u);
       setAuthLoading(false);
-      
-      // Detecção automática de portal para clientes
-      if(u && u.email !== ADMIN_EMAIL) {
-        try {
-          const match = await Clientes.getByEmail(u.email);
-          if(match) setPortal(match);
-          else {
-            // Cria um portal automático para teste
-            setPortal({ id: "demo-id", name: u.email.split("@")[0], email: u.email, payment_status: "paid", status: "active" });
-          }
-        } catch (e) {
-          console.warn("Firestore bloqueado. Injetando Portal Mock para testes de UI:", e);
+      if (u && u.email !== ADMIN_EMAIL) {
+        Clientes.getByEmail(u.email).then(match => {
+          if (match) setPortal(match);
+          else setPortal({ id: "demo-id", name: u.email.split("@")[0], email: u.email, payment_status: "paid", status: "active" });
+        }).catch(() => {
           setPortal({ id: "demo-id", name: u.email.split("@")[0], email: u.email, payment_status: "paid", status: "active" });
-        }
+        });
       }
     });
-    return unsub;
+
+    // Escuta mudanças de auth (login/logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const u = session?.user ?? null;
+      setUser(u);
+      setAuthLoading(false);
+      if (u && u.email !== ADMIN_EMAIL) {
+        const match = await Clientes.getByEmail(u.email).catch(() => null);
+        setPortal(match || { id: "demo-id", name: u.email.split("@")[0], email: u.email, payment_status: "paid", status: "active" });
+      } else if (!u) {
+        setPortal(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   // Suporte a ?client=ID na URL
@@ -1521,7 +1524,7 @@ export default function App(){
     setPending(null);
   },[clients.length]);
 
-  const logout = () => signOut(auth);
+  const logout = () => supabase.auth.signOut();
 
 
   const updateBriefing = useCallback(async(id, briefing, plan)=>{

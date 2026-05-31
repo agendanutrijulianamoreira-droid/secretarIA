@@ -1,132 +1,178 @@
 /**
- * SecretarIA — Camada de acesso ao Firestore
- * Todas as operações de banco passam por aqui.
+ * SecretarIA — Camada de acesso ao Supabase
+ * Substitui completamente o Firebase/Firestore.
  *
- * Estrutura de coleções:
- *   /clients/{clienteId}
- *   /clients/{clienteId}/contatos/{id}          — CRM 1: leads
- *   /clients/{clienteId}/pacientes/{id}          — CRM 2: pacientes ativos
- *   /clients/{clienteId}/whatsapp_numbers/{id}   — números WhatsApp conectados
- *   /clients/{clienteId}/servicos/{id}           — serviços e tabela de preços
- *   /clients/{clienteId}/vendas/{id}             — vendas registradas
- *   /clients/{clienteId}/campanhas/{id}          — campanhas de mensagem
- *   /clients/{clienteId}/ia_aprendizados/{id}    — o que a IA aprendeu
- *   /clients/{clienteId}/chat_messages/{id}      — histórico IA-lead
- *   /clients/{clienteId}/invoices/{id}           — cobranças do plano
- *   /clients/{clienteId}/portal_messages/{id}    — canal admin-cliente
- *   /clients/{clienteId}/agendamentos/{id}       — agendamentos
- *   /n8n_fluxos/{clienteId}                     — status fluxos n8n
- *   /tokens/{clienteId}                          — tokens API
- *   /alerts                                      — alertas de venda
+ * Tabelas principais:
+ *   clients, contatos, pacientes, servicos, vendas,
+ *   campanhas, ia_aprendizados, chat_messages,
+ *   invoices, portal_messages, agendamentos,
+ *   n8n_fluxos, tokens, alerts
  */
 
-import {
-  collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
-  query, where, orderBy, limit, onSnapshot,
-  serverTimestamp, increment,
-} from "firebase/firestore";
-import { db } from "./firebase";
+import { supabase } from "./supabase";
 
-// ── helpers ────────────────────────────────────────────────────────────────
-const col  = (...path) => collection(db, ...path);
-const ref  = (...path) => doc(db, ...path);
-const now  = () => serverTimestamp();
-const toJS = (snap) => snap.exists() ? { id: snap.id, ...snap.data() } : null;
-const listToJS = (snap) => snap.docs.map(d => ({ id: d.id, ...d.data() }));
+const now = () => new Date().toISOString();
+
+// Helper: converte erro do Supabase em exceção legível
+function check(error, label = "") {
+  if (error) throw new Error(`[${label}] ${error.message}`);
+}
+
+// Helper: inscreve em mudanças de uma tabela e chama callback com dados frescos
+function onTable(table, fetchFn, callback, filter = null) {
+  const channelName = `${table}-${Math.random()}`;
+  const ch = supabase.channel(channelName);
+
+  const evt = { event: "*", schema: "public", table };
+  if (filter) evt.filter = filter;
+
+  ch.on("postgres_changes", evt, async () => {
+    const data = await fetchFn();
+    callback(data);
+  }).subscribe();
+
+  // Busca inicial
+  fetchFn().then(callback);
+
+  return () => supabase.removeChannel(ch);
+}
 
 // ── CLIENTES ───────────────────────────────────────────────────────────────
 export const Clientes = {
   async list() {
-    const snap = await getDocs(col("clients"));
-    return listToJS(snap);
+    const { data, error } = await supabase
+      .from("clients")
+      .select("*")
+      .order("created_at", { ascending: false });
+    check(error, "Clientes.list");
+    return data || [];
   },
 
   async getByEmail(email) {
-    const q = query(col("clients"), where("email", "==", email), limit(1));
-    const snap = await getDocs(q);
-    return snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() };
+    const { data, error } = await supabase
+      .from("clients")
+      .select("*")
+      .eq("email", email)
+      .maybeSingle();
+    check(error, "Clientes.getByEmail");
+    return data;
   },
 
   async get(id) {
-    return toJS(await getDoc(ref("clients", id)));
+    const { data, error } = await supabase
+      .from("clients")
+      .select("*")
+      .eq("id", id)
+      .single();
+    check(error, "Clientes.get");
+    return data;
   },
 
   async create(data) {
-    const docRef = await addDoc(col("clients"), {
-      ...data,
-      status:     "setup",
-      msgs_today:  0,
-      msgs_month:  0,
-      created_at:  now(),
-      updated_at:  now(),
-      email:       data.email || "",
-    });
-    return docRef.id;
+    const { data: row, error } = await supabase
+      .from("clients")
+      .insert({
+        ...data,
+        status:      data.status     || "setup",
+        msgs_today:  0,
+        msgs_month:  0,
+        created_at:  now(),
+        updated_at:  now(),
+        email:       data.email || "",
+      })
+      .select("id")
+      .single();
+    check(error, "Clientes.create");
+    return row.id;
   },
 
   async update(id, data) {
-    await updateDoc(ref("clients", id), { ...data, updated_at: now() });
+    const { error } = await supabase
+      .from("clients")
+      .update({ ...data, updated_at: now() })
+      .eq("id", id);
+    check(error, "Clientes.update");
   },
 
   async updateBriefing(id, briefing, plan) {
-    await updateDoc(ref("clients", id), { briefing, plan, updated_at: now() });
+    const { error } = await supabase
+      .from("clients")
+      .update({ briefing, plan, updated_at: now() })
+      .eq("id", id);
+    check(error, "Clientes.updateBriefing");
   },
 
   onList(callback) {
-    return onSnapshot(col("clients"), snap => callback(listToJS(snap)));
+    return onTable("clients", () => this.list(), callback);
   },
 
   onMyClient(email, callback) {
-    const q = query(col("clients"), where("email", "==", email), limit(1));
-    return onSnapshot(q, snap => {
-      const data = listToJS(snap);
-      callback(data.length > 0 ? data[0] : null);
-    });
+    return onTable(
+      "clients",
+      () => this.getByEmail(email),
+      callback,
+      `email=eq.${email}`
+    );
   },
 };
 
 // ── CONTATOS (CRM 1 — Leads) ──────────────────────────────────────────────
 export const Contatos = {
-  _col: (clienteId) => col("clients", clienteId, "contatos"),
-
   async get(clienteId, telefone) {
-    const q = query(this._col(clienteId), where("telefone", "==", telefone));
-    const snap = await getDocs(q);
-    return snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() };
+    const { data, error } = await supabase
+      .from("contatos")
+      .select("*")
+      .eq("client_id", clienteId)
+      .eq("telefone", telefone)
+      .maybeSingle();
+    check(error, "Contatos.get");
+    return data;
   },
 
   async upsert(clienteId, telefone, nome) {
     const existing = await this.get(clienteId, telefone);
     if (existing) return existing;
-    const docRef = await addDoc(this._col(clienteId), {
-      telefone, nome,
-      atendimento_ia:    "ativo",
-      ia_nome:           "",         // nome customizado da IA para este lead
-      crm_status:        "novo",
-      crm_notes:         "",
-      ultima_interacao:  now(),
-      total_mensagens:   0,
-      created_at:        now(),
-    });
-    return docRef.id;
+    const { data, error } = await supabase
+      .from("contatos")
+      .insert({
+        client_id:        clienteId,
+        telefone,
+        nome,
+        atendimento_ia:   "ativo",
+        ia_nome:          "",
+        crm_status:       "novo",
+        crm_notes:        "",
+        ultima_interacao: now(),
+        total_mensagens:  0,
+        created_at:       now(),
+      })
+      .select("id")
+      .single();
+    check(error, "Contatos.upsert");
+    return data.id;
   },
 
   async setPause(clienteId, contatoId, paused) {
-    await updateDoc(ref("clients", clienteId, "contatos", contatoId), {
-      atendimento_ia: paused ? "pausado" : "ativo",
-      updated_at: now(),
-    });
+    const { error } = await supabase
+      .from("contatos")
+      .update({ atendimento_ia: paused ? "pausado" : "ativo", updated_at: now() })
+      .eq("id", contatoId)
+      .eq("client_id", clienteId);
+    check(error, "Contatos.setPause");
   },
 
   async updateCRM(clienteId, contatoId, data) {
-    await updateDoc(ref("clients", clienteId, "contatos", contatoId), {
-      ...data,
-      updated_at: now(),
-    });
+    const { error } = await supabase
+      .from("contatos")
+      .update({ ...data, updated_at: now() })
+      .eq("id", contatoId)
+      .eq("client_id", clienteId);
+    check(error, "Contatos.updateCRM");
   },
 
   async convertToPaciente(clienteId, contatoId) {
-    const contato = toJS(await getDoc(ref("clients", clienteId, "contatos", contatoId)));
+    const { data: contato } = await supabase
+      .from("contatos").select("*").eq("id", contatoId).single();
     if (!contato) return;
     await Pacientes.create(clienteId, {
       nome: contato.nome,
@@ -134,469 +180,465 @@ export const Contatos = {
       origem: "lead_convertido",
       contato_id: contatoId,
     });
-    await updateDoc(ref("clients", clienteId, "contatos", contatoId), {
-      crm_status: "convertido",
-      updated_at: now(),
-    });
+    await this.updateCRM(clienteId, contatoId, { crm_status: "convertido" });
   },
 
   async list(clienteId) {
-    const q = query(this._col(clienteId), orderBy("ultima_interacao", "desc"));
-    const snap = await getDocs(q);
-    return listToJS(snap);
+    const { data, error } = await supabase
+      .from("contatos")
+      .select("*")
+      .eq("client_id", clienteId)
+      .order("ultima_interacao", { ascending: false });
+    check(error, "Contatos.list");
+    return data || [];
   },
 
   onList(clienteId, callback) {
-    const q = query(this._col(clienteId), orderBy("ultima_interacao", "desc"));
-    return onSnapshot(q, snap => callback(listToJS(snap)));
+    return onTable(
+      "contatos",
+      () => this.list(clienteId),
+      callback,
+      `client_id=eq.${clienteId}`
+    );
   },
 };
 
-// ── PACIENTES (CRM 2 — Pacientes Ativos) ─────────────────────────────────
+// ── PACIENTES (CRM 2) ─────────────────────────────────────────────────────
 export const Pacientes = {
-  _col: (clienteId) => col("clients", clienteId, "pacientes"),
-
   async list(clienteId) {
-    const q = query(this._col(clienteId), orderBy("created_at", "desc"));
-    const snap = await getDocs(q);
-    return listToJS(snap);
+    const { data, error } = await supabase
+      .from("pacientes")
+      .select("*")
+      .eq("client_id", clienteId)
+      .order("created_at", { ascending: false });
+    check(error, "Pacientes.list");
+    return data || [];
   },
 
   async get(clienteId, pacienteId) {
-    return toJS(await getDoc(ref("clients", clienteId, "pacientes", pacienteId)));
+    const { data, error } = await supabase
+      .from("pacientes")
+      .select("*")
+      .eq("id", pacienteId)
+      .eq("client_id", clienteId)
+      .single();
+    check(error, "Pacientes.get");
+    return data;
   },
 
   async create(clienteId, data) {
-    const docRef = await addDoc(this._col(clienteId), {
-      nome: "",
-      telefone: "",
-      email: "",
-      data_nascimento: "",
-      observacoes: "",
-      ativo: true,
-      origem: "manual",
-      contato_id: null,
-      created_at: now(),
-      updated_at: now(),
-      ...data,
-    });
-    return docRef.id;
+    const { data: row, error } = await supabase
+      .from("pacientes")
+      .insert({ client_id: clienteId, nome: "", telefone: "", email: "", data_nascimento: "", observacoes: "", ativo: true, origem: "manual", contato_id: null, created_at: now(), updated_at: now(), ...data })
+      .select("id").single();
+    check(error, "Pacientes.create");
+    return row.id;
   },
 
   async update(clienteId, pacienteId, data) {
-    await updateDoc(ref("clients", clienteId, "pacientes", pacienteId), {
-      ...data,
-      updated_at: now(),
-    });
+    const { error } = await supabase
+      .from("pacientes")
+      .update({ ...data, updated_at: now() })
+      .eq("id", pacienteId).eq("client_id", clienteId);
+    check(error, "Pacientes.update");
   },
 
   async delete(clienteId, pacienteId) {
-    await deleteDoc(ref("clients", clienteId, "pacientes", pacienteId));
+    const { error } = await supabase
+      .from("pacientes").delete()
+      .eq("id", pacienteId).eq("client_id", clienteId);
+    check(error, "Pacientes.delete");
   },
 
   onList(clienteId, callback) {
-    const q = query(this._col(clienteId), orderBy("created_at", "desc"));
-    return onSnapshot(q, snap => callback(listToJS(snap)));
+    return onTable("pacientes", () => this.list(clienteId), callback, `client_id=eq.${clienteId}`);
   },
 };
 
-// ── CAMPANHAS (mensagens automáticas para pacientes) ──────────────────────
+// ── CAMPANHAS ─────────────────────────────────────────────────────────────
 export const Campanhas = {
-  _col: (clienteId) => col("clients", clienteId, "campanhas"),
-
   TIPOS: {
-    aniversario:           { label: "🎂 Aniversário",             cor: "#EC4899" },
-    acompanhamento:        { label: "💊 Acompanhamento",           cor: "#6366F1" },
-    lembrete_consulta:     { label: "📅 Lembrete de Consulta",    cor: "#0EA5E9" },
-    oferta:                { label: "📣 Oferta / Promoção",        cor: "#F59E0B" },
-    informativo:           { label: "📋 Informativo",              cor: "#8B5CF6" },
-    checkin:               { label: "✅ Check-in",                 cor: "#10B981" },
-    satisfacao:            { label: "⭐ Pesquisa de Satisfação",   cor: "#F97316" },
-    boas_vindas:           { label: "👋 Boas-Vindas",              cor: "#2EB67D" },
+    aniversario:       { label: "🎂 Aniversário",           cor: "#EC4899" },
+    acompanhamento:    { label: "💊 Acompanhamento",         cor: "#6366F1" },
+    lembrete_consulta: { label: "📅 Lembrete de Consulta",  cor: "#0EA5E9" },
+    oferta:            { label: "📣 Oferta / Promoção",      cor: "#F59E0B" },
+    informativo:       { label: "📋 Informativo",            cor: "#8B5CF6" },
+    checkin:           { label: "✅ Check-in",               cor: "#10B981" },
+    satisfacao:        { label: "⭐ Pesquisa de Satisfação", cor: "#F97316" },
+    boas_vindas:       { label: "👋 Boas-Vindas",            cor: "#2EB67D" },
   },
 
   async list(clienteId) {
-    const q = query(this._col(clienteId), orderBy("created_at", "desc"));
-    const snap = await getDocs(q);
-    return listToJS(snap);
+    const { data, error } = await supabase
+      .from("campanhas")
+      .select("*")
+      .eq("client_id", clienteId)
+      .order("created_at", { ascending: false });
+    check(error, "Campanhas.list");
+    return data || [];
   },
 
   async create(clienteId, data) {
-    const docRef = await addDoc(this._col(clienteId), {
-      tipo: "",
-      titulo: "",
-      mensagem: "",
-      pacientes_alvo: [], // IDs dos pacientes ou "todos"
-      status: "rascunho",  // rascunho | agendada | enviando | concluida | cancelada
-      agendada_para: null,
-      enviados: 0,
-      falhas: 0,
-      created_at: now(),
-      updated_at: now(),
-      ...data,
-    });
-    return docRef.id;
+    const { data: row, error } = await supabase
+      .from("campanhas")
+      .insert({ client_id: clienteId, tipo: "", titulo: "", mensagem: "", pacientes_alvo: [], status: "rascunho", agendada_para: null, enviados: 0, falhas: 0, created_at: now(), updated_at: now(), ...data })
+      .select("id").single();
+    check(error, "Campanhas.create");
+    return row.id;
   },
 
   async update(clienteId, campanhaId, data) {
-    await updateDoc(ref("clients", clienteId, "campanhas", campanhaId), {
-      ...data,
-      updated_at: now(),
-    });
+    const { error } = await supabase
+      .from("campanhas")
+      .update({ ...data, updated_at: now() })
+      .eq("id", campanhaId).eq("client_id", clienteId);
+    check(error, "Campanhas.update");
   },
 
   onList(clienteId, callback) {
-    const q = query(this._col(clienteId), orderBy("created_at", "desc"));
-    return onSnapshot(q, snap => callback(listToJS(snap)));
+    return onTable("campanhas", () => this.list(clienteId), callback, `client_id=eq.${clienteId}`);
   },
 };
 
 // ── WHATSAPP NUMBERS ──────────────────────────────────────────────────────
 export const WhatsAppNumbers = {
-  _col: (clienteId) => col("clients", clienteId, "whatsapp_numbers"),
-
   async list(clienteId) {
-    const snap = await getDocs(this._col(clienteId));
-    return listToJS(snap);
+    const { data, error } = await supabase
+      .from("whatsapp_numbers")
+      .select("*")
+      .eq("client_id", clienteId);
+    check(error, "WhatsAppNumbers.list");
+    return data || [];
   },
 
   async add(clienteId, data) {
-    const docRef = await addDoc(this._col(clienteId), {
-      numero: "",
-      nome_display: "",     // nome do número (ex: "Atendimento Principal")
-      ia_nome: "",          // nome da IA neste número (ex: "Ana")
-      ia_funcao: "",        // função da IA (ex: "Recepcionista", "Comercial")
-      status: "pendente",   // pendente | ativo | inativo | erro
-      waba_id: "",          // WhatsApp Business Account ID
-      phone_number_id: "",  // Phone Number ID da API Oficial
-      cobrado_extra: false,
-      created_at: now(),
-      updated_at: now(),
-      ...data,
-    });
-    return docRef.id;
+    const { data: row, error } = await supabase
+      .from("whatsapp_numbers")
+      .insert({ client_id: clienteId, numero: "", nome_display: "", ia_nome: "", ia_funcao: "", status: "pendente", cobrado_extra: false, created_at: now(), updated_at: now(), ...data })
+      .select("id").single();
+    check(error, "WhatsAppNumbers.add");
+    return row.id;
   },
 
   async update(clienteId, numId, data) {
-    await updateDoc(ref("clients", clienteId, "whatsapp_numbers", numId), {
-      ...data,
-      updated_at: now(),
-    });
+    const { error } = await supabase
+      .from("whatsapp_numbers")
+      .update({ ...data, updated_at: now() })
+      .eq("id", numId).eq("client_id", clienteId);
+    check(error, "WhatsAppNumbers.update");
   },
 
   async delete(clienteId, numId) {
-    await deleteDoc(ref("clients", clienteId, "whatsapp_numbers", numId));
+    const { error } = await supabase
+      .from("whatsapp_numbers").delete()
+      .eq("id", numId).eq("client_id", clienteId);
+    check(error, "WhatsAppNumbers.delete");
   },
 
   onList(clienteId, callback) {
-    return onSnapshot(this._col(clienteId), snap => callback(listToJS(snap)));
+    return onTable("whatsapp_numbers", () => this.list(clienteId), callback, `client_id=eq.${clienteId}`);
   },
 };
 
 // ── SERVIÇOS ──────────────────────────────────────────────────────────────
 export const Servicos = {
-  _col: (clienteId) => col("clients", clienteId, "servicos"),
-
   async list(clienteId) {
-    const q = query(this._col(clienteId), orderBy("created_at", "asc"));
-    const snap = await getDocs(q);
-    return listToJS(snap);
+    const { data, error } = await supabase
+      .from("servicos")
+      .select("*")
+      .eq("client_id", clienteId)
+      .order("created_at", { ascending: true });
+    check(error, "Servicos.list");
+    return data || [];
   },
 
   async create(clienteId, data) {
-    const docRef = await addDoc(this._col(clienteId), {
-      nome: "",
-      descricao: "",
-      preco: 0,
-      duracao_minutos: 60,
-      ativo: true,
-      created_at: now(),
-      updated_at: now(),
-      ...data,
-    });
-    return docRef.id;
+    const { data: row, error } = await supabase
+      .from("servicos")
+      .insert({ client_id: clienteId, nome: "", descricao: "", preco: 0, duracao_minutos: 60, ativo: true, created_at: now(), updated_at: now(), ...data })
+      .select("id").single();
+    check(error, "Servicos.create");
+    return row.id;
   },
 
   async update(clienteId, servicoId, data) {
-    await updateDoc(ref("clients", clienteId, "servicos", servicoId), {
-      ...data,
-      updated_at: now(),
-    });
+    const { error } = await supabase
+      .from("servicos")
+      .update({ ...data, updated_at: now() })
+      .eq("id", servicoId).eq("client_id", clienteId);
+    check(error, "Servicos.update");
   },
 
   async delete(clienteId, servicoId) {
-    await deleteDoc(ref("clients", clienteId, "servicos", servicoId));
+    const { error } = await supabase
+      .from("servicos").delete()
+      .eq("id", servicoId).eq("client_id", clienteId);
+    check(error, "Servicos.delete");
   },
 
   onList(clienteId, callback) {
-    const q = query(this._col(clienteId), orderBy("created_at", "asc"));
-    return onSnapshot(q, snap => callback(listToJS(snap)));
+    return onTable("servicos", () => this.list(clienteId), callback, `client_id=eq.${clienteId}`);
   },
 };
 
 // ── VENDAS ────────────────────────────────────────────────────────────────
 export const Vendas = {
-  _col: (clienteId) => col("clients", clienteId, "vendas"),
-
   async list(clienteId) {
-    const q = query(this._col(clienteId), orderBy("created_at", "desc"));
-    const snap = await getDocs(q);
-    return listToJS(snap);
+    const { data, error } = await supabase
+      .from("vendas")
+      .select("*")
+      .eq("client_id", clienteId)
+      .order("created_at", { ascending: false });
+    check(error, "Vendas.list");
+    return data || [];
   },
 
   async create(clienteId, data) {
-    const docRef = await addDoc(this._col(clienteId), {
-      paciente_nome: "",
-      paciente_id: null,
-      servico_nome: "",
-      servico_id: null,
-      valor: 0,
-      forma_pagamento: "",  // pix | cartao | dinheiro | boleto
-      status: "pendente",   // pendente | confirmado | cancelado
-      observacoes: "",
-      created_at: now(),
-      updated_at: now(),
-      ...data,
-    });
-    return docRef.id;
+    const { data: row, error } = await supabase
+      .from("vendas")
+      .insert({ client_id: clienteId, paciente_nome: "", paciente_id: null, servico_nome: "", servico_id: null, valor: 0, forma_pagamento: "", status: "pendente", observacoes: "", created_at: now(), updated_at: now(), ...data })
+      .select("id").single();
+    check(error, "Vendas.create");
+    return row.id;
   },
 
   async update(clienteId, vendaId, data) {
-    await updateDoc(ref("clients", clienteId, "vendas", vendaId), {
-      ...data,
-      updated_at: now(),
-    });
+    const { error } = await supabase
+      .from("vendas")
+      .update({ ...data, updated_at: now() })
+      .eq("id", vendaId).eq("client_id", clienteId);
+    check(error, "Vendas.update");
   },
 
   onList(clienteId, callback) {
-    const q = query(this._col(clienteId), orderBy("created_at", "desc"));
-    return onSnapshot(q, snap => callback(listToJS(snap)));
+    return onTable("vendas", () => this.list(clienteId), callback, `client_id=eq.${clienteId}`);
   },
 };
 
 // ── IA APRENDIZADOS ───────────────────────────────────────────────────────
 export const IAAprendizados = {
-  _col: (clienteId) => col("clients", clienteId, "ia_aprendizados"),
-
   async list(clienteId) {
-    const q = query(this._col(clienteId), orderBy("created_at", "desc"), limit(50));
-    const snap = await getDocs(q);
-    return listToJS(snap);
+    const { data, error } = await supabase
+      .from("ia_aprendizados")
+      .select("*")
+      .eq("client_id", clienteId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    check(error, "IAAprendizados.list");
+    return data || [];
   },
 
   async create(clienteId, data) {
-    const docRef = await addDoc(this._col(clienteId), {
-      tipo: "conversa",       // conversa | correcao | manual
-      resumo: "",
-      aprendizado: "",
-      status: "pendente",     // pendente | aprovado | rejeitado
-      telefone_origem: "",
-      created_at: now(),
-      ...data,
-    });
-    return docRef.id;
+    const { data: row, error } = await supabase
+      .from("ia_aprendizados")
+      .insert({ client_id: clienteId, tipo: "conversa", resumo: "", aprendizado: "", status: "pendente", telefone_origem: "", created_at: now(), ...data })
+      .select("id").single();
+    check(error, "IAAprendizados.create");
+    return row.id;
   },
 
   async aprovar(clienteId, id) {
-    await updateDoc(ref("clients", clienteId, "ia_aprendizados", id), {
-      status: "aprovado",
-      aprovado_at: now(),
-    });
+    const { error } = await supabase.from("ia_aprendizados").update({ status: "aprovado", aprovado_at: now() }).eq("id", id).eq("client_id", clienteId);
+    check(error, "IAAprendizados.aprovar");
   },
 
   async rejeitar(clienteId, id) {
-    await updateDoc(ref("clients", clienteId, "ia_aprendizados", id), {
-      status: "rejeitado",
-    });
+    const { error } = await supabase.from("ia_aprendizados").update({ status: "rejeitado" }).eq("id", id).eq("client_id", clienteId);
+    check(error, "IAAprendizados.rejeitar");
   },
 
   async corrigir(clienteId, id, novoAprendizado) {
-    await updateDoc(ref("clients", clienteId, "ia_aprendizados", id), {
-      aprendizado: novoAprendizado,
-      status: "aprovado",
-      corrigido: true,
-      updated_at: now(),
-    });
+    const { error } = await supabase.from("ia_aprendizados").update({ aprendizado: novoAprendizado, status: "aprovado", corrigido: true, updated_at: now() }).eq("id", id).eq("client_id", clienteId);
+    check(error, "IAAprendizados.corrigir");
   },
 
   onList(clienteId, callback) {
-    const q = query(this._col(clienteId), orderBy("created_at", "desc"), limit(50));
-    return onSnapshot(q, snap => callback(listToJS(snap)));
+    return onTable("ia_aprendizados", () => this.list(clienteId), callback, `client_id=eq.${clienteId}`);
   },
 };
 
 // ── CHAT MESSAGES ──────────────────────────────────────────────────────────
 export const ChatMessages = {
-  _col: (clienteId) => col("clients", clienteId, "chat_messages"),
-
   async add(clienteId, data) {
-    await addDoc(this._col(clienteId), { ...data, created_at: now() });
-    await updateDoc(ref("clients", clienteId), {
-      msgs_today: increment(1),
-      msgs_month: increment(1),
-    });
+    const { error } = await supabase
+      .from("chat_messages")
+      .insert({ client_id: clienteId, ...data, created_at: now() });
+    check(error, "ChatMessages.add");
+    // Incrementa contadores
+    await supabase.rpc("increment_msgs", { p_client_id: clienteId }).catch(() => {});
   },
 
   async list(clienteId, telefone, limitN = 50) {
-    const q = query(
-      this._col(clienteId),
-      where("telefone", "==", telefone),
-      orderBy("created_at", "desc"),
-      limit(limitN)
-    );
-    const snap = await getDocs(q);
-    return listToJS(snap).reverse();
+    const { data, error } = await supabase
+      .from("chat_messages")
+      .select("*")
+      .eq("client_id", clienteId)
+      .eq("telefone", telefone)
+      .order("created_at", { ascending: false })
+      .limit(limitN);
+    check(error, "ChatMessages.list");
+    return (data || []).reverse();
   },
 
   onList(clienteId, telefone, callback) {
-    const q = query(
-      this._col(clienteId),
-      where("telefone", "==", telefone),
-      orderBy("created_at", "asc"),
-      limit(100)
-    );
-    return onSnapshot(q, snap => callback(listToJS(snap)));
+    return onTable("chat_messages", () => this.list(clienteId, telefone), callback, `client_id=eq.${clienteId}`);
   },
 
   onListAll(clienteId, callback) {
-    const q = query(
-      this._col(clienteId),
-      orderBy("created_at", "desc"),
-      limit(100)
-    );
-    return onSnapshot(q, snap => callback(listToJS(snap)));
+    const fetchAll = async () => {
+      const { data } = await supabase.from("chat_messages").select("*").eq("client_id", clienteId).order("created_at", { ascending: false }).limit(100);
+      return data || [];
+    };
+    return onTable("chat_messages", fetchAll, callback, `client_id=eq.${clienteId}`);
   },
 };
 
 // ── INVOICES ───────────────────────────────────────────────────────────────
 export const Invoices = {
-  _col: (clienteId) => col("clients", clienteId, "invoices"),
-
   async list(clienteId) {
-    const q = query(this._col(clienteId), orderBy("created_at", "desc"));
-    const snap = await getDocs(q);
-    return listToJS(snap);
+    const { data, error } = await supabase
+      .from("invoices")
+      .select("*")
+      .eq("client_id", clienteId)
+      .order("created_at", { ascending: false });
+    check(error, "Invoices.list");
+    return data || [];
   },
 
   async add(clienteId, data) {
-    return await addDoc(this._col(clienteId), { ...data, created_at: now() });
+    const { data: row, error } = await supabase
+      .from("invoices")
+      .insert({ client_id: clienteId, ...data, created_at: now() })
+      .select("id").single();
+    check(error, "Invoices.add");
+    return row;
   },
 
   async updateStatus(clienteId, invoiceId, status) {
-    await updateDoc(ref("clients", clienteId, "invoices", invoiceId), {
-      status,
-      paid_at: status === "pago" ? now() : null,
-    });
+    const { error } = await supabase
+      .from("invoices")
+      .update({ status, paid_at: status === "pago" ? now() : null })
+      .eq("id", invoiceId).eq("client_id", clienteId);
+    check(error, "Invoices.updateStatus");
   },
 
   onList(clienteId, callback) {
-    const q = query(this._col(clienteId), orderBy("created_at", "desc"));
-    return onSnapshot(q, snap => callback(listToJS(snap)));
+    return onTable("invoices", () => this.list(clienteId), callback, `client_id=eq.${clienteId}`);
   },
 };
 
 // ── PORTAL MESSAGES ────────────────────────────────────────────────────────
 export const PortalMessages = {
-  _col: (clienteId) => col("clients", clienteId, "portal_messages"),
-
   async list(clienteId) {
-    const q = query(this._col(clienteId), orderBy("created_at", "asc"));
-    const snap = await getDocs(q);
-    return listToJS(snap);
+    const { data, error } = await supabase
+      .from("portal_messages")
+      .select("*")
+      .eq("client_id", clienteId)
+      .order("created_at", { ascending: true });
+    check(error, "PortalMessages.list");
+    return data || [];
   },
 
   async send(clienteId, text, from_role = "client") {
-    return await addDoc(this._col(clienteId), {
-      text, from_role, read: false, created_at: now(),
-    });
+    const { error } = await supabase
+      .from("portal_messages")
+      .insert({ client_id: clienteId, text, from_role, read: false, created_at: now() });
+    check(error, "PortalMessages.send");
   },
 
   onList(clienteId, callback) {
-    const q = query(this._col(clienteId), orderBy("created_at", "asc"));
-    return onSnapshot(q, snap => callback(listToJS(snap)));
+    return onTable("portal_messages", () => this.list(clienteId), callback, `client_id=eq.${clienteId}`);
   },
 
   async markRead(clienteId, msgId) {
-    await updateDoc(ref("clients", clienteId, "portal_messages", msgId), { read: true });
+    const { error } = await supabase
+      .from("portal_messages").update({ read: true })
+      .eq("id", msgId).eq("client_id", clienteId);
+    check(error, "PortalMessages.markRead");
   },
 };
 
 // ── AGENDAMENTOS ───────────────────────────────────────────────────────────
 export const Agendamentos = {
-  _col: (clienteId) => col("clients", clienteId, "agendamentos"),
-
   async list(clienteId) {
-    const q = query(this._col(clienteId), orderBy("data_inicio", "asc"));
-    const snap = await getDocs(q);
-    return listToJS(snap);
+    const { data, error } = await supabase
+      .from("agendamentos")
+      .select("*")
+      .eq("client_id", clienteId)
+      .order("data_inicio", { ascending: true });
+    check(error, "Agendamentos.list");
+    return data || [];
   },
 
   async add(clienteId, data) {
-    return await addDoc(this._col(clienteId), { ...data, created_at: now() });
+    const { data: row, error } = await supabase
+      .from("agendamentos")
+      .insert({ client_id: clienteId, ...data, created_at: now() })
+      .select("id").single();
+    check(error, "Agendamentos.add");
+    return row;
   },
 };
 
 // ── N8N FLUXOS ─────────────────────────────────────────────────────────────
 export const N8nFluxos = {
   async get(clienteId) {
-    return toJS(await getDoc(ref("n8n_fluxos", clienteId)));
+    const { data } = await supabase.from("n8n_fluxos").select("*").eq("client_id", clienteId).maybeSingle();
+    return data;
   },
 
   async update(clienteId, data) {
-    const docRef = ref("n8n_fluxos", clienteId);
-    const snap = await getDoc(docRef);
-    if (snap.exists()) {
-      await updateDoc(docRef, { ...data, updated_at: now() });
+    const existing = await this.get(clienteId);
+    if (existing) {
+      await supabase.from("n8n_fluxos").update({ ...data, updated_at: now() }).eq("client_id", clienteId);
     } else {
-      const { setDoc } = await import("firebase/firestore");
-      await setDoc(docRef, { ...data, created_at: now(), updated_at: now() });
+      await supabase.from("n8n_fluxos").insert({ client_id: clienteId, ...data, created_at: now(), updated_at: now() });
     }
   },
 
   onList(callback) {
-    return onSnapshot(col("n8n_fluxos"), snap => callback(listToJS(snap)));
+    return onTable("n8n_fluxos", async () => {
+      const { data } = await supabase.from("n8n_fluxos").select("*");
+      return data || [];
+    }, callback);
   },
 };
 
 // ── TOKENS ─────────────────────────────────────────────────────────────────
 export const Tokens = {
   async get(clienteId) {
-    return toJS(await getDoc(ref("tokens", clienteId)));
+    const { data } = await supabase.from("tokens").select("*").eq("client_id", clienteId).maybeSingle();
+    return data;
   },
 
   async update(clienteId, data) {
-    const docRef = ref("tokens", clienteId);
-    const snap = await getDoc(docRef);
-    if (snap.exists()) {
-      await updateDoc(docRef, { ...data, updated_at: now() });
+    const existing = await this.get(clienteId);
+    if (existing) {
+      await supabase.from("tokens").update({ ...data, updated_at: now() }).eq("client_id", clienteId);
     } else {
-      const { setDoc } = await import("firebase/firestore");
-      await setDoc(docRef, {
-        openai_key: "",
-        waba_token: "",
-        waba_verify_token: "",
-        ...data,
-        created_at: now(),
-        updated_at: now(),
-      });
+      await supabase.from("tokens").insert({ client_id: clienteId, openai_key: "", waba_token: "", waba_verify_token: "", ...data, created_at: now(), updated_at: now() });
     }
   },
 
   onList(callback) {
-    return onSnapshot(col("tokens"), snap => callback(listToJS(snap)));
+    return onTable("tokens", async () => {
+      const { data } = await supabase.from("tokens").select("*");
+      return data || [];
+    }, callback);
   },
 };
 
-// ── ALERTS (Notificações) ──────────────────────────────────────────────────
+// ── ALERTS ─────────────────────────────────────────────────────────────────
 export const Alerts = {
-  onList(cb) {
-    const q = query(col("alerts"), orderBy("created_at", "desc"), limit(20));
-    return onSnapshot(q, (snap) => cb(listToJS(snap)), err => {
-      console.error("Alerts onList error:", err);
-      cb([]);
-    });
+  onList(callback) {
+    return onTable("alerts", async () => {
+      const { data } = await supabase.from("alerts").select("*").order("created_at", { ascending: false }).limit(20);
+      callback(data || []);
+      return data || [];
+    }, callback);
   },
+
   async markRead(id) {
-    await updateDoc(ref("alerts", id), { read: true });
-  }
+    await supabase.from("alerts").update({ read: true }).eq("id", id);
+  },
 };

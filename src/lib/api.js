@@ -1,11 +1,7 @@
-import { auth } from "./firebase.js";
+import { supabase } from "./supabase.js";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
-/**
- * Faz uma requisição autenticada para a API.
- * Automaticamente adiciona o token Firebase no header.
- */
 async function request(path, options = {}) {
   const { method = "GET", body, headers: extraHeaders = {} } = options;
 
@@ -14,10 +10,10 @@ async function request(path, options = {}) {
     ...extraHeaders,
   };
 
-  // Adicionar token se o usuário estiver logado
-  const user = auth.currentUser;
-  if (user) {
-    const token = await user.getIdToken();
+  // Adicionar token Supabase se logado
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) {
+    const token = session.access_token;
     headers["Authorization"] = `Bearer ${token}`;
   }
 
