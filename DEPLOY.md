@@ -1,102 +1,135 @@
-# Deploy no Railway — Guia de Serviços
+# Deploy no VPS Hostinger
 
-Este projeto é um **monorepo** com três serviços independentes no Railway:
-
-| Serviço | Diretório | Tipo |
-|---------|-----------|------|
-| `secretarIA` (frontend) | `/` (raiz) | Web estático (Vite) |
-| `secretarIA-backend` | `/backend` | API Node.js/Express |
-| `secretarIA-db` | — | PostgreSQL (plugin Railway) |
+## Plano recomendado
+**VPS KVM 1** (~R$25-35/mês) — suficiente para começar com 1-3 clínicas.
 
 ---
 
-## 1. Criar o serviço de Backend
+## 1. Configuração inicial do VPS (só na primeira vez)
 
-O frontend já está criado. Para adicionar o backend:
+Acesse o VPS via SSH como root:
 
-1. No painel do Railway, clique em **"+ New"** (botão no canto superior do canvas)
-2. Escolha **"GitHub Repo"**
-3. Selecione o repositório `secretarIA`
-4. Em **"Root Directory"**, coloque: `backend`
-5. O Railway vai detectar o `railway.toml` dentro de `/backend` automaticamente
-6. Clique em **"Deploy"**
-
-> O arquivo `backend/railway.toml` já está configurado com Nixpacks, build e start commands.
-
----
-
-## 2. Criar o banco de dados PostgreSQL
-
-1. No painel do Railway, clique em **"+ New"**
-2. Escolha **"Database" → "Add PostgreSQL"**
-3. O Railway cria o banco e expõe a variável `DATABASE_URL` automaticamente
-4. Vincule essa variável ao serviço `secretarIA-backend`:
-   - Clique no serviço `secretarIA-backend` → **"Variables"**
-   - Clique em **"+ New Variable"** → **"Add Reference"**
-   - Selecione `Postgres.DATABASE_URL`
-
----
-
-## 3. Variáveis de ambiente necessárias
-
-### Frontend (`secretarIA`)
-
-| Variável | Valor |
-|----------|-------|
-| `VITE_API_URL` | URL pública do backend (ex: `https://secretaria-backend-xxx.up.railway.app`) |
-| `VITE_SUPABASE_URL` | URL do projeto Supabase |
-| `VITE_SUPABASE_ANON_KEY` | Chave anon do Supabase |
-
-### Backend (`secretarIA-backend`)
-
-| Variável | Fonte |
-|----------|-------|
-| `DATABASE_URL` | Referência ao `Postgres.DATABASE_URL` |
-| `FRONTEND_URL` | URL pública do frontend |
-| `OPENAI_API_KEY` | Chave da OpenAI |
-| `ASAAS_API_KEY` | Chave da API Asaas |
-| `WHATSAPP_TOKEN` | Token da API WhatsApp Cloud (Meta) |
-| `WHATSAPP_VERIFY_TOKEN` | Token de verificação do webhook |
-
----
-
-## 4. Expor o backend publicamente
-
-Por padrão, novos serviços no Railway são **internos** (sem domínio público).
-
-1. Clique no serviço `secretarIA-backend`
-2. Vá em **"Settings"**
-3. Em **"Networking"**, clique em **"Generate Domain"**
-4. Copie o domínio gerado e cole como `VITE_API_URL` no frontend
-
----
-
-## 5. Ordem de deploy recomendada
-
+```bash
+ssh root@IP_DO_SEU_VPS
 ```
-1. PostgreSQL (banco de dados)
-2. secretarIA-backend (API)
-3. secretarIA (frontend — após ter a URL da API)
+
+Baixe e execute o script de setup:
+
+```bash
+curl -O https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPO/main/deploy/setup-vps.sh
+bash setup-vps.sh
+```
+
+Isso instala: Node.js 20, PM2, Nginx, Certbot e Git.
+
+---
+
+## 2. Clonar o repositório
+
+```bash
+git clone https://github.com/SEU_USUARIO/SEU_REPO.git /var/www/secretaria
 ```
 
 ---
 
-## 6. Rodar as migrations do banco
+## 3. Configurar variáveis de ambiente
 
-Após o PostgreSQL estar online, execute os scripts SQL em ordem no **SQL Editor do Supabase** ou via `psql`:
+```bash
+# Backend
+cp /var/www/secretaria/.env.example /var/www/secretaria/backend/.env
+nano /var/www/secretaria/backend/.env
+# Preencha todas as variáveis
 
-```
-database/01_supabase.sql
-database/02_postgres.sql
-database/03_saas_multitenancy.sql
-...
-database/11_marketing_and_followup.sql
+# Frontend
+cp /var/www/secretaria/.env.example /var/www/secretaria/.env
+nano /var/www/secretaria/.env
+# Preencha as variáveis VITE_*
 ```
 
 ---
 
-## Verificar saúde dos serviços
+## 4. Configurar o Nginx
 
-- **Frontend**: acesse a URL pública → deve carregar a interface
-- **Backend**: `GET /health` → retorna `{ "status": "ok" }`
-- **Banco**: verifique em **"Data"** no plugin PostgreSQL do Railway
+```bash
+cp /var/www/secretaria/deploy/nginx.conf /etc/nginx/sites-available/secretaria
+ln -s /etc/nginx/sites-available/secretaria /etc/nginx/sites-enabled/secretaria
+nano /etc/nginx/sites-available/secretaria
+# Substitua SEU_DOMINIO.com pelo seu domínio real
+
+nginx -t && systemctl reload nginx
+```
+
+---
+
+## 5. Gerar certificado SSL gratuito
+
+```bash
+certbot --nginx -d SEU_DOMINIO.com -d www.SEU_DOMINIO.com
+```
+
+---
+
+## 6. Primeiro deploy
+
+```bash
+bash /var/www/secretaria/deploy/deploy.sh
+```
+
+---
+
+## 7. Deploys futuros (atualizar o sistema)
+
+Sempre que fizer alterações no código:
+
+```bash
+ssh root@IP_DO_SEU_VPS
+bash /var/www/secretaria/deploy/deploy.sh
+```
+
+---
+
+## Comandos úteis no VPS
+
+```bash
+# Ver status do backend
+pm2 status
+
+# Ver logs em tempo real
+pm2 logs secretaria-backend
+
+# Reiniciar o backend manualmente
+pm2 restart secretaria-backend
+
+# Ver logs do Nginx
+tail -f /var/log/nginx/error.log
+
+# Ver logs do app
+tail -f /var/www/secretaria/logs/backend-error.log
+```
+
+---
+
+## Configurar o WhatsApp (Evolution API)
+
+O Evolution API precisa ser instalado separadamente. Opções:
+1. **No mesmo VPS** — instale via Docker na porta 8080
+2. **Serviço separado** — use um VPS menor ou serviço gerenciado
+
+Após instalar, crie uma instância e configure o webhook apontando para:
+```
+https://SEU_DOMINIO.com/webhooks/whatsapp
+```
+
+---
+
+## Variáveis obrigatórias para funcionar
+
+| Variável | Onde encontrar |
+|----------|---------------|
+| `SUPABASE_URL` | Supabase > Project Settings > API |
+| `SUPABASE_SERVICE_KEY` | Supabase > Project Settings > API > service_role |
+| `POSTGRES_*` | Supabase > Project Settings > Database |
+| `OPENAI_API_KEY` | platform.openai.com > API Keys |
+| `EVO_*` | Painel do seu Evolution API |
+| `VITE_SUPABASE_URL` | Supabase > Project Settings > API |
+| `VITE_SUPABASE_ANON_KEY` | Supabase > Project Settings > API > anon/public |
