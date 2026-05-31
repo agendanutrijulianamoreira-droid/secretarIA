@@ -174,9 +174,25 @@ CREATE TABLE IF NOT EXISTS agendamentos (
   servico_id   uuid REFERENCES servicos(id),
   data_inicio  timestamptz,
   data_fim     timestamptz,
-  status       text DEFAULT 'agendado',
-  notas        text DEFAULT '',
-  created_at   timestamptz DEFAULT now()
+  status            text DEFAULT 'agendado',
+  notas             text DEFAULT '',
+  google_event_id   text,
+  professional_id   uuid,
+  lembrete_enviado  boolean DEFAULT false,
+  nps_enviado       boolean DEFAULT false,
+  created_at        timestamptz DEFAULT now()
+);
+
+-- ── PROFESSIONALS (profissionais de saúde da clínica) ──────
+CREATE TABLE IF NOT EXISTS professionals (
+  id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id             uuid REFERENCES clients(id) ON DELETE CASCADE,
+  name                  text NOT NULL,
+  especialidade         text DEFAULT '',
+  google_calendar_email text DEFAULT '',
+  ativo                 boolean DEFAULT true,
+  created_at            timestamptz DEFAULT now(),
+  updated_at            timestamptz DEFAULT now()
 );
 
 -- ── N8N FLUXOS ────────────────────────────────────────────
@@ -263,3 +279,7 @@ CREATE POLICY "allow_all_authenticated" ON agendamentos    FOR ALL TO authentica
 CREATE POLICY "allow_all_authenticated" ON n8n_fluxos      FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "allow_all_authenticated" ON tokens          FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "allow_all_authenticated" ON alerts          FOR ALL TO authenticated USING (true) WITH CHECK (true);
+ALTER TABLE professionals ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow_all_authenticated" ON professionals   FOR ALL TO authenticated USING (true) WITH CHECK (true);
+ALTER PUBLICATION supabase_realtime ADD TABLE agendamentos;
+ALTER PUBLICATION supabase_realtime ADD TABLE professionals;

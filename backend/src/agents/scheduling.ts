@@ -3,10 +3,6 @@ import { ClinicContext, PatientContext, ChatMessage, AgentResponse } from './typ
 import { calendarService } from '../services/calendarService.js';
 import { query } from '../lib/db.js';
 
-/**
- * Agente especialista em agendamentos.
- * Responsável por gerenciar o fluxo de escolha de profissionais, verificação de datas e criação de compromissos.
- */
 export class SchedulingAgent {
   private get openai() {
     return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -18,36 +14,65 @@ export class SchedulingAgent {
     patient: PatientContext,
     history: ChatMessage[]
   ): Promise<AgentResponse> {
-    
-    // 1. Buscar profissionais disponíveis para prover contexto à IA
-    const profRes = await query('SELECT id, name FROM professionals WHERE clinic_id = $1', [clinic.id]);
-    const professionals = profRes.rows;
+
+    // Buscar profissionais cadastrados
+    const profRes = await query(
+      'SELECT id, name FROM professionals WHERE client_id = $1 AND ativo = TRUE',
+      [clinic.id]
+    );
+    const professionals: { id: string; name: string }[] = profRes.rows;
+
+    // Verificar se há data/hora mencionada na mensagem para checar disponibilidade real
+    let availabilityContext = '';
+    const datePattern = /(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?/;
+    const dateMatch = message.match(datePattern);
+
+    if (dateMatch && professionals.length > 0) {
+      try {
+        const day   = dateMatch[1].padStart(2, '0');
+        const month = dateMatch[2].padStart(2, '0');
+        const year  = dateMatch[3] ? (dateMatch[3].length === 2 ? `20${dateMatch[3]}` : dateMatch[3]) : new Date().getFullYear().toString();
+        const dateStr = `${year}-${month}-${day}`;
+
+        // Checa disponibilidade do primeiro profissional (ou do único)
+        const targetProfessional = professionals[0];
+        const availability = await calendarService.checkAvailability(targetProfessional.id, dateStr);
+
+        const busyFormatted = availability.busy_slots.map((s: any) => {
+          const start = new Date(s.start).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          const end   = new Date(s.end).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          return `${start}–${end}`;
+        }).join(', ');
+
+        availabilityContext = busyFormatted
+          ? `\nCONSULTA DE AGENDA PARA ${day}/${month}:\nHorários JÁ OCUPADOS: ${busyFormatted}\nApenas ofereça horários FORA desses blocos.`
+          : `\nCONSULTA DE AGENDA PARA ${day}/${month}:\nAgenda completamente LIVRE nesse dia.`;
+      } catch {
+        // Calendário não configurado — segue sem contexto de disponibilidade
+      }
+    }
 
     const systemPrompt = `
-Você é o Especialista em Agendamento da clínica "${clinic.name}".
-Sua missão é coordenar o agendamento de consultas de forma eficiente, amigável e profissional.
+Você é a Especialista em Agendamento da clínica "${clinic.name}".
+Coordene o agendamento de consultas de forma eficiente e profissional.
 
-DADOS DA CLÍNICA:
-- Especialidades: ${clinic.specialties?.join(', ') || 'Clínica Geral'}
-- Horários de Funcionamento: ${JSON.stringify(clinic.operating_hours)}
+CLÍNICA:
+${clinic.prompt_context}
+Horários de funcionamento: ${clinic.operating_hours}
+${availabilityContext}
 
-EQUIPE DE PROFISSIONAIS:
-${professionals.length > 0 
-  ? professionals.map((p: Record<string, any>) => `- ${p.name} (ID: ${p.id})`).join('\n')
-  : 'Nenhum profissional cadastrado no momento. Informe ao paciente que a recepção entrará em contato.'}
+PROFISSIONAIS DISPONÍVEIS:
+${professionals.length > 0
+  ? professionals.map(p => `- ${p.name} (ID: ${p.id})`).join('\n')
+  : 'Nenhum profissional cadastrado. Informe que a recepção entrará em contato.'}
 
-INSTRUÇÕES DE FLUXO:
-1. SE houver mais de um profissional disponível, você DEVE perguntar ao paciente com qual deles ele deseja agendar.
-2. Quando o paciente sugerir uma data e hora, responda que vai verificar a disponibilidade técnica com o profissional.
-3. Você deve consultar mentalmente se o horário está dentro dos "Horários de Funcionamento" da clínica.
-4. Nunca confirme um agendamento sem antes garantir que o paciente escolheu um profissional (se houver múltiplos).
-
-AÇÕES ESPECIAIS (JSON):
-Se o paciente confirmar uma data, hora e profissional, você deve incluir o seguinte bloco JSON ao final da sua resposta para que o sistema processe o agendamento:
-[[{"action": "create_appointment", "professional_id": "ID_DO_PROFISSIONAL", "start_time": "ISO_DATETIME", "service_type": "Consulta"}]]
-
-MENSAGEM DO PACIENTE:
-"${message}"
+REGRAS:
+1. Se houver mais de um profissional, pergunte com qual o paciente quer agendar.
+2. Nunca ofereça horários que estejam nos blocos OCUPADOS acima.
+3. Proponha sempre dois horários alternativos — nunca pergunte "qual prefere?" abertamente.
+4. Ao confirmar: profissional + data + hora devem estar definidos.
+5. Quando tudo estiver confirmado, inclua o bloco JSON ao final da mensagem:
+[[{"action":"create_appointment","professional_id":"ID","start_time":"ISO_DATETIME","service_type":"Consulta"}]]
 `;
 
     try {
@@ -60,20 +85,13 @@ MENSAGEM DO PACIENTE:
         ]
       });
 
-      let aiResponse = completion.choices[0].message.content || '';
+      const aiResponse = completion.choices[0].message.content || '';
 
-      // Lógica de Integração com Calendar Service
-      // Se a IA gerou uma intenção de agendamento, podemos validar a disponibilidade aqui
-      // Nota: Em um fluxo mais avançado, poderíamos fazer uma chamada de ferramenta (Function Calling)
-      
-      return {
-        content: aiResponse,
-        intent: 'scheduling'
-      };
+      return { content: aiResponse, intent: 'scheduling' };
     } catch (error) {
       console.error('❌ Erro no SchedulingAgent:', error);
-      return { 
-        content: 'Desculpe, tive um problema ao acessar minha agenda. Posso pedir para alguém da equipe te ligar para confirmar o horário?',
+      return {
+        content: 'Tive um problema ao verificar a agenda. Posso pedir para alguém da equipe te ligar para confirmar o horário?',
         intent: 'scheduling'
       };
     }

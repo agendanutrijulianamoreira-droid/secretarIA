@@ -20,8 +20,8 @@ export class Orchestrator {
     
     // 1. Recuperar histórico recente (últimas 10 mensagens para economizar tokens)
     const historyResult = await query(
-      'SELECT role, content FROM chat_messages WHERE patient_id = $1 ORDER BY created_at DESC LIMIT 10',
-      [patient.id]
+      'SELECT role, content FROM chat_messages WHERE client_id = $1 AND telefone = $2 ORDER BY created_at DESC LIMIT 10',
+      [clinic.id, patient.phone]
     );
     const history: ChatMessage[] = historyResult.rows.reverse() as ChatMessage[];
 
@@ -67,8 +67,8 @@ export class Orchestrator {
 
     // 4. Salvar resposta da IA no histórico
     await query(
-      'INSERT INTO chat_messages (clinic_id, patient_id, role, content) VALUES ($1, $2, $3, $4)',
-      [clinic.id, patient.id, 'assistant', response.content]
+      'INSERT INTO chat_messages (client_id, telefone, role, content, created_at) VALUES ($1, $2, $3, $4, NOW())',
+      [clinic.id, patient.phone, 'assistant', response.content]
     );
 
     return response;

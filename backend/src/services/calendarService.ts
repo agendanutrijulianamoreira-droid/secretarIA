@@ -32,6 +32,7 @@ export const calendarService = {
   }) {
     // 1. Buscar o e-mail do calendário do profissional
     const profRes = await query('SELECT google_calendar_email FROM professionals WHERE id = $1', [data.professional_id]);
+
     const calendarId = profRes.rows[0]?.google_calendar_email;
 
     if (!calendarId) {
@@ -55,9 +56,9 @@ export const calendarService = {
 
       // 3. Salvar no banco de dados local
       const res = await query(
-        `INSERT INTO appointments (clinic_id, professional_id, patient_id, google_event_id, start_time, end_time, status, service_type)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-        [data.clinic_id, data.professional_id, data.patient_id, googleEvent.data.id, data.start_time, data.end_time, 'scheduled', data.service_type]
+        `INSERT INTO agendamentos (client_id, professional_id, paciente_id, google_event_id, data_inicio, data_fim, status, notas, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, 'agendado', $7, NOW()) RETURNING *`,
+        [data.clinic_id, data.professional_id, data.patient_id, googleEvent.data.id, data.start_time, data.end_time, data.service_type]
       );
 
       return res.rows[0];
@@ -73,9 +74,9 @@ export const calendarService = {
   async cancelAppointment(appointmentId: string) {
     // 1. Buscar detalhes do agendamento e do profissional
     const res = await query(
-      `SELECT a.*, p.google_calendar_email 
-       FROM appointments a 
-       JOIN professionals p ON a.professional_id = p.id 
+      `SELECT a.*, p.google_calendar_email
+       FROM agendamentos a
+       JOIN professionals p ON a.professional_id = p.id
        WHERE a.id = $1`, 
       [appointmentId]
     );
@@ -98,7 +99,7 @@ export const calendarService = {
     }
 
     // 3. Atualizar status local para 'cancelled'
-    await query('UPDATE appointments SET status = $1 WHERE id = $2', ['cancelled', appointmentId]);
+    await query('UPDATE agendamentos SET status = $1 WHERE id = $2', ['cancelado', appointmentId]);
     
     return { success: true };
   },
@@ -109,9 +110,9 @@ export const calendarService = {
   async checkAvailability(professionalId: string, date: string) {
     // 1. Buscar e-mail do calendário e horários de funcionamento da clínica
     const res = await query(
-      `SELECT p.google_calendar_email, c.operating_hours 
-       FROM professionals p 
-       JOIN clinics c ON p.clinic_id = c.id 
+      `SELECT p.google_calendar_email, cl.briefing->>'business_hours' as operating_hours
+       FROM professionals p
+       JOIN clients cl ON p.client_id = cl.id
        WHERE p.id = $1`, 
       [professionalId]
     );

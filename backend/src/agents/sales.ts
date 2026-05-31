@@ -6,76 +6,89 @@ export class SalesAgent {
   private get openai() {
     return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   }
+
   async handle(
     message: string,
     clinic: ClinicContext,
     patient: PatientContext,
     history: ChatMessage[]
   ): Promise<AgentResponse> {
-    
-    // Buscar promoções ativas para injetar no contexto
+
+    // Puxar serviços e preços do banco
+    let servicosContext = '';
+    try {
+      const svcResult = await query(
+        'SELECT nome, descricao, preco, duracao_minutos FROM servicos WHERE client_id = $1 AND ativo = TRUE ORDER BY preco ASC',
+        [clinic.id]
+      );
+      if (svcResult.rows.length > 0) {
+        servicosContext = '\nSERVIÇOS E VALORES:\n' + svcResult.rows.map((s: any) =>
+          `- ${s.nome}: R$ ${Number(s.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}${s.duracao_minutos ? ` (${s.duracao_minutos} min)` : ''}${s.descricao ? ` — ${s.descricao}` : ''}`
+        ).join('\n');
+      }
+    } catch (e) {
+      console.error('Erro ao buscar serviços:', e);
+    }
+
+    // Promoções ativas (tabela opcional)
     let promotionsContext = '';
     try {
       const promoResult = await query(
-        `SELECT title, description, discount_rules, valid_until FROM active_promotions 
-         WHERE clinic_id = $1 AND is_active = TRUE AND (valid_until IS NULL OR valid_until > NOW())`,
+        `SELECT titulo, descricao FROM campanhas
+         WHERE client_id = $1 AND status = 'ativa' AND (agendada_para IS NULL OR agendada_para > NOW())
+         LIMIT 3`,
         [clinic.id]
       );
-      
       if (promoResult.rows.length > 0) {
-        promotionsContext = `\nPROMOÇÕES ATIVAS (Use apenas como argumento de fechamento/urgência se o cliente hesitar pelo preço):\n`;
-        promoResult.rows.forEach((p: Record<string, any>) => {
-          promotionsContext += `- ${p.title}: ${p.description}. Regras: ${p.discount_rules}. Válido até: ${p.valid_until ? p.valid_until.toISOString().split('T')[0] : 'Indeterminado'}\n`;
-        });
+        promotionsContext = '\nPROMOÇÕES ATIVAS (use como gatilho de urgência se o paciente hesitar):\n' +
+          promoResult.rows.map((p: any) => `- ${p.titulo}: ${p.descricao}`).join('\n');
       }
-    } catch (e) {
-      console.error('Erro ao buscar promoções ativas', e);
+    } catch {
+      // Tabela pode não existir ainda
     }
 
     const systemPrompt = `
-Você é uma Especialista em Fechamento e Consultora de Vendas da clínica de nutrição "${clinic.name}".
-O público-alvo são mulheres empreendedoras de 30 a 45 anos com rotina corrida, buscando resolver problemas como efeito sanfona, inchaço, falta de energia, SOP, endometriose ou compulsão noturna.
-
-DIRETRIZES DE VENDAS (MÉTODO SMART & PUV):
-1. **Regra Absoluta:** NUNCA informe o preço da consulta na primeira interação sobre valores.
-2. **Sondagem da Dor:** Se o paciente perguntar o preço, você deve primeiramente acolher e sondar a dor. Exemplo: "Compreendo perfeitamente. Para que eu possa te passar os valores adequados, me conte rapidamente: quais são as suas maiores dificuldades hoje para atingir seu objetivo?".
-3. **Proposta Única de Valor (PUV):** Antes de ancorar o valor, mostre os diferenciais (método focado na rotina, sem extremismos, acompanhamento contínuo).
-4. **Fechamento e Controle de Agenda:** Aja como líder. NUNCA diga "Qual melhor horário para você?". Sempre ofereça duas opções. Exemplo: "Eu consigo te encaixar na terça às 14h ou na quinta às 09h. Qual prefere?".
-5. **Tratamento de Objeções:** Se o cliente achar caro, seja empática, mostre o custo da inação (continuar com o mesmo problema). Se houver promoções ativas no contexto, utilize-as gerando escassez/urgência.
-6. **Formatação:** Textos visualmente harmônicos, curtos, use quebras de linha para facilitar a leitura. Nunca envie "paredões de texto". NUNCA USE EMOJIS (apenas a pontuação padrão).
-
-PORTFÓLIO DE SERVIÇOS E PREÇOS:
-- Consulta Avulsa: R$ 200,00
-- Checkup Nutricional Presencial: R$ 520,00
-- Protocolos de Reprogramação Hormonal:
-  * 3 meses: R$ 2.190,00
-  * 6 meses: R$ 4.190,00
-  * 12 meses: R$ 7.590,00
+Você é a Especialista Comercial da clínica "${clinic.name}".
+Seu objetivo é converter o interesse do paciente em consulta agendada.
 
 CONTEXTO DA CLÍNICA:
 ${clinic.prompt_context}
+${servicosContext}
 ${promotionsContext}
+
+MÉTODO DE VENDAS:
+1. NUNCA informe o preço na primeira mensagem sobre valores. Primeiro sonde a dor do paciente.
+   → Exemplo de sondagem: "Para te indicar a melhor opção, me conta rapidinho: qual é sua maior dificuldade hoje?"
+2. Antes do preço, mostre o diferencial: método personalizado, sem extremismos, acompanhamento contínuo.
+3. Ao falar de valor, contextualize o investimento (meses de acompanhamento, resultado esperado).
+4. Fechamento com duas opções de horário — nunca pergunta aberta.
+   → "Consigo te encaixar na terça às 14h ou na quinta às 10h. Qual prefere?"
+5. Se o paciente achar caro: acolha, mostre o custo de não tratar o problema, use promoção se houver.
+6. Texto curto, com quebras de linha. Sem "paredões". Sem emojis.
+
+MENSAGEM DO PACIENTE:
+"${message}"
 `;
 
     try {
       const completion = await this.openai.chat.completions.create({
-        model: 'gpt-4o', // Usando gpt-4o para maior capacidade persuasiva
+        model: 'gpt-4o',
+        temperature: 0.7,
         messages: [
           { role: 'system', content: systemPrompt },
           ...history.map(m => ({ role: m.role, content: m.content })),
           { role: 'user', content: message }
-        ],
-        temperature: 0.7, // Um pouco de criatividade para argumentação
+        ]
       });
 
       return {
-        content: completion.choices[0].message.content || 'Houve um erro processando sua resposta.',
+        content: completion.choices[0].message.content || '',
         intent: 'sales'
       };
     } catch (error) {
       console.error('❌ Erro no SalesAgent:', error);
       return {
-        content: 'No momento nosso sistema comercial está passando por atualizações. Posso pedir para um especialista humano te chamar?',
+        content: 'No momento estou com uma dificuldade técnica. Posso pedir para um especialista da clínica entrar em contato com você?',
         intent: 'handoff',
         needs_action: true
       };
