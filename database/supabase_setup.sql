@@ -283,3 +283,28 @@ ALTER TABLE professionals ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "allow_all_authenticated" ON professionals   FOR ALL TO authenticated USING (true) WITH CHECK (true);
 ALTER PUBLICATION supabase_realtime ADD TABLE agendamentos;
 ALTER PUBLICATION supabase_realtime ADD TABLE professionals;
+
+-- ── AUDITORIA (LGPD art. 37 — registro de operações) ──────
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     uuid,
+  user_email  text NOT NULL,
+  action      text NOT NULL,
+  resource    text,
+  ip          text,
+  created_at  timestamptz DEFAULT NOW()
+);
+
+-- Só a service_role pode ler logs de auditoria (nem o usuário vê seus próprios logs)
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "only_service_role" ON audit_logs FOR ALL TO service_role USING (true);
+
+-- Índice para consultas por usuário e por período
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON audit_logs (user_email, created_at DESC);
+
+-- Limpeza automática: mantém apenas 90 dias de logs
+CREATE OR REPLACE FUNCTION cleanup_audit_logs() RETURNS void AS $$
+BEGIN
+  DELETE FROM audit_logs WHERE created_at < NOW() - INTERVAL '90 days';
+END;
+$$ LANGUAGE plpgsql;
