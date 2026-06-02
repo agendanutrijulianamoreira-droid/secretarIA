@@ -10,6 +10,18 @@ export default function SalesPage() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
+    const root = document.documentElement;
+    const prev = root.getAttribute('data-theme');
+    root.setAttribute('data-theme', 'dark');
+    root.classList.add('dark');
+    return () => {
+      if (prev) root.setAttribute('data-theme', prev);
+      else root.removeAttribute('data-theme');
+      root.classList.toggle('dark', prev === 'dark');
+    };
+  }, []);
+
+  useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);

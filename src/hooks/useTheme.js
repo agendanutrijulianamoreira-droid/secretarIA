@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 // Gerencia o tema dark/light com persistência no localStorage
 export function useTheme() {
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
