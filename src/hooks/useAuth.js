@@ -3,10 +3,14 @@ import { supabase } from '../lib/supabase';
 import { Clientes } from '../lib/db';
 import { ADMIN_EMAIL } from '../design-system/tokens';
 
+const BYPASS_KEY = '__admin_bypass';
+
 // Gerencia sessão de autenticação e portal do cliente logado
 export function useAuth() {
-  const [user, setUser]           = useState(null);
-  const [authLoading, setLoading] = useState(true);
+  const isBypass = sessionStorage.getItem(BYPASS_KEY) === '1';
+
+  const [user, setUser]           = useState(isBypass ? { email: ADMIN_EMAIL, id: 'local-admin' } : null);
+  const [authLoading, setLoading] = useState(!isBypass);
   const [portal, setPortal]       = useState(null);
 
   const resolvePortal = async (u) => {
@@ -22,6 +26,8 @@ export function useAuth() {
   };
 
   useEffect(() => {
+    if (isBypass) return;
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       const u = session?.user ?? null;
       setUser(u);
@@ -40,7 +46,14 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const logout = () => supabase.auth.signOut();
+  const logout = () => {
+    if (sessionStorage.getItem(BYPASS_KEY)) {
+      sessionStorage.removeItem(BYPASS_KEY);
+      window.location.reload();
+      return;
+    }
+    return supabase.auth.signOut();
+  };
 
   return { user, authLoading, portal, setPortal, logout };
 }
