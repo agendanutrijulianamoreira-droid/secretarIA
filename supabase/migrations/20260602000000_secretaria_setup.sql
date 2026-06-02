@@ -1,6 +1,5 @@
 -- ============================================================
 -- SecretarIA — Setup completo do banco de dados
--- Aplicado automaticamente via integração GitHub ↔ Supabase
 -- ============================================================
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
@@ -272,29 +271,30 @@ ALTER TABLE tokens           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE alerts           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs       ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "allow_all_authenticated" ON clients          FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_authenticated" ON contatos         FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_authenticated" ON pacientes        FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_authenticated" ON campanhas        FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_authenticated" ON whatsapp_numbers FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_authenticated" ON servicos         FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_authenticated" ON vendas           FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_authenticated" ON ia_aprendizados  FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_authenticated" ON chat_messages    FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_authenticated" ON invoices         FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_authenticated" ON portal_messages  FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_authenticated" ON agendamentos     FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_authenticated" ON professionals    FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_authenticated" ON n8n_fluxos       FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_authenticated" ON tokens           FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "allow_all_authenticated" ON alerts           FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "only_service_role"       ON audit_logs       FOR ALL TO service_role USING (true);
+-- Políticas com proteção contra duplicatas
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON clients          FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON contatos         FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON pacientes        FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON campanhas        FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON whatsapp_numbers FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON servicos         FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON vendas           FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON ia_aprendizados  FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON chat_messages    FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON invoices         FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON portal_messages  FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON agendamentos     FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON professionals    FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON n8n_fluxos       FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON tokens           FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "allow_all_authenticated" ON alerts           FOR ALL TO authenticated USING (true) WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "only_service_role"       ON audit_logs       FOR ALL TO service_role  USING (true);                  EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ── REALTIME ──────────────────────────────────────────────
-ALTER PUBLICATION supabase_realtime ADD TABLE clients;
-ALTER PUBLICATION supabase_realtime ADD TABLE contatos;
-ALTER PUBLICATION supabase_realtime ADD TABLE portal_messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE alerts;
-ALTER PUBLICATION supabase_realtime ADD TABLE chat_messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE agendamentos;
-ALTER PUBLICATION supabase_realtime ADD TABLE professionals;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE clients;        EXCEPTION WHEN others THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE contatos;       EXCEPTION WHEN others THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE portal_messages;EXCEPTION WHEN others THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE alerts;         EXCEPTION WHEN others THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE chat_messages;  EXCEPTION WHEN others THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE agendamentos;   EXCEPTION WHEN others THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE professionals;  EXCEPTION WHEN others THEN NULL; END $$;
