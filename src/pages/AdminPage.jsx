@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
 import AdminLayout        from '../components/layout/AdminLayout';
-import DashboardView      from '../components/dashboard/DashboardView';
-import FluxosView         from '../components/dashboard/FluxosView';
-import TokensView         from '../components/dashboard/TokensView';
+import DashboardView      from '../views/admin/DashboardView';
+import FluxosView         from '../views/admin/FluxosView';
+import TokensView         from '../views/admin/TokensView';
 import FinanceiroAdmin    from '../components/financeiro/FinanceiroAdmin';
 import AlertsView         from '../components/alerts/AlertsView';
 import VendasView         from '../components/vendas/VendasView';

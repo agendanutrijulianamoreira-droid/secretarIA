@@ -13,7 +13,7 @@ import EquipeView from "../views/client/EquipeView";
 import MarketingView from "../views/client/MarketingView";
 import SettingsView from "../views/client/SettingsView";
 import OnboardingChat from "../views/client/OnboardingChat";
-import { Logo } from "../components/UI";
+import { Logo } from "../components/shared/Logo";
 import { PLAN_META } from "../design-system/tokens";
 import { Zap, Star, Settings, Power, ChevronRight, Bell, Activity, Brain, CheckCircle2, LayoutDashboard, AlertCircle, Sparkles, Bot, TrendingUp, Users, Smartphone, MessageCircle, ShieldCheck, User, Plus, Edit2, X } from "lucide-react";
 

@@ -4,7 +4,7 @@ import {
   BarChart2, DollarSign, Moon, Sun,
   Activity, LogOut, Search
 } from 'lucide-react';
-import { Logo } from '../components/UI';
+import { Logo } from '../components/shared/Logo';
 
 const NAV_ITEMS = [
   { id: "dashboard",  icon: LayoutDashboard, label: "Painel" },

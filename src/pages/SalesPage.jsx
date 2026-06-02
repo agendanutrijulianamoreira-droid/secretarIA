@@ -4,7 +4,7 @@ import {
   MessageSquare, Calendar, ArrowRight, CheckCircle2, 
   Globe, Clock, Plus, Minus, Activity, Star, ShieldCheck
 } from 'lucide-react';
-import { Logo } from '../components/UI';
+import { Logo } from '../components/shared/Logo';
 
 export default function SalesPage() {
   const [scrolled, setScrolled] = useState(false);

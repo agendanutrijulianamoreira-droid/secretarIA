@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Clientes } from "../../lib/db";
-import { Logo } from "../../components/UI";
+import { Logo } from "../../components/shared/Logo";
 import { Send, Sparkles, CheckCircle, Bot, User, ArrowRight, Brain, Zap } from "lucide-react";
 
 // ── Fluxo de perguntas do Onboarding ────────────────────────────────────────
