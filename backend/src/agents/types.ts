@@ -15,6 +15,7 @@ export interface PatientContext {
   id: string;
   phone: string;
   name: string;
+  clinic_id?: string;
 }
 
 export interface ChatMessage {

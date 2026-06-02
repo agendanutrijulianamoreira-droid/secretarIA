@@ -1,35 +1,26 @@
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from './authMiddleware.js';
 
-const ADMIN_EMAIL = "agendanutrijulianamoreira@gmail.com";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'agendanutrijulianamoreira@gmail.com';
 
-/**
- * Middleware para garantir que o usuário logado só acesse dados de sua própria clínica.
- * Assume que :clientId ou :id na URL é o identificador único da clínica (ex: e-mail ou UUID).
- */
+// Garante que o usuário só acessa dados do próprio client_id
 export const tenantGuard = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const user = req.user;
-  const targetClientId = req.params.clientId || req.params.id;
 
   if (!user) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ error: 'Não autenticado' });
   }
 
-  // Admin tem passe livre para qualquer tenant
   if (user.email === ADMIN_EMAIL) {
     return next();
   }
 
-  // Verifica se o ID solicitado corresponde ao e-mail do usuário logado
-  // (Ou outra lógica de mapeamento se o clientId não for o e-mail)
-  if (targetClientId && user.email === targetClientId) {
-    return next();
+  const requestedClientId = req.params.clientId || req.params.id || req.body?.client_id;
+
+  if (requestedClientId && user.client_id !== requestedClientId) {
+    console.warn(`[SECURITY] Acesso negado: ${user.email} tentou acessar client ${requestedClientId}`);
+    return res.status(403).json({ error: 'Acesso negado' });
   }
 
-  // Se o clientId for um UUID, precisaríamos de uma consulta prévia ao banco 
-  // para verificar a relação user.email -> clinic.id. 
-  // Por simplicidade e segurança Zero Trust imediata, bloqueamos se não houver match direto.
-  
-  console.warn(`🚨 Security Alert: User ${user.email} tried to access ${targetClientId}`);
-  return res.status(403).json({ error: 'Forbidden: You do not have access to this tenant data' });
+  next();
 };

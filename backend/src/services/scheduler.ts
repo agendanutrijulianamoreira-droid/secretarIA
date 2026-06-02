@@ -2,165 +2,143 @@ import cron from 'node-cron';
 import { query } from '../lib/db.js';
 import { whatsappService } from './whatsapp.js';
 
+// Helper: envia mensagem para um contato via WhatsApp de uma clínica
+async function sendToContact(clientId: string, telefone: string, text: string) {
+  const cfgRes = await query('SELECT briefing FROM clients WHERE id = $1', [clientId]);
+  const briefing = cfgRes.rows[0]?.briefing || {};
+  const phoneNumberId = briefing.whatsapp_phone_number_id;
+  if (!phoneNumberId) return;
+  await whatsappService.sendMessage(telefone, text, phoneNumberId);
+}
+
 export function initScheduler() {
-  console.log('🚀 Inicializando Motor de Agendamento (Scheduler)...');
+  console.log('🚀 Scheduler iniciado');
 
-  // Roda a cada minuto para testes (ou usar '0 9 * * *' para diário às 09:00)
-  // Como estamos testando o fluxo, vamos manter a cada hora no exemplo ou minuto para dev
-  // O usuário pediu "jobs que rodam diariamente", mas "para que se houver falha, o loop continue"
-  cron.schedule('0 9 * * *', async () => {
-    console.log('⏰ Iniciando Jobs de Marketing e Follow-up...');
-
-    // ---------------------------------------------------------
-    // 1. RECUPERAÇÃO DE VENDAS (Leads estagnados há 1, 3 ou 7 dias)
-    // ---------------------------------------------------------
+  // ── Job 1: Lembrete de consulta 24h antes (anti no-show) ─────────────────
+  // Roda de hora em hora e envia lembrete para agendamentos que começam em ~24h
+  cron.schedule('0 * * * *', async () => {
+    console.log('⏰ [Scheduler] Verificando lembretes de consulta...');
     try {
-      console.log('🔍 Checando leads para recuperação...');
-      // Pegar pacientes que não têm agendamentos futuros e a última interação foi há 1, 3 ou 7 dias
-      // Simplificação do status "em negociação" usando ausência de appointments
-      const leadsResult = await query(
-        `SELECT p.id as patient_id, p.phone, p.name, p.clinic_id, c.config_json,
-         EXTRACT(DAY FROM NOW() - p.last_interaction) as days_inactive
-         FROM patients p
-         JOIN clinics c ON p.clinic_id = c.id
-         LEFT JOIN appointments a ON a.patient_id = p.id AND a.start_time > NOW()
-         WHERE a.id IS NULL 
-         AND EXTRACT(DAY FROM NOW() - p.last_interaction) IN (1, 3, 7)`
-      );
+      const result = await query(`
+        SELECT a.id, a.client_id, a.data_inicio,
+               c.telefone, c.nome
+        FROM agendamentos a
+        JOIN contatos c ON c.id = a.paciente_id
+        WHERE a.status = 'agendado'
+          AND a.data_inicio BETWEEN NOW() + INTERVAL '23 hours' AND NOW() + INTERVAL '25 hours'
+          AND a.lembrete_enviado IS DISTINCT FROM TRUE
+      `);
 
-      for (const lead of leadsResult.rows) {
+      for (const appt of result.rows) {
         try {
-          const days = Math.floor(lead.days_inactive);
-          // Buscar template 'recovery'
-          const tmplResult = await query(
-            `SELECT content_text FROM message_templates WHERE clinic_id = $1 AND type = 'recovery'`,
-            [lead.clinic_id]
-          );
-          
-          let message = `Olá ${lead.name || ''}, percebi que paramos de nos falar há alguns dias. Ficou alguma dúvida sobre o acompanhamento?`;
-          if (tmplResult.rows.length > 0) {
-            message = tmplResult.rows[0].content_text.replace('{{nome}}', lead.name || '');
-          }
+          const hora = new Date(appt.data_inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          const data = new Date(appt.data_inicio).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
 
-          const fromPhoneNumberId = lead.config_json?.whatsapp_phone_number_id;
-          if (fromPhoneNumberId) {
-            await whatsappService.sendMessage(lead.phone, message, fromPhoneNumberId);
-            
-            // Registrar follow-up
-            await query(
-              `INSERT INTO lead_followups (clinic_id, patient_id, followup_stage, status, sent_at)
-               VALUES ($1, $2, $3, 'sent', NOW())`,
-              [lead.clinic_id, lead.patient_id, days]
-            );
-            console.log(`✅ Recuperação enviada para lead ${lead.phone} (Dia ${days})`);
-          }
+          const msg = `Olá, ${appt.nome}!\n\nLembrando que você tem consulta amanhã, *${data}* às *${hora}*.\n\nCaso precise reagendar, entre em contato com antecedência. Te esperamos!`;
+
+          await sendToContact(appt.client_id, appt.telefone, msg);
+          await query('UPDATE agendamentos SET lembrete_enviado = TRUE WHERE id = $1', [appt.id]);
+          console.log(`✅ Lembrete enviado para ${appt.telefone}`);
         } catch (e) {
-          console.error(`❌ Erro ao enviar recuperação para lead ${lead.phone}:`, e);
+          console.error(`❌ Erro ao enviar lembrete para ${appt.telefone}:`, e);
         }
       }
     } catch (error) {
-      console.error('❌ Erro no Job de Recuperação de Leads:', error);
+      console.error('❌ Erro no Job de Lembretes:', error);
     }
+  });
 
-    // ---------------------------------------------------------
-    // 2. REENGAJAMENTO (Pacientes inativos há 3 ou 6 meses)
-    // ---------------------------------------------------------
+  // ── Job 2: Recuperação de leads parados (1, 3 e 7 dias sem resposta) ──────
+  cron.schedule('0 9 * * *', async () => {
+    console.log('⏰ [Scheduler] Recuperação de leads...');
     try {
-      console.log('🔍 Checando pacientes para reengajamento...');
-      const reengageResult = await query(
-        `SELECT a.patient_id, p.phone, p.name, p.clinic_id, c.config_json,
-         EXTRACT(MONTH FROM NOW() - MAX(a.start_time)) as months_inactive
-         FROM appointments a
-         JOIN patients p ON a.patient_id = p.id
-         JOIN clinics c ON a.clinic_id = c.id
-         WHERE a.status = 'completed'
-         GROUP BY a.patient_id, p.phone, p.name, p.clinic_id, c.config_json
-         HAVING EXTRACT(MONTH FROM NOW() - MAX(a.start_time)) IN (3, 6)`
-      );
+      const result = await query(`
+        SELECT c.id as contato_id, c.client_id, c.telefone, c.nome,
+               EXTRACT(DAY FROM NOW() - c.ultima_interacao)::int as dias_inativo
+        FROM contatos c
+        LEFT JOIN agendamentos a ON a.paciente_id = c.id AND a.data_inicio > NOW()
+        WHERE a.id IS NULL
+          AND c.crm_status NOT IN ('convertido', 'perdido')
+          AND EXTRACT(DAY FROM NOW() - c.ultima_interacao)::int IN (1, 3, 7)
+      `);
 
-      for (const patient of reengageResult.rows) {
+      for (const lead of result.rows) {
         try {
-          // Checar se já enviou reengajamento recente para evitar spam
-          const lastFollowup = await query(
-            `SELECT id FROM lead_followups WHERE patient_id = $1 AND followup_stage = 90 AND sent_at > NOW() - INTERVAL '30 days'`,
-            [patient.patient_id]
-          );
-          
-          if (lastFollowup.rows.length === 0) {
-            const tmplResult = await query(
-              `SELECT content_text FROM message_templates WHERE clinic_id = $1 AND type = 'reengagement'`,
-              [patient.clinic_id]
-            );
-            
-            let message = `Olá ${patient.name || ''}, já faz um tempo desde nossa última consulta! Como estão seus resultados? Vamos agendar um retorno?`;
-            if (tmplResult.rows.length > 0) {
-              message = tmplResult.rows[0].content_text.replace('{{nome}}', patient.name || '');
-            }
+          const msgs: Record<number, string> = {
+            1: `Oi, ${lead.nome}! Percebi que você entrou em contato ontem. Ficou alguma dúvida? Estou por aqui.`,
+            3: `Oi, ${lead.nome}! Tudo bem? Ainda estou disponível para ajudar com qualquer dúvida sobre o acompanhamento.`,
+            7: `${lead.nome}, sei que a rotina corrida dificulta tomar decisões. Se quiser conversar sobre como podemos ajudar, é só me chamar.`,
+          };
+          const msg = msgs[lead.dias_inativo];
+          if (!msg) continue;
 
-            const fromPhoneNumberId = patient.config_json?.whatsapp_phone_number_id;
-            if (fromPhoneNumberId) {
-              await whatsappService.sendMessage(patient.phone, message, fromPhoneNumberId);
-              
-              await query(
-                `INSERT INTO lead_followups (clinic_id, patient_id, followup_stage, status, sent_at)
-                 VALUES ($1, $2, 90, 'sent', NOW())`, // 90 = código genérico para reengajamento
-                [patient.clinic_id, patient.patient_id]
-              );
-              console.log(`✅ Reengajamento enviado para ${patient.phone}`);
-            }
-          }
+          await sendToContact(lead.client_id, lead.telefone, msg);
+          await query('UPDATE contatos SET ultima_interacao = NOW() WHERE id = $1', [lead.contato_id]);
+          console.log(`✅ Recuperação D${lead.dias_inativo} enviada para ${lead.telefone}`);
         } catch (e) {
-          console.error(`❌ Erro ao enviar reengajamento para ${patient.phone}:`, e);
+          console.error(`❌ Erro ao enviar recuperação para ${lead.telefone}:`, e);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Erro no Job de Recuperação:', error);
+    }
+  });
+
+  // ── Job 3: Reengajamento de pacientes inativos (3 e 6 meses) ─────────────
+  cron.schedule('0 10 * * 1', async () => { // Toda segunda-feira às 10h
+    console.log('⏰ [Scheduler] Reengajamento de pacientes...');
+    try {
+      const result = await query(`
+        SELECT DISTINCT ON (p.id)
+               p.id, p.client_id, p.telefone, p.nome,
+               EXTRACT(MONTH FROM NOW() - MAX(a.data_inicio))::int as meses_inativo
+        FROM pacientes p
+        JOIN agendamentos a ON a.paciente_id = p.id
+        WHERE a.status = 'realizado'
+        GROUP BY p.id, p.client_id, p.telefone, p.nome
+        HAVING EXTRACT(MONTH FROM NOW() - MAX(a.data_inicio))::int IN (3, 6)
+      `);
+
+      for (const paciente of result.rows) {
+        try {
+          const msg = paciente.meses_inativo === 3
+            ? `${paciente.nome}, já faz 3 meses desde sua última consulta. Como estão os resultados? Vamos agendar um retorno para avaliarmos seu progresso?`
+            : `${paciente.nome}, passaram 6 meses desde nosso último encontro. Seria ótimo conversar sobre como você está e planejar os próximos passos juntas.`;
+
+          await sendToContact(paciente.client_id, paciente.telefone, msg);
+          console.log(`✅ Reengajamento enviado para ${paciente.telefone}`);
+        } catch (e) {
+          console.error(`❌ Erro ao enviar reengajamento para ${paciente.telefone}:`, e);
         }
       }
     } catch (error) {
       console.error('❌ Erro no Job de Reengajamento:', error);
     }
+  });
 
-    // ---------------------------------------------------------
-    // 3. NPS / FEEDBACK (24 horas após consulta)
-    // ---------------------------------------------------------
+  // ── Job 4: NPS — pesquisa de satisfação 24h após consulta ─────────────────
+  cron.schedule('0 11 * * *', async () => {
+    console.log('⏰ [Scheduler] Enviando pesquisas NPS...');
     try {
-      console.log('🔍 Checando consultas recentes para NPS...');
-      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      const yesterdayStart = new Date(yesterday).setHours(0, 0, 0, 0);
-      const yesterdayEnd = new Date(yesterday).setHours(23, 59, 59, 999);
+      const result = await query(`
+        SELECT a.id, a.client_id,
+               c.telefone, c.nome
+        FROM agendamentos a
+        JOIN contatos c ON c.id = a.paciente_id
+        WHERE a.status = 'realizado'
+          AND a.data_inicio BETWEEN NOW() - INTERVAL '25 hours' AND NOW() - INTERVAL '23 hours'
+          AND a.nps_enviado IS DISTINCT FROM TRUE
+      `);
 
-      const npsResult = await query(
-        `SELECT a.id as appointment_id, a.patient_id, p.phone, p.name, p.clinic_id, c.config_json
-         FROM appointments a
-         JOIN patients p ON a.patient_id = p.id
-         JOIN clinics c ON a.clinic_id = c.id
-         WHERE a.status = 'completed'
-         AND a.start_time BETWEEN $1 AND $2`,
-        [new Date(yesterdayStart), new Date(yesterdayEnd)]
-      );
-
-      for (const appt of npsResult.rows) {
+      for (const appt of result.rows) {
         try {
-          const tmplResult = await query(
-            `SELECT content_text FROM message_templates WHERE clinic_id = $1 AND type = 'nps'`,
-            [appt.clinic_id]
-          );
-          
-          let message = `Olá ${appt.name || ''}, como foi seu atendimento ontem? De 0 a 10, que nota você daria para a nossa clínica?`;
-          if (tmplResult.rows.length > 0) {
-            message = tmplResult.rows[0].content_text.replace('{{nome}}', appt.name || '');
-          }
+          const msg = `${appt.nome}, obrigada pela sua visita ontem!\n\nDe 0 a 10, que nota você daria para o seu atendimento? Sua opinião é muito importante para continuarmos melhorando.`;
 
-          const fromPhoneNumberId = appt.config_json?.whatsapp_phone_number_id;
-          if (fromPhoneNumberId) {
-            await whatsappService.sendMessage(appt.phone, message, fromPhoneNumberId);
-            
-            await query(
-              `INSERT INTO lead_followups (clinic_id, patient_id, followup_stage, status, sent_at)
-               VALUES ($1, $2, 24, 'sent', NOW())`, // 24 = código genérico para NPS 24h
-              [appt.clinic_id, appt.patient_id]
-            );
-            console.log(`✅ Pesquisa NPS enviada para ${appt.phone}`);
-          }
+          await sendToContact(appt.client_id, appt.telefone, msg);
+          await query('UPDATE agendamentos SET nps_enviado = TRUE WHERE id = $1', [appt.id]);
+          console.log(`✅ NPS enviado para ${appt.telefone}`);
         } catch (e) {
-          console.error(`❌ Erro ao enviar NPS para ${appt.phone}:`, e);
+          console.error(`❌ Erro ao enviar NPS para ${appt.telefone}:`, e);
         }
       }
     } catch (error) {

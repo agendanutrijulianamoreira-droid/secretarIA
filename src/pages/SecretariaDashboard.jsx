@@ -1,39 +1,36 @@
 import React from 'react';
-import { 
-  LayoutDashboard, Users, Settings, Bell, Bot, Zap, Power, 
-  BarChart2, GitBranch, Key, DollarSign, ShoppingCart, Moon, Sun, ChevronRight,
-  Activity, ShieldCheck, Search
+import {
+  LayoutDashboard, Users, Settings, Bell,
+  BarChart2, DollarSign, Moon, Sun,
+  Activity, LogOut, Search
 } from 'lucide-react';
 import { Logo } from '../components/UI';
 
 const NAV_ITEMS = [
-  { id: "dashboard",  icon: LayoutDashboard, label: "Overview" },
-  { id: "clients",    icon: Users,           label: "Portfólios" },
-  { id: "vendas",     icon: ShoppingCart,    label: "Pipeline" },
-  { id: "alerts",     icon: Bell,            label: "Eventos" },
-  { id: "stats",      icon: BarChart2,       label: "Cognição" },
-  { id: "settings",   icon: Settings,        label: "Protocolos" },
+  { id: "dashboard",  icon: LayoutDashboard, label: "Painel" },
+  { id: "clients",    icon: Users,           label: "Clientes" },
+  { id: "vendas",     icon: DollarSign,      label: "Vendas" },
+  { id: "alerts",     icon: Bell,            label: "Alertas" },
+  { id: "stats",      icon: BarChart2,       label: "Relatórios" },
+  { id: "settings",   icon: Settings,        label: "Configurações" },
 ];
 
 function NavItem({ icon: Icon, label, active, onClick, badge }) {
   return (
-    <button 
-      onClick={onClick} 
+    <button
+      onClick={onClick}
       className={`
-        w-full group flex items-center gap-5 px-6 py-4.5 rounded-[20px] transition-all duration-500 relative overflow-hidden
-        ${active 
-          ? 'bg-primary/10 text-primary shadow-2xl shadow-primary/5 border border-primary/20' 
-          : 'text-tertiary hover:text-secondary hover:bg-surface/50'
+        w-full group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative
+        ${active
+          ? 'bg-primary/10 text-primary border border-primary/20'
+          : 'text-secondary hover:text-main hover:bg-surface-up/60'
         }
       `}
     >
-      {active && (
-        <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-full shadow-[0_0_15px_rgba(16,185,129,0.8)]" />
-      )}
-      <Icon size={20} strokeWidth={active ? 2.5 : 2} className={`${active ? 'text-primary' : 'text-tertiary group-hover:text-secondary'} transition-all duration-500 group-hover:scale-110`} />
-      <span className={`text-[10px] font-black uppercase tracking-[0.3em] flex-1 text-left ${active ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>{label}</span>
+      <Icon size={18} strokeWidth={active ? 2.5 : 2} className="shrink-0" />
+      <span className={`text-sm font-medium flex-1 text-left`}>{label}</span>
       {badge > 0 && (
-        <span className="h-5 min-w-[20px] px-1.5 flex items-center justify-center rounded-lg bg-primary text-black text-[9px] font-black shadow-lg shadow-primary/20">
+        <span className="h-5 min-w-[20px] px-1.5 flex items-center justify-center rounded-full bg-primary text-black text-[10px] font-bold">
           {badge}
         </span>
       )}
@@ -43,34 +40,30 @@ function NavItem({ icon: Icon, label, active, onClick, badge }) {
 
 export default function SecretariaDashboard({ user, logout, setView, activeView, alertCount = 0, children, theme, toggleTheme }) {
   const VIEW_LABELS = {
-    dashboard: "Central de Operações", 
-    clients: "Gestão de Portfólios",
-    vendas: "Pipeline de Aquisição",
-    stats: "Inteligência de Dados", 
-    alerts: "Monitoramento de Eventos", 
-    settings: "Configurações do Núcleo",
+    dashboard: "Painel geral",
+    clients: "Clientes",
+    vendas: "Vendas",
+    stats: "Relatórios",
+    alerts: "Alertas",
+    settings: "Configurações",
   };
 
   return (
-    <div className="flex min-h-screen bg-background text-main selection:bg-primary/20 selection:text-primary font-sans overflow-hidden">
-      {/* Sidebar Obsidian */}
-      <aside className="fixed left-0 top-0 z-50 h-screen w-[320px] flex flex-col bg-background border-r border-border overflow-hidden">
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-           <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(16,185,129,0.1),transparent)]" />
+    <div className="flex min-h-screen bg-background text-main font-sans overflow-hidden">
+      {/* Sidebar */}
+      <aside className="fixed left-0 top-0 z-50 h-screen w-[240px] flex flex-col bg-surface border-r border-border">
+        <div className="p-6 pb-4">
+          <Logo size={36} />
         </div>
 
-        <div className="p-12 pb-10 relative z-10">
-          <Logo size={42} />
-        </div>
-
-        <div className="px-10 mb-10 relative z-10">
-          <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-surface-up/30 border border-primary/20 backdrop-blur-md shadow-2xl">
-            <div className="h-2 w-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(16,185,129,1)]" />
-            <span className="text-[9px] uppercase tracking-[0.3em] font-black text-primary">Quantum Core Active</span>
+        <div className="px-4 mb-2">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-up/40 border border-border-subtle">
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-xs text-secondary font-medium">Sistema online</span>
           </div>
         </div>
 
-        <nav className="flex-1 px-8 space-y-3 overflow-y-auto custom-scrollbar relative z-10">
+        <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map(item => (
             <NavItem
               key={item.id}
@@ -83,72 +76,60 @@ export default function SecretariaDashboard({ user, logout, setView, activeView,
           ))}
         </nav>
 
-        <div className="p-10 border-t border-border bg-background/80 backdrop-blur-xl relative z-10">
-          <div className="flex items-center gap-5 p-5 rounded-[24px] bg-surface/50 border border-border-subtle mb-6 group hover:border-primary/20 transition-all duration-500">
-            <div className="h-12 w-12 rounded-[14px] bg-primary/10 flex items-center justify-center text-primary font-black text-base border border-primary/20 shadow-2xl group-hover:rotate-6 transition-all duration-500">
+        <div className="p-4 border-t border-border">
+          <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-surface-up/40 border border-border-subtle mb-3">
+            <div className="h-8 w-8 rounded-full bg-primary/15 flex items-center justify-center text-primary font-bold text-sm border border-primary/20">
               {user?.email?.[0]?.toUpperCase() || 'A'}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-black text-main uppercase tracking-tight truncate italic">Dra. Juliana</span>
-              <span className="text-[9px] text-tertiary font-black uppercase tracking-widest mt-0.5 opacity-60">Admin Root</span>
+              <span className="text-sm font-semibold text-main truncate">Dra. Juliana</span>
+              <span className="text-xs text-tertiary">Administradora</span>
             </div>
           </div>
-          <button 
+          <button
             onClick={logout}
-            className="w-full flex items-center justify-center gap-4 py-5 rounded-[20px] bg-red-500/5 text-red-500 text-[10px] font-black uppercase tracking-[0.3em] border border-red-500/10 hover:bg-red-500 hover:text-black transition-all duration-500 group cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-500/5 text-red-500 text-sm font-medium border border-red-500/10 hover:bg-red-500/10 transition-all cursor-pointer"
           >
-            <Power size={18} className="group-hover:rotate-90 transition-transform duration-500" />
-            <span>Encerrar Ciclo</span>
+            <LogOut size={16} />
+            <span>Sair</span>
           </button>
         </div>
       </aside>
 
-      {/* Main Framework Area */}
-      <main className="flex-1 ml-[320px] flex flex-col h-screen overflow-hidden relative">
-        <header className="sticky top-0 z-40 h-24 flex items-center justify-between px-16 bg-background/80 backdrop-blur-2xl border-b border-border">
-          <div className="flex items-center gap-10">
-             <div className="flex flex-col">
-               <h2 className="text-2xl font-black text-main tracking-tighter uppercase italic">
-                 {VIEW_LABELS[activeView] || activeView}
-               </h2>
-               <div className="flex items-center gap-3 mt-1.5">
-                 <div className="h-1 w-8 bg-primary/40 rounded-full overflow-hidden">
-                    <div className="h-full bg-primary animate-progress-fast" />
-                 </div>
-                 <span className="text-[9px] text-tertiary font-black uppercase tracking-[0.3em] opacity-60">Sincronização Neural Estável</span>
-               </div>
-             </div>
-          </div>
+      {/* Main Content */}
+      <main className="flex-1 ml-[240px] flex flex-col h-screen overflow-hidden">
+        <header className="sticky top-0 z-40 h-16 flex items-center justify-between px-8 bg-background/90 backdrop-blur-xl border-b border-border">
+          <h2 className="text-base font-semibold text-main">
+            {VIEW_LABELS[activeView] || activeView}
+          </h2>
 
-          <div className="flex items-center gap-8">
-            <div className="relative group hidden md:block">
-               <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-tertiary group-focus-within:text-primary transition-colors" size={16} />
-               <input 
-                 type="text" 
-                 placeholder="COMANDAR SISTEMA..." 
-                 className="bg-surface/50 border border-border-subtle rounded-full py-3.5 pl-12 pr-6 text-[10px] font-black tracking-[0.2em] text-main placeholder:text-tertiary/40 focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all w-64"
-               />
+          <div className="flex items-center gap-3">
+            <div className="relative hidden md:block">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" size={15} />
+              <input
+                type="text"
+                placeholder="Buscar..."
+                className="bg-surface-up/50 border border-border-subtle rounded-lg py-2 pl-9 pr-4 text-sm text-main placeholder:text-tertiary focus:outline-none focus:border-primary/50 transition-all w-52"
+              />
             </div>
 
-            <button 
+            <button
               onClick={toggleTheme}
-              className="h-12 w-12 flex items-center justify-center rounded-2xl bg-surface/50 border border-border-subtle text-tertiary hover:text-primary hover:border-primary/40 transition-all duration-500 shadow-xl"
+              className="h-9 w-9 flex items-center justify-center rounded-lg bg-surface-up/50 border border-border-subtle text-tertiary hover:text-primary transition-all"
             >
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-            
-            <div className="h-10 w-[1px] bg-surface" />
-            
-            <button className="flex items-center gap-4 px-8 py-4 rounded-2xl bg-primary text-black text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:scale-[1.05] active:scale-[0.95] transition-all duration-500 group cursor-pointer">
-              <ShieldCheck size={18} className="group-hover:rotate-12 transition-transform" />
-              <span>Security Hub</span>
-            </button>
+
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-up/50 border border-border-subtle">
+              <Activity size={14} className="text-primary" />
+              <span className="text-xs font-medium text-secondary">Tudo certo</span>
+            </div>
           </div>
         </header>
 
-        <section className="flex-1 p-16 animate-fade-in overflow-y-auto custom-scrollbar bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.03),transparent)]">
+        <section className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-background animate-fade-in">
           <div className="max-w-7xl mx-auto">
-             {children}
+            {children}
           </div>
         </section>
       </main>

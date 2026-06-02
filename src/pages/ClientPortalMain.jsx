@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { signOut } from "firebase/auth";
-import { auth } from "../lib/firebase";
+import { supabase } from "../lib/supabase";
 import {
   Contatos, Pacientes, WhatsAppNumbers, Servicos, Vendas,
   Campanhas, IAAprendizados, Invoices
@@ -211,7 +210,7 @@ export default function ClientPortalMain({ client, onBack }) {
            {onBack && (
              <Btn variant="ghost" className="w-full" onClick={onBack} icon={Settings}>Admin Portal</Btn>
            )}
-           <button onClick={() => signOut(auth)} className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-red-500/5 border border-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all cursor-pointer">
+           <button onClick={() => supabase.auth.signOut()} className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-red-500/5 border border-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all cursor-pointer">
               <Power size={14} strokeWidth={3} /> Logout
            </button>
         </div>

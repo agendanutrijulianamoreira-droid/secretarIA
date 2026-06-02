@@ -44,7 +44,7 @@ router.post('/', async (req, res) => {
 
     // 1. Identificar a clínica no banco
     const clinicResult = await query(
-      'SELECT * FROM clinics WHERE whatsapp_number = $1',
+      'SELECT * FROM clients WHERE phone = $1',
       [destinationPhone]
     );
 
@@ -53,19 +53,37 @@ router.post('/', async (req, res) => {
       return;
     }
 
-    const clinic = clinicResult.rows[0];
+    // Monta o ClinicContext a partir da tabela clients
+    const raw = clinicResult.rows[0];
+    const briefing = raw.briefing || {};
+    const clinic = {
+      id:                raw.id,
+      name:              raw.name,
+      whatsapp_number:   raw.phone,
+      receptionist_phone: briefing.escalation_number || '',
+      config_json:       { whatsapp_phone_number_id: raw.config_json?.whatsapp_phone_number_id },
+      prompt_context:    [
+        briefing.description || '',
+        `Horários: ${briefing.business_hours || ''}`,
+        `Tom de voz: ${briefing.ai_tone || ''}`,
+        `Nome da IA: ${briefing.ai_name || 'Assistente'}`,
+        briefing.restrictions ? `Restrições: ${briefing.restrictions}` : '',
+        briefing.promotions  ? `Promoções: ${briefing.promotions}` : '',
+      ].filter(Boolean).join('\n'),
+      specialties:       raw.capabilities || [],
+      operating_hours:   briefing.business_hours || '',
+    };
 
-    // 2. Identificar ou criar o paciente
+    // 2. Identificar ou criar o contato (lead)
     let patient;
     const patientResult = await query(
-      'SELECT * FROM patients WHERE clinic_id = $1 AND phone = $2',
+      'SELECT * FROM contatos WHERE client_id = $1 AND telefone = $2',
       [clinic.id, patientPhone]
     );
 
     if (patientResult.rows.length === 0) {
-      // Criar novo paciente
       const newPatientResult = await query(
-        'INSERT INTO patients (clinic_id, phone, name) VALUES ($1, $2, $3) RETURNING *',
+        'INSERT INTO contatos (client_id, telefone, nome, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *',
         [clinic.id, patientPhone, 'Paciente Novo']
       );
       patient = newPatientResult.rows[0];
@@ -73,10 +91,13 @@ router.post('/', async (req, res) => {
       patient = patientResult.rows[0];
     }
 
+    // Adapta para o formato esperado pelos agentes
+    patient = { id: patient.id, phone: patient.telefone, name: patient.nome, clinic_id: clinic.id };
+
     // 3. Salvar a mensagem no histórico
     await query(
-      'INSERT INTO chat_messages (clinic_id, patient_id, role, content) VALUES ($1, $2, $3, $4)',
-      [clinic.id, patient.id, 'user', text]
+      'INSERT INTO chat_messages (client_id, telefone, role, content, created_at) VALUES ($1, $2, $3, $4, NOW())',
+      [clinic.id, patientPhone, 'user', text]
     );
 
     // 4. Processar com Orquestrador Multi-Agente
