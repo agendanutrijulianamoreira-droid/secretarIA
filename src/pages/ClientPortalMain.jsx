@@ -1,9 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "../lib/supabase";
-import {
-  Contatos, Pacientes, WhatsAppNumbers, Servicos, Vendas,
-  Campanhas, IAAprendizados, Invoices
-} from "../lib/db";
+import { useClientPortalData } from "../hooks/useClientPortalData";
 import {
   ClientDashboardView, WhatsAppView,
   Btn, Card, NAV, NavItem, PageTitle
@@ -117,33 +114,10 @@ function PlanoView({ client, invoices }) {
 
 // ── Main Portal ────────────────────────────────────────────────────────────
 export default function ClientPortalMain({ client, onBack }) {
-  const [view, setView]           = useState("dashboard");
-  const [leads, setLeads]         = useState([]);
-  const [pacientes, setPacientes] = useState([]);
-  const [campanhas, setCampanhas] = useState([]);
-  const [numbers, setNumbers]     = useState([]);
-  const [servicos, setServicos]   = useState([]);
-  const [vendas, setVendas]       = useState([]);
-  const [aprendizados, setAprendizados] = useState([]);
-  const [invoices, setInvoices]   = useState([]);
+  const [view, setView] = useState("dashboard");
+  const { leads, pacientes, campanhas, numbers, servicos, vendas, aprendizados, invoices, reloadNumbers } = useClientPortalData(client.id);
 
   const numPendentes = aprendizados.filter(a => a.status === "pendente").length;
-
-  useEffect(() => {
-    const subs = [
-      Contatos.onList(client.id, setLeads),
-      Pacientes.onList(client.id, setPacientes),
-      Campanhas.onList(client.id, setCampanhas),
-      WhatsAppNumbers.onList(client.id, setNumbers),
-      Servicos.onList(client.id, setServicos),
-      Vendas.onList(client.id, setVendas),
-      IAAprendizados.onList(client.id, setAprendizados),
-      Invoices.onList(client.id, setInvoices),
-    ];
-    return () => subs.forEach(fn => fn && fn());
-  }, [client.id]);
-
-  const reloadNumbers = () => WhatsAppNumbers.list(client.id).then(setNumbers);
   const initials = client.name?.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase() || "?";
 
   const VIEW_LABELS = {
