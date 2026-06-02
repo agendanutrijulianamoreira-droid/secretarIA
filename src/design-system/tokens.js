@@ -43,5 +43,11 @@ export const EMPTY_BRIEFING = {
   services: [], faqs: [], restrictions: "", promotions: "",
 };
 
+export const PLAN_LIMITS = {
+  Starter:    1,
+  Pro:        3,
+  Enterprise: 5,
+};
+
 export const ADMIN_EMAIL =
   import.meta.env.VITE_ADMIN_EMAIL || "agendanutrijulianamoreira@gmail.com";

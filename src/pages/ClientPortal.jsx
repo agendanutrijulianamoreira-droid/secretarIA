@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { PLAN_LIMITS, COLORS } from "../design-system/tokens";
 import {
-  LayoutDashboard, MessageSquare, Users, Wallet, 
+  LayoutDashboard, MessageSquare, Users, Wallet,
   Phone, Brain, Star, Zap,
   Bell, BarChart2, Plus, X, AlertCircle,
   Pause, Play, Edit2, ChevronRight, Smartphone, MessageCircle,
@@ -28,8 +29,6 @@ const T = {
   inkTert: "var(--color-text-tertiary)",
 };
 
-const PLAN_LIMITS = { Starter: 1, Pro: 3, Enterprise: 5 };
-const COLORS = ["#6366F1","#EC4899","#F59E0B","#0EA5E9","#10B981","#8B5CF6","#F43F5E"];
 
 // ── Primitives ────────────────────────────────────────────────────────────
 function Pill({ children, color, bg }) {
