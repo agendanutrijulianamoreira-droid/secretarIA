@@ -112,7 +112,7 @@ export const NAV = [
   { id: "dashboard",  icon: LayoutDashboard, label: "Dashboard" },
   { id: "whatsapp",   icon: Phone,           label: "WhatsApp" },
   { id: "crm1",       icon: MessageSquare,   label: "CRM — Leads" },
-  { id: "crm2",       icon: Users,           label: "CRM — Pacientes" },
+  { id: "crm2",       icon: Users,           label: "CRM — Clientes" },
   { id: "equipe",     icon: Calendar,        label: "Equipe & Agenda" },
   { id: "financeiro", icon: Wallet,          label: "Financeiro" },
   { id: "marketing",  icon: Megaphone,       label: "Marketing & Vendas" },

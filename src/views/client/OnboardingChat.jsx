@@ -13,13 +13,13 @@ const STEPS = [
   },
   {
     id: "segment",
-    bot: () => "Para começar, em qual nicho da saúde você atua?",
+    bot: () => "Para começar, qual é o segmento do seu negócio?",
     field: "segment",
-    options: ["Nutrição", "Dermatologia", "Psicologia", "Odontologia", "Fisioterapia", "Estética", "Outro"],
+    options: ["Nutricionista", "Psicologia", "Odontologia", "Fisioterapia", "Estética / Beleza", "Educação", "Jurídico", "Outro"],
   },
   {
     id: "description",
-    bot: () => "Defina sua clínica em uma frase. Qual o seu diferencial competitivo?",
+    bot: () => "Descreva seu negócio em uma frase. Qual o seu diferencial competitivo?",
     field: "description",
     placeholder: "Ex: Especialista em emagrecimento com foco em longevidade...",
   },

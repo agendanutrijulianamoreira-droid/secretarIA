@@ -21,7 +21,9 @@ export const CRM_STATUSES = {
 };
 
 export const SEGMENTS = [
-  "Saúde / Clínica", "Saúde / Odontologia", "Beleza / Salão",
+  "Nutricionista",
+  "Saúde / Clínica", "Saúde / Odontologia", "Psicologia",
+  "Fisioterapia", "Estética / Beleza", "Beleza / Salão",
   "Educação", "Imobiliária", "Jurídico", "Alimentação",
   "Varejo", "Serviços Gerais", "Outro",
 ];

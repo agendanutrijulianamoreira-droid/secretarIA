@@ -32,7 +32,7 @@ export default function NewClientModal({ onClose, onNext, onFinish }) {
         </div>
 
         <div className="p-10 space-y-6">
-          <Inp label="Nome da clínica *" value={f.name}  onChange={upd('name')}  placeholder="Ex: Clínica Juliana Moreira" icon={Briefcase} />
+          <Inp label="Nome do negócio *" value={f.name}  onChange={upd('name')}  placeholder="Ex: Nutricionista Juliana Moreira" icon={Briefcase} />
           <Inp label="WhatsApp *"        value={f.phone} onChange={upd('phone')} placeholder="+55 11 9 0000-0000"            icon={Smartphone} />
           <Inp label="E-mail *"          value={f.email} onChange={upd('email')} placeholder="gestao@clinica.com"            icon={User} />
 

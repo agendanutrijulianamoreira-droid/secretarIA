@@ -14,7 +14,7 @@ export function ClientDashboardView({ client, leads, pacientes, whatsappNums }) 
     { l: "Novos Leads",      v: leadsNovos,        Icon: Sparkles,      color: "text-primary",    bg: "bg-primary/10" },
     { l: "IAs em Turno",     v: leadsAtivos,        Icon: Bot,           color: "text-blue-500",   bg: "bg-blue-500/10" },
     { l: "Agendamentos",     v: convertidos,        Icon: TrendingUp,    color: "text-emerald-500",bg: "bg-emerald-500/10" },
-    { l: "Total Pacientes",  v: pacientes.length,   Icon: Users,         color: "text-purple-500", bg: "bg-purple-500/10" },
+    { l: "Total Clientes",   v: pacientes.length,   Icon: Users,         color: "text-purple-500", bg: "bg-purple-500/10" },
     { l: "Canais WhatsApp",  v: numAtivos,          Icon: Smartphone,    color: "text-amber-500",  bg: "bg-amber-500/10" },
     { l: "Interações Hoje",  v: client.msgs_today||0, Icon: MessageCircle, color: "text-tertiary", bg: "bg-slate-500/10" },
   ];

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   Pause, Play, MessageSquare, ChevronDown, ChevronUp, Send, User, Bot,
-  Clock, Edit3, Sparkles, Target, CheckCircle2, XCircle, Zap,
+  Clock, Edit3, Sparkles, Target, CheckCircle2, XCircle, Zap, X, Save,
 } from "lucide-react";
 import { Contatos, ChatMessages } from "../../lib/db";
 import { Btn, Inp, Pulse, COLORS } from "../../pages/ClientPortal";
@@ -15,12 +15,14 @@ const CRM_STATUS = {
 };
 
 export function LeadCard({ lead, clientId }) {
-  const [open,    setOpen]    = useState(false);
-  const [msgs,    setMsgs]    = useState([]);
-  const [draft,   setDraft]   = useState("");
-  const [tab,     setTab]     = useState("conversa");
-  const [editIA,  setEditIA]  = useState(false);
-  const [iaNome,  setIaNome]  = useState(lead.ia_nome || "");
+  const [open,      setOpen]      = useState(false);
+  const [msgs,      setMsgs]      = useState([]);
+  const [draft,     setDraft]     = useState("");
+  const [tab,       setTab]       = useState("conversa");
+  const [editIA,    setEditIA]    = useState(false);
+  const [iaNome,    setIaNome]    = useState(lead.ia_nome || "");
+  const [editLead,  setEditLead]  = useState(false);
+  const [leadForm,  setLeadForm]  = useState({ nome: lead.nome || "", telefone: lead.telefone || "" });
 
   const s       = CRM_STATUS[lead.crm_status || "novo"] || CRM_STATUS.novo;
   const ia      = lead.atendimento_ia === "ativo";
@@ -32,13 +34,36 @@ export function LeadCard({ lead, clientId }) {
     return ChatMessages.onList(clientId, lead.telefone, setMsgs);
   }, [open, tab, lead.telefone, clientId]);
 
-  const toggleIA   = () => Contatos.setPause(clientId, lead.id, ia);
-  const saveIANome = async () => { await Contatos.updateCRM(clientId, lead.id, { ia_nome: iaNome }); setEditIA(false); };
-  const sendMsg    = async () => { if (!draft.trim()) return; await ChatMessages.add(clientId, { telefone: lead.telefone, role: "user", content: draft }); setDraft(""); };
-  const setStatus  = (status) => Contatos.updateCRM(clientId, lead.id, { crm_status: status });
+  const toggleIA    = () => Contatos.setPause(clientId, lead.id, ia);
+  const saveIANome  = async () => { await Contatos.updateCRM(clientId, lead.id, { ia_nome: iaNome }); setEditIA(false); };
+  const sendMsg     = async () => { if (!draft.trim()) return; await ChatMessages.add(clientId, { telefone: lead.telefone, role: "user", content: draft }); setDraft(""); };
+  const setStatus   = (status) => Contatos.updateCRM(clientId, lead.id, { crm_status: status });
+  const saveLeadEdit = async () => {
+    if (!leadForm.nome.trim()) return;
+    await Contatos.updateCRM(clientId, lead.id, { nome: leadForm.nome, telefone: leadForm.telefone });
+    setEditLead(false);
+  };
 
   return (
     <div className={`group glass-card border rounded-[32px] overflow-hidden transition-all duration-500 ${open ? 'border-primary/40 ring-1 ring-primary/20 shadow-2xl' : 'hover:border-primary/20'}`}>
+      {editLead && (
+        <div className="fixed inset-0 bg-background/90 backdrop-blur-md z-[300] flex items-center justify-center p-8">
+          <div className="w-full max-w-md bg-surface border border-border rounded-[32px] overflow-hidden shadow-2xl animate-fade-in">
+            <div className="px-8 py-6 border-b border-border-subtle flex items-center justify-between bg-surface-up/20">
+              <h4 className="text-base font-black text-main uppercase tracking-tight">Editar Lead</h4>
+              <button onClick={() => setEditLead(false)} className="h-9 w-9 rounded-xl bg-surface-up flex items-center justify-center text-tertiary hover:text-main transition-all cursor-pointer"><X size={18} /></button>
+            </div>
+            <div className="p-8 space-y-5">
+              <Inp label="Nome *" value={leadForm.nome} onChange={v => setLeadForm(p => ({ ...p, nome: v }))} placeholder="Nome do lead" icon={User} />
+              <Inp label="Telefone" value={leadForm.telefone} onChange={v => setLeadForm(p => ({ ...p, telefone: v }))} placeholder="+55 11 9 0000-0000" icon={Zap} />
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => setEditLead(false)} className="flex-1 py-3 rounded-2xl bg-surface-up border border-border-subtle text-secondary text-[10px] font-black uppercase tracking-[0.2em] transition-all cursor-pointer">Cancelar</button>
+                <Btn onClick={saveLeadEdit} className="flex-1" icon={Save}>Salvar</Btn>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="p-6 flex items-center gap-6 cursor-pointer" onClick={() => setOpen(!open)}>
         <div className="h-14 w-14 rounded-2xl flex items-center justify-center font-black text-base border shadow-inner transition-transform duration-500 group-hover:scale-105" style={{ backgroundColor: color + '15', color, borderColor: color + '30' }}>
           {initials}
@@ -58,6 +83,9 @@ export function LeadCard({ lead, clientId }) {
             <s.icon size={14} />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">{s.label}</span>
           </div>
+          <button onClick={e => { e.stopPropagation(); setLeadForm({ nome: lead.nome || "", telefone: lead.telefone || "" }); setEditLead(true); }} className="h-10 w-10 rounded-xl bg-surface-up/50 border border-border-subtle flex items-center justify-center text-tertiary hover:text-primary transition-all">
+            <Edit3 size={16} />
+          </button>
           <button className="h-10 w-10 rounded-xl bg-surface-up/50 border border-border-subtle flex items-center justify-center text-tertiary hover:text-primary transition-all">
             {open ? <ChevronUp size={18} strokeWidth={3} /> : <ChevronDown size={18} strokeWidth={3} />}
           </button>
@@ -114,7 +142,7 @@ export function LeadCard({ lead, clientId }) {
                           <p className="font-medium">{m.content}</p>
                           <div className={`mt-3 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] opacity-40 ${isAI ? '' : 'justify-end'}`}>
                             {isAI ? <Bot size={12} className="text-primary" /> : <User size={12} className="text-cta" />}
-                            {isAI ? (lead.ia_nome || "SecretarIA") : "Paciente"}
+                            {isAI ? (lead.ia_nome || "SecretarIA") : "Cliente"}
                           </div>
                         </div>
                       </div>

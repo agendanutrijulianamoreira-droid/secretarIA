@@ -17,7 +17,7 @@ const VIEW_LABELS = {
   dashboard:  "Dashboard de Inteligência",
   whatsapp:   "Canais WhatsApp",
   crm1:       "Funil de Leads",
-  crm2:       "Gestão de Pacientes",
+  crm2:       "Gestão de Clientes",
   equipe:     "Equipe & Agenda",
   financeiro: "Financeiro & Vendas",
   marketing:  "Marketing & Vendas",

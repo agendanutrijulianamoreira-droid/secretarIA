@@ -25,14 +25,14 @@ export default function CRM2View({ client, pacientes, campanhas }) {
   );
 
   const del = async (p) => {
-    if (!confirm(`Remover prontuário de ${p.nome}?`)) return;
+    if (!confirm(`Remover cadastro de ${p.nome}?`)) return;
     await Pacientes.delete(client.id, p.id);
   };
 
   return (
     <div className="space-y-12 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-        <PageTitle icon={Users} title="Base de Pacientes" subtitle="Gestão de prontuários e comunicação estratégica." />
+        <PageTitle icon={Users} title="Base de Clientes" subtitle="Gestão de cadastros e comunicação estratégica." />
         <div className="flex gap-4">
           <button onClick={() => setShowCamp(true)} className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-surface-up/50 border border-border-subtle text-main font-black text-[10px] uppercase tracking-[0.2em] hover:border-primary/40 hover:bg-surface-up transition-all cursor-pointer">
             <Megaphone size={16} className="text-primary" /> Criar Campanha
@@ -42,7 +42,7 @@ export default function CRM2View({ client, pacientes, campanhas }) {
       </div>
 
       <div className="flex gap-10 border-b border-border-subtle">
-        {[["pacientes", `Banco de Dados (${pacientes.length})`], ["campanhas", `Fluxos de Disparo (${campanhas.length})`]].map(([id, label]) => (
+        {[["pacientes", `Cadastros (${pacientes.length})`], ["campanhas", `Fluxos de Disparo (${campanhas.length})`]].map(([id, label]) => (
           <button key={id} onClick={() => setTab(id)} className={`pb-5 text-[11px] font-black uppercase tracking-[0.3em] transition-all border-b-2 cursor-pointer ${tab === id ? 'border-primary text-primary' : 'border-transparent text-tertiary hover:text-secondary'}`}>
             {label}
           </button>
@@ -55,7 +55,7 @@ export default function CRM2View({ client, pacientes, campanhas }) {
           {filtered.length === 0 ? (
             <div className="py-32 text-center border border-dashed border-border-subtle rounded-[48px] opacity-30">
               <ShieldCheck size={80} strokeWidth={1} className="mx-auto mb-6 text-tertiary" />
-              <p className="text-sm font-black uppercase tracking-[0.3em]">Ambiente Livre de Registros</p>
+              <p className="text-sm font-black uppercase tracking-[0.3em]">Nenhum cadastro encontrado</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6">
