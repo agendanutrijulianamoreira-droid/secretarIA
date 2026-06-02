@@ -8,8 +8,8 @@ export const auditLog = (action: string) => {
     const originalJson = res.json.bind(res);
 
     res.json = (body: any) => {
-      // Só loga se a resposta foi bem-sucedida
-      if (res.statusCode < 400) {
+        // Loga todas as ações (sucesso e falha) para rastreabilidade LGPD
+      if (res.statusCode < 500) {
         pool.query(
           `INSERT INTO audit_logs (user_id, user_email, action, resource, ip, created_at)
            VALUES ($1, $2, $3, $4, $5, NOW())`,

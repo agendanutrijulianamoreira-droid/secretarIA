@@ -8,8 +8,13 @@ dist/
 
 # Environment variables (NEVER commit)
 .env
+.env.*
+!.env.example
 app/.env
+backend/.env
 *.env.local
+*.env.production
+*.env.staging
 
 # Logs
 *.log
@@ -18,6 +23,15 @@ npm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Secrets / Chaves privadas (NUNCA commitar)
+*.pem
+*.key
+*.p12
+*.pfx
+service-account*.json
+*-credentials.json
+secrets/
 
 # Editor
 .vscode/
