@@ -30,11 +30,12 @@ export default function AdminPage({ user, theme, toggleTheme, onPortal }) {
     const color = COLORS[clients.length % COLORS.length];
     const data  = { ...base, avatar: av, color, briefing, plan, capabilities: base.capabilities || ['text'], status: 'active', payment_status: 'paid' };
     try {
-      await Clientes.create(data);
-    } catch {
-      data.id = 'demo-' + Date.now();
+      const id = await Clientes.create(data);
+      data.id = id;
+      setClients(prev => [...prev, data]);
+    } catch (err) {
+      alert('Erro ao salvar cliente: ' + (err?.message || 'verifique sua conexão'));
     }
-    setClients(prev => [...prev, data]);
     setPending(null);
   }, [clients.length]);
 
