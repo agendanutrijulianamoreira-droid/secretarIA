@@ -1,4 +1,4 @@
-import { Logo } from '../UI';
+import { Logo } from './Logo';
 
 // Tela de carregamento inicial enquanto verifica sessão
 export default function LoadingScreen() {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Logo } from '../UI';
+import { Logo } from '../shared/Logo';
 import { Btn, Inp } from '../../pages/ClientPortal';
 import {
   Briefcase, User, Shield, AlertTriangle,

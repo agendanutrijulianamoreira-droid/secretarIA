@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/supabase';
-import { Logo } from '../UI';
+import { Logo } from '../shared/Logo';
 import { Btn } from '../../pages/ClientPortal';
 import { ArrowLeft, Zap, Sparkles } from 'lucide-react';
 
