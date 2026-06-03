@@ -10,12 +10,14 @@ import MarketingView       from "../views/client/MarketingView";
 import SettingsView        from "../views/client/SettingsView";
 import OnboardingChat      from "../views/client/OnboardingChat";
 import PlanoView           from "../views/client/PlanoView";
+import AgentesView         from "../views/client/AgentesView";
 import { ClientSidebar }   from "../components/shared/ClientSidebar";
 import { ClientHeader }    from "../components/shared/ClientHeader";
 
 const VIEW_LABELS = {
   dashboard:  "Dashboard de Inteligência",
-  whatsapp:   "Agentes IA",
+  whatsapp:   "WhatsApp",
+  agentes:    "Agentes IA",
   crm1:       "Funil de Leads",
   crm2:       "Gestão de Clientes",
   equipe:     "Equipe & Agenda",
@@ -46,6 +48,7 @@ export default function ClientPortalMain({ client, onBack }) {
           <div className="max-w-7xl mx-auto pb-20">
             {view === "dashboard"  && <ClientDashboardView client={client} leads={leads} pacientes={pacientes} whatsappNums={numbers} />}
             {view === "whatsapp"   && <WhatsAppView client={client} numbers={numbers} reload={reloadNumbers} />}
+            {view === "agentes"    && <AgentesView client={client} />}
             {view === "crm1"       && <CRM1View client={client} leads={leads} />}
             {view === "crm2"       && <CRM2View client={client} pacientes={pacientes} campanhas={campanhas} />}
             {view === "equipe"     && <EquipeView client={client} />}

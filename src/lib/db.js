@@ -646,3 +646,29 @@ export const Alerts = {
     await supabase.from("alerts").update({ read: true }).eq("id", id);
   },
 };
+
+// ── AGENTE CONFIGS ─────────────────────────────────────────────────────────
+export const AgenteConfigs = {
+  async list(clientId) {
+    const { data, error } = await supabase
+      .from("agente_configs")
+      .select("*")
+      .eq("client_id", clientId)
+      .order("created_at", { ascending: true });
+    check(error, "AgenteConfigs.list");
+    return data || [];
+  },
+
+  async upsert(clientId, tipo, updates) {
+    const { data, error } = await supabase
+      .from("agente_configs")
+      .upsert(
+        { client_id: clientId, tipo, ...updates, updated_at: now() },
+        { onConflict: "client_id,tipo" }
+      )
+      .select()
+      .single();
+    check(error, "AgenteConfigs.upsert");
+    return data;
+  },
+};

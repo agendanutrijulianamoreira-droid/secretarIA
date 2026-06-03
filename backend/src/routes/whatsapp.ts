@@ -72,6 +72,7 @@ router.post('/', async (req, res) => {
       ].filter(Boolean).join('\n'),
       specialties:       raw.capabilities || [],
       operating_hours:   briefing.business_hours || '',
+      pode_falar_preco:  briefing.ia_fala_preco || false,
     };
 
     // 2. Identificar ou criar o contato (lead)

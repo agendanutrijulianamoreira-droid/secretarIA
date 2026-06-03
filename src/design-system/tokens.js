@@ -43,7 +43,47 @@ export const EMPTY_BRIEFING = {
   ai_name: "", ai_tone: "", ai_goal: "", business_hours: "",
   escalation_trigger: "", escalation_number: "",
   services: [], faqs: [], restrictions: "", promotions: "",
+  ia_fala_preco: false,
 };
+
+export const AGENT_TYPES = [
+  {
+    tipo: "gerente_geral",
+    label: "Gerente Geral",
+    descricao: "Classifica a mensagem e decide qual agente responde. Não conversa diretamente com o paciente.",
+    pode_editar: false,
+  },
+  {
+    tipo: "faq",
+    label: "FAQ",
+    descricao: "Responde dúvidas sobre horários, localização, especialidades e informações gerais.",
+    pode_editar: true,
+  },
+  {
+    tipo: "recepcionista",
+    label: "Recepcionista",
+    descricao: "Cuida de agendamentos, recados, confirmações e triagem inicial.",
+    pode_editar: true,
+  },
+  {
+    tipo: "follow_up",
+    label: "Follow-up & Recuperação",
+    descricao: "Reativa pacientes que sumiram e faz check-in de retorno após abandono.",
+    pode_editar: true,
+  },
+  {
+    tipo: "acompanhamento",
+    label: "Acompanhamento",
+    descricao: "Suporte para pacientes em tratamento ativo: lembretes, orientações e evolução.",
+    pode_editar: true,
+  },
+  {
+    tipo: "vendedor",
+    label: "Vendedor",
+    descricao: "Apresenta serviços e converte leads do CRM em consultas agendadas.",
+    pode_editar: true,
+  },
+];
 
 export const PLAN_LIMITS = {
   Starter:    1,

@@ -9,6 +9,7 @@ export interface ClinicContext {
   prompt_context: string;
   specialties?: string[];
   operating_hours?: any;
+  pode_falar_preco?: boolean;
 }
 
 export interface PatientContext {

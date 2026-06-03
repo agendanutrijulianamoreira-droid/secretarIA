@@ -34,6 +34,17 @@ function Selct({ label, value, onChange, options, icon: Icon }) {
   );
 }
 
+function Toggle({ on, onChange }) {
+  return (
+    <button
+      onClick={() => onChange(!on)}
+      className={`relative h-6 w-11 rounded-full transition-all cursor-pointer shrink-0 ${on ? 'bg-primary' : 'bg-surface-up border border-border-subtle'}`}
+    >
+      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-transform ${on ? 'translate-x-5' : 'translate-x-0.5'}`} />
+    </button>
+  );
+}
+
 function Chip({ active, onClick, children }) {
   return (
     <button
@@ -51,7 +62,7 @@ function Chip({ active, onClick, children }) {
 
 // Wizard de 6 passos para configurar briefing e plano do cliente IA
 export default function BriefingWizard({ initial, planInit, onSave, onCancel }) {
-  const EMPTY = { segment: '', description: '', site: '', instagram: '', ai_name: '', ai_tone: '', ai_goal: '', business_hours: '', escalation_trigger: '', escalation_number: '', services: [], faqs: [], restrictions: '', promotions: '' };
+  const EMPTY = { segment: '', description: '', site: '', instagram: '', ai_name: '', ai_tone: '', ai_goal: '', business_hours: '', escalation_trigger: '', escalation_number: '', services: [], faqs: [], restrictions: '', promotions: '', ia_fala_preco: false };
   const [step,   setStep]   = useState(0);
   const [b,      setB]      = useState({ ...EMPTY, ...initial });
   const [plan,   setPlan]   = useState(planInit || 'Pro');
@@ -168,6 +179,26 @@ export default function BriefingWizard({ initial, planInit, onSave, onCancel }) 
       </div>
       <Inp label="Restrições e Zonas Proibidas"  value={b.restrictions} onChange={upd('restrictions')} placeholder="Ex: nunca confirmar diagnósticos médicos…" rows={4} icon={ShieldCheck} />
       <Inp label="Ofertas e Comunicados Temporários" value={b.promotions} onChange={upd('promotions')} placeholder="Ex: 20% off em consultas de Maio…"           rows={3} icon={Zap} />
+
+      <div className="rounded-[24px] border border-amber-500/30 overflow-hidden">
+        <div className="p-5 bg-amber-500/5 border-b border-amber-500/20 flex items-start gap-4">
+          <AlertTriangle size={16} className="text-amber-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+          <div className="space-y-1.5">
+            <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Risco: Menção de Preços pela IA</p>
+            <p className="text-xs text-secondary leading-relaxed">
+              IAs podem ser manipuladas via <span className="font-black text-main">prompt injection</span> — alguém pode tentar convencer a IA a confirmar um preço falso ou conceder desconto no chat.
+              Se ativar, o sistema carrega preços <span className="font-black text-main">exclusivamente da sua tabela de serviços</span> e blinda contra negociação e manipulação.
+            </p>
+          </div>
+        </div>
+        <div className="p-5 flex items-center justify-between gap-6 bg-surface-up/10">
+          <div>
+            <p className="text-xs font-black text-main">Permitir que a IA mencione preços?</p>
+            <p className="text-[10px] text-tertiary mt-1">Valores virão apenas da tabela de serviços — nunca do chat</p>
+          </div>
+          <Toggle on={!!b.ia_fala_preco} onChange={upd('ia_fala_preco')} />
+        </div>
+      </div>
     </div>,
 
     // Passo 6 — Plano

@@ -1,5 +1,6 @@
 // Shapes dos dados do SecretarIA.
 // Nenhum código executável — só documentação de tipos via JSDoc.
+// Nenhum código executável — só documentação de tipos via JSDoc.
 // A IA lê este arquivo antes de criar/editar qualquer hook ou service.
 
 /**
@@ -154,6 +155,26 @@
  * @property {string} telefone_origem
  * @property {boolean} [corrigido]
  * @property {string} created_at
+ */
+
+/**
+ * @typedef {'gerente_geral'|'faq'|'recepcionista'|'follow_up'|'acompanhamento'|'vendedor'} AgenteTipo
+ */
+
+/**
+ * @typedef {Object} AgenteConfig
+ * @property {string} id
+ * @property {string} client_id
+ * @property {AgenteTipo} tipo
+ * @property {boolean} ativo
+ * @property {string} nome
+ * @property {string} instrucoes
+ * @property {boolean} pode_falar_preco
+ * @property {boolean} pode_agendar
+ * @property {boolean} escalar_para_humano
+ * @property {Object} config_extra
+ * @property {string} created_at
+ * @property {string} updated_at
  */
 
 /**

@@ -1,4 +1,4 @@
-import { LayoutDashboard, MessageSquare, Users, Wallet, Bot, Brain, Star, Settings, Calendar, Megaphone } from "lucide-react";
+import { LayoutDashboard, MessageSquare, Users, Wallet, Bot, Brain, Star, Settings, Calendar, Megaphone, Cpu } from "lucide-react";
 import { COLORS } from "../../design-system/tokens";
 
 export { COLORS };
@@ -110,7 +110,8 @@ export function PageTitle({ icon: Icon, title, subtitle }) {
 
 export const NAV = [
   { id: "dashboard",  icon: LayoutDashboard, label: "Dashboard" },
-  { id: "whatsapp",   icon: Bot,             label: "Agentes" },
+  { id: "whatsapp",   icon: Bot,             label: "WhatsApp" },
+  { id: "agentes",    icon: Cpu,             label: "Agentes IA" },
   { id: "crm1",       icon: MessageSquare,   label: "CRM — Leads" },
   { id: "crm2",       icon: Users,           label: "CRM — Clientes" },
   { id: "equipe",     icon: Calendar,        label: "Equipe & Agenda" },
