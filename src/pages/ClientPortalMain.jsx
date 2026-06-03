@@ -15,7 +15,7 @@ import { ClientHeader }    from "../components/shared/ClientHeader";
 
 const VIEW_LABELS = {
   dashboard:  "Dashboard de Inteligência",
-  whatsapp:   "Canais WhatsApp",
+  whatsapp:   "Agentes IA",
   crm1:       "Funil de Leads",
   crm2:       "Gestão de Clientes",
   equipe:     "Equipe & Agenda",
