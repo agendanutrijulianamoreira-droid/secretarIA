@@ -16,13 +16,48 @@ import { supabase }       from '../lib/supabase';
 import { COLORS, EMPTY_BRIEFING } from '../design-system/tokens';
 import { useAdminData }   from '../hooks/useAdminData';
 import { ADMIN_EMAIL }    from '../design-system/tokens';
+import { Btn, Inp, Card } from './ClientPortal';
+import { KeyRound, X }    from 'lucide-react';
+
+function ResetPasswordModal({ client, onClose, onSave }) {
+  const [pwd, setPwd] = useState('');
+  const [loading, setLoading] = useState(false);
+  const handle = async () => {
+    if (pwd.length < 6) { alert('Mínimo 6 caracteres.'); return; }
+    setLoading(true);
+    const ok = await onSave(client, pwd);
+    setLoading(false);
+    if (ok) onClose();
+  };
+  return (
+    <div className="fixed inset-0 bg-background/95 backdrop-blur-xl z-[400] flex items-center justify-center p-8">
+      <Card className="w-full max-w-sm animate-fade-in p-0 overflow-hidden shadow-2xl border-amber-500/20">
+        <div className="px-8 py-6 border-b border-border-subtle bg-surface-up/20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <KeyRound size={18} className="text-amber-500" />
+            <h4 className="text-base font-bold text-main">Redefinir senha</h4>
+          </div>
+          <button onClick={onClose} className="h-10 w-10 rounded-2xl bg-surface-up flex items-center justify-center text-tertiary hover:text-main transition-all cursor-pointer"><X size={20} /></button>
+        </div>
+        <div className="p-8 space-y-5">
+          <p className="text-sm text-secondary">Nova senha para <strong className="text-main">{client.name}</strong></p>
+          <Inp label="Nova senha" value={pwd} onChange={setPwd} placeholder="Mínimo 6 caracteres" type="password" icon={KeyRound} />
+          <Btn onClick={handle} disabled={loading || pwd.length < 6} className="w-full" icon={KeyRound}>
+            {loading ? 'Salvando...' : 'Redefinir senha'}
+          </Btn>
+        </div>
+      </Card>
+    </div>
+  );
+}
 
 // Página admin — orquestra views e estado global do painel
 export default function AdminPage({ user, theme, toggleTheme, onPortal }) {
-  const [view,       setView]      = useState('dashboard');
-  const [showNew,    setShowNew]   = useState(false);
-  const [pending,    setPending]   = useState(null);
-  const [briefCl,    setBriefCl]   = useState(null);
+  const [view,        setView]       = useState('dashboard');
+  const [showNew,     setShowNew]    = useState(false);
+  const [pending,     setPending]    = useState(null);
+  const [briefCl,     setBriefCl]   = useState(null);
+  const [resetClient, setResetClient] = useState(null);
 
   const { clients, setClients, alerts, loading } = useAdminData(user, ADMIN_EMAIL);
 
@@ -40,16 +75,23 @@ export default function AdminPage({ user, theme, toggleTheme, onPortal }) {
       setPending(null);
       return;
     }
-
     if (password) {
       const { error: fnErr } = await supabase.functions.invoke('create-client-auth', {
         body: { email: rest.email, password },
       });
       if (fnErr) alert(`Cliente salvo, mas erro ao criar login: ${fnErr.message}`);
     }
-
     setPending(null);
   }, [clients.length]);
+
+  const handleResetPassword = useCallback(async (client, newPassword) => {
+    const { error } = await supabase.functions.invoke('create-client-auth', {
+      body: { email: client.email, password: newPassword, mode: 'reset' },
+    });
+    if (error) { alert('Erro ao redefinir senha: ' + error.message); return false; }
+    alert(`Senha de ${client.name} redefinida com sucesso!`);
+    return true;
+  }, []);
 
   const updateBriefing = useCallback(async (id, briefing, plan) => {
     try { await Clientes.updateBriefing(id, briefing, plan); } catch { /* local only */ }
@@ -65,7 +107,7 @@ export default function AdminPage({ user, theme, toggleTheme, onPortal }) {
         theme={theme} toggleTheme={toggleTheme}
       >
         {view === 'dashboard'  && <DashboardView   clients={clients} alerts={alerts} onPortal={onPortal} />}
-        {view === 'clients'    && <ClientsTable     clients={clients} onPortal={onPortal} onBriefing={setBriefCl} onNewClient={() => setShowNew(true)} />}
+        {view === 'clients'    && <ClientsTable     clients={clients} onPortal={onPortal} onBriefing={setBriefCl} onNewClient={() => setShowNew(true)} onResetPassword={setResetClient} />}
         {view === 'fluxos'     && <FluxosView       clients={clients} />}
         {view === 'tokens'     && <TokensView       clients={clients} />}
         {view === 'financeiro' && <FinanceiroAdmin  clients={clients} />}
@@ -75,15 +117,10 @@ export default function AdminPage({ user, theme, toggleTheme, onPortal }) {
         {view === 'settings'   && <AdminSettings    user={user} />}
       </AdminLayout>
 
-      {showNew && (
-        <NewClientModal
-          onClose={() => setShowNew(false)}
-          onNext={f => { setPending(f); setShowNew(false); }}
-          onFinish={f => { addClient(f, EMPTY_BRIEFING, f.plan); setShowNew(false); }}
-        />
-      )}
-      {pending  && <BriefingWizard initial={EMPTY_BRIEFING} planInit={pending.plan} onSave={(b, p) => addClient(pending, b, p)} onCancel={() => setPending(null)} />}
-      {briefCl  && <BriefingWizard initial={briefCl.briefing || {}} planInit={briefCl.plan} onSave={(b, p) => updateBriefing(briefCl.id, b, p)} onCancel={() => setBriefCl(null)} />}
+      {showNew      && <NewClientModal onClose={() => setShowNew(false)} onNext={f => { setPending(f); setShowNew(false); }} onFinish={f => { addClient(f, EMPTY_BRIEFING, f.plan); setShowNew(false); }} />}
+      {pending      && <BriefingWizard initial={EMPTY_BRIEFING} planInit={pending.plan} onSave={(b, p) => addClient(pending, b, p)} onCancel={() => setPending(null)} />}
+      {briefCl      && <BriefingWizard initial={briefCl.briefing || {}} planInit={briefCl.plan} onSave={(b, p) => updateBriefing(briefCl.id, b, p)} onCancel={() => setBriefCl(null)} />}
+      {resetClient  && <ResetPasswordModal client={resetClient} onClose={() => setResetClient(null)} onSave={handleResetPassword} />}
     </>
   );
 }

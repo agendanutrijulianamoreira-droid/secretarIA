@@ -12,13 +12,23 @@ const CAP_LABELS = {
 // Modal de criação de novo cliente com seleção de plano e capacidades
 export default function NewClientModal({ onClose, onNext, onFinish }) {
   const [f, setF] = useState({ name: '', phone: '', email: '', password: '', plan: 'Pro', capabilities: ['text'] });
-  const upd = k => v => setF(p => ({ ...p, [k]: v }));
+
+  const upd = k => v => setF(p => {
+    const next = { ...p, [k]: v };
+    if (k === 'phone') {
+      const digits = v.replace(/\D/g, '');
+      if (digits.length >= 6) next.password = digits;
+    }
+    return next;
+  });
+
   const toggleCap = c => setF(p => ({
     ...p,
     capabilities: p.capabilities.includes(c)
       ? p.capabilities.filter(x => x !== c)
       : [...p.capabilities, c],
   }));
+
   const isValid = f.name.trim() && f.phone.trim() && f.email.trim() && f.password.trim().length >= 6;
 
   return (
@@ -34,8 +44,12 @@ export default function NewClientModal({ onClose, onNext, onFinish }) {
         <div className="p-10 space-y-6">
           <Inp label="Nome do negócio *" value={f.name}  onChange={upd('name')}  placeholder="Ex: Nutricionista Juliana Moreira" icon={Briefcase} />
           <Inp label="WhatsApp *"        value={f.phone} onChange={upd('phone')} placeholder="+55 11 9 0000-0000"            icon={Smartphone} />
-          <Inp label="E-mail *"          value={f.email}    onChange={upd('email')}    placeholder="gestao@clinica.com"    icon={User} />
-          <Inp label="Senha inicial *"  value={f.password} onChange={upd('password')} placeholder="Mínimo 6 caracteres"   icon={Lock} type="password" />
+          <Inp label="E-mail *"          value={f.email} onChange={upd('email')} placeholder="gestao@clinica.com"            icon={User} />
+
+          <div className="space-y-1">
+            <Inp label="Senha inicial *" value={f.password} onChange={upd('password')} placeholder="Mínimo 6 caracteres" icon={Lock} type="password" />
+            <p className="text-[10px] text-tertiary ml-1">Gerada automaticamente pelo telefone — pode ser alterada a qualquer momento.</p>
+          </div>
 
           <div className="space-y-3">
             <label className="text-sm font-medium text-secondary ml-1">Funcionalidades</label>

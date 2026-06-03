@@ -1,11 +1,11 @@
-import { Plus, Settings } from 'lucide-react';
+import { Plus, Settings, KeyRound } from 'lucide-react';
 import { PageTitle, Pulse } from '../../pages/ClientPortal';
 import { PLAN_META } from '../../design-system/tokens';
 import Av from '../shared/Av';
 import { User } from 'lucide-react';
 
-// Tabela de clientes do painel admin com ações de portal e briefing
-export default function ClientsTable({ clients, onPortal, onBriefing, onNewClient }) {
+// Tabela de clientes do painel admin com ações de portal, briefing e redefinição de senha
+export default function ClientsTable({ clients, onPortal, onBriefing, onNewClient, onResetPassword }) {
   return (
     <div className="space-y-10 animate-fade-in">
       <div className="flex justify-between items-center">
@@ -55,7 +55,10 @@ export default function ClientsTable({ clients, onPortal, onBriefing, onNewClien
                     </td>
                     <td className="px-8 py-5 text-right">
                       <div className="flex gap-3 justify-end">
-                        <button onClick={() => onBriefing(c)} className="h-10 w-10 flex items-center justify-center rounded-2xl bg-surface-up border border-border-subtle text-tertiary hover:text-primary hover:border-primary/40 transition-all cursor-pointer">
+                        <button onClick={() => onResetPassword(c)} title="Redefinir senha" className="h-10 w-10 flex items-center justify-center rounded-2xl bg-surface-up border border-border-subtle text-tertiary hover:text-amber-500 hover:border-amber-500/40 transition-all cursor-pointer">
+                          <KeyRound size={16} />
+                        </button>
+                        <button onClick={() => onBriefing(c)} title="Configurações" className="h-10 w-10 flex items-center justify-center rounded-2xl bg-surface-up border border-border-subtle text-tertiary hover:text-primary hover:border-primary/40 transition-all cursor-pointer">
                           <Settings size={16} />
                         </button>
                         <button onClick={() => onPortal(c)} className="h-10 px-6 flex items-center justify-center rounded-2xl bg-primary text-black text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-105 transition-all cursor-pointer">

@@ -33,10 +33,21 @@ Deno.serve(async (req: Request) => {
     );
     if (authErr || user?.email !== ADMIN_EMAIL) return json({ error: "Não autorizado" }, 401);
 
-    const { email, password } = await req.json();
+    const { email, password, mode = "create" } = await req.json();
     if (!email || !password) return json({ error: "Email e senha são obrigatórios" }, 400);
     if (password.length < 6) return json({ error: "A senha precisa ter pelo menos 6 caracteres" }, 400);
 
+    if (mode === "reset") {
+      const { data: { users }, error: listErr } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      if (listErr) return json({ error: listErr.message }, 500);
+      const target = users.find((u: { email: string }) => u.email === email);
+      if (!target) return json({ error: "Usuário não encontrado. Verifique o e-mail." }, 404);
+      const { error } = await supabaseAdmin.auth.admin.updateUserById((target as { id: string }).id, { password });
+      if (error) return json({ error: error.message }, 400);
+      return json({ success: true });
+    }
+
+    // mode === "create"
     const { data, error } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,

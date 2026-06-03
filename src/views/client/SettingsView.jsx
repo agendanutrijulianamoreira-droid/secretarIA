@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import {
   Settings, Smartphone, MessageCircle, AlertTriangle, ShieldCheck, Key, Save,
   ChevronDown, ChevronUp, CheckCircle2, QrCode, Send, Camera, Edit2,
-  Briefcase, Brain, Clock, Globe, AtSign, Zap,
+  Briefcase, Brain, Clock, Globe, AtSign, Zap, Lock,
 } from "lucide-react";
 import { PageTitle, Card, Btn, Inp, Pulse } from "../../pages/ClientPortal";
 import { Tokens, Clientes } from "../../lib/db";
+import { supabase } from "../../lib/supabase";
 
 function QRBlock({ label, value, placeholder, urlPrefix, icon: Icon, color = "text-primary" }) {
   const [val, setVal] = useState(value || "");
@@ -67,6 +68,9 @@ export default function SettingsView({ client }) {
   const [isConnected, setIsConnected] = useState(false);
   const [briefing, setBriefing] = useState(client?.briefing || {});
   const [savingBriefing, setSavingBriefing] = useState(false);
+  const [newPwd, setNewPwd] = useState('');
+  const [pwdConfirm, setPwdConfirm] = useState('');
+  const [pwdLoading, setPwdLoading] = useState(false);
 
   useEffect(() => {
     if (!client?.id) return;
@@ -116,6 +120,19 @@ export default function SettingsView({ client }) {
   };
 
   const upBriefing = k => v => setBriefing(p => ({ ...p, [k]: v }));
+
+  const handleChangePassword = async () => {
+    if (newPwd.length < 6) { alert('A senha precisa ter pelo menos 6 caracteres.'); return; }
+    if (newPwd !== pwdConfirm) { alert('As senhas não coincidem.'); return; }
+    setPwdLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPwd });
+      if (error) throw error;
+      setNewPwd(''); setPwdConfirm('');
+      alert('Senha alterada com sucesso!');
+    } catch (e) { alert('Erro ao alterar senha: ' + e.message); }
+    finally { setPwdLoading(false); }
+  };
 
   return (
     <div className="space-y-8 animate-fade-in pb-12">
@@ -272,6 +289,29 @@ export default function SettingsView({ client }) {
             icon={Camera}
             color="text-pink-500"
           />
+        </div>
+      </div>
+
+      {/* ── Seção: Alterar senha ── */}
+      <div className="rounded-[32px] border border-border-subtle overflow-hidden">
+        <div className="p-6 border-b border-border-subtle flex items-center gap-3 bg-surface-up/20">
+          <Lock size={18} className="text-primary" />
+          <div>
+            <h3 className="text-sm font-black text-main">Alterar Senha de Acesso</h3>
+            <p className="text-[10px] text-tertiary mt-0.5">Redefina a sua senha de entrada no portal</p>
+          </div>
+        </div>
+        <div className="p-6 space-y-4">
+          <Inp label="Nova senha" value={newPwd} onChange={setNewPwd} placeholder="Mínimo 6 caracteres" icon={Key} type="password" />
+          <Inp label="Confirmar nova senha" value={pwdConfirm} onChange={setPwdConfirm} placeholder="Repita a nova senha" icon={ShieldCheck} type="password" />
+          <Btn
+            onClick={handleChangePassword}
+            disabled={pwdLoading || newPwd.length < 6 || newPwd !== pwdConfirm}
+            className="w-full"
+            icon={Save}
+          >
+            {pwdLoading ? 'Salvando...' : 'Salvar Nova Senha'}
+          </Btn>
         </div>
       </div>
 
