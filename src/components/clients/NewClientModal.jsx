@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Briefcase, Smartphone, User, Star, Zap } from 'lucide-react';
+import { X, Briefcase, Smartphone, User, Star, Zap, Lock } from 'lucide-react';
 import { Btn, Inp, Card } from '../../pages/ClientPortal';
 
 const CAP_LABELS = {
@@ -11,7 +11,7 @@ const CAP_LABELS = {
 
 // Modal de criação de novo cliente com seleção de plano e capacidades
 export default function NewClientModal({ onClose, onNext, onFinish }) {
-  const [f, setF] = useState({ name: '', phone: '', email: '', plan: 'Pro', capabilities: ['text'] });
+  const [f, setF] = useState({ name: '', phone: '', email: '', password: '', plan: 'Pro', capabilities: ['text'] });
   const upd = k => v => setF(p => ({ ...p, [k]: v }));
   const toggleCap = c => setF(p => ({
     ...p,
@@ -19,7 +19,7 @@ export default function NewClientModal({ onClose, onNext, onFinish }) {
       ? p.capabilities.filter(x => x !== c)
       : [...p.capabilities, c],
   }));
-  const isValid = f.name.trim() && f.phone.trim() && f.email.trim();
+  const isValid = f.name.trim() && f.phone.trim() && f.email.trim() && f.password.trim().length >= 6;
 
   return (
     <div className="fixed inset-0 bg-background/95 backdrop-blur-xl z-[400] flex items-center justify-center p-8">
@@ -34,7 +34,8 @@ export default function NewClientModal({ onClose, onNext, onFinish }) {
         <div className="p-10 space-y-6">
           <Inp label="Nome do negócio *" value={f.name}  onChange={upd('name')}  placeholder="Ex: Nutricionista Juliana Moreira" icon={Briefcase} />
           <Inp label="WhatsApp *"        value={f.phone} onChange={upd('phone')} placeholder="+55 11 9 0000-0000"            icon={Smartphone} />
-          <Inp label="E-mail *"          value={f.email} onChange={upd('email')} placeholder="gestao@clinica.com"            icon={User} />
+          <Inp label="E-mail *"          value={f.email}    onChange={upd('email')}    placeholder="gestao@clinica.com"    icon={User} />
+          <Inp label="Senha inicial *"  value={f.password} onChange={upd('password')} placeholder="Mínimo 6 caracteres"   icon={Lock} type="password" />
 
           <div className="space-y-3">
             <label className="text-sm font-medium text-secondary ml-1">Funcionalidades</label>

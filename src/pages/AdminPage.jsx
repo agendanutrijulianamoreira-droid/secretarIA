@@ -12,6 +12,7 @@ import ClientsTable       from '../components/clients/ClientsTable';
 import NewClientModal     from '../components/clients/NewClientModal';
 import BriefingWizard     from '../components/briefing/BriefingWizard';
 import { Clientes }       from '../lib/db';
+import { supabase }       from '../lib/supabase';
 import { COLORS, EMPTY_BRIEFING } from '../design-system/tokens';
 import { useAdminData }   from '../hooks/useAdminData';
 import { ADMIN_EMAIL }    from '../design-system/tokens';
@@ -28,14 +29,25 @@ export default function AdminPage({ user, theme, toggleTheme, onPortal }) {
   const addClient = useCallback(async (base, briefing, plan) => {
     const av    = (base?.name || 'CL').split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
     const color = COLORS[clients.length % COLORS.length];
-    const data  = { ...base, avatar: av, color, briefing, plan, capabilities: base.capabilities || ['text'], status: 'active', payment_status: 'paid' };
+    const { password, ...rest } = base;
+    const data  = { ...rest, avatar: av, color, briefing, plan, capabilities: rest.capabilities || ['text'], status: 'active', payment_status: 'paid' };
     try {
       const id = await Clientes.create(data);
       data.id = id;
       setClients(prev => [...prev, data]);
     } catch (err) {
       alert('Erro ao salvar cliente: ' + (err?.message || 'verifique sua conexão'));
+      setPending(null);
+      return;
     }
+
+    if (password) {
+      const { error: fnErr } = await supabase.functions.invoke('create-client-auth', {
+        body: { email: rest.email, password },
+      });
+      if (fnErr) alert(`Cliente salvo, mas erro ao criar login: ${fnErr.message}`);
+    }
+
     setPending(null);
   }, [clients.length]);
 

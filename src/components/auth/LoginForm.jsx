@@ -22,8 +22,20 @@ export default function LoginForm() {
     setError(null);
     try {
       if (isRegister) {
-        const { error } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
-        if (error) throw error;
+        const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
+        if (error) {
+          if (error.message.toLowerCase().includes('already')) {
+            setError('Este e-mail já possui uma conta. Faça login.');
+          } else if (error.message.toLowerCase().includes('password')) {
+            setError('A senha precisa ter pelo menos 6 caracteres.');
+          } else {
+            setError('Erro ao criar conta: ' + error.message);
+          }
+          return;
+        }
+        if (data.session === null) {
+          setError('Conta criada! Verifique seu e-mail para confirmar o cadastro antes de entrar.');
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
