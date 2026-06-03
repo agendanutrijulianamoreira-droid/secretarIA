@@ -12,13 +12,20 @@ export function useAuth() {
   const resolvePortal = async (u) => {
     if (!u || u.email === ADMIN_EMAIL) return;
     const match = await Clientes.getByEmail(u.email).catch(() => null);
-    setPortal(match || {
-      id: 'demo-id',
-      name: u.email.split('@')[0],
-      email: u.email,
-      payment_status: 'paid',
-      status: 'active',
-    });
+    if (match) { setPortal(match); return; }
+    try {
+      const id = await Clientes.create({
+        name: u.displayName || u.email.split('@')[0],
+        email: u.email,
+        plan: 'Starter',
+        payment_status: 'paid',
+        status: 'active',
+      });
+      const created = await Clientes.get(id);
+      setPortal(created);
+    } catch {
+      setPortal({ id: null, name: u.email.split('@')[0], email: u.email, plan: 'Starter', payment_status: 'paid', status: 'active' });
+    }
   };
 
   useEffect(() => {

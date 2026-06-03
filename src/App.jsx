@@ -28,9 +28,14 @@ export default function App() {
   async function handlePlan(plan) {
     try {
       const data = { name: user.displayName || user.email.split('@')[0], email: user.email, plan: plan.id, payment_status: 'paid', status: 'active' };
-      if (portal?.id && portal.id !== 'demo-id') await Clientes.update(portal.id, data);
-      else await Clientes.create(data).catch(() => {});
-      setPortal({ ...data, id: portal?.id || 'demo-id' });
+      let id = portal?.id && portal.id !== 'demo-id' && portal.id !== null ? portal.id : null;
+      if (id) {
+        await Clientes.update(id, data);
+      } else {
+        id = await Clientes.create(data);
+      }
+      const updated = await Clientes.get(id);
+      setPortal(updated);
     } catch (err) { alert('Erro ao processar plano: ' + err.message); }
   }
 }

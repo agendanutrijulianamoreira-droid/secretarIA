@@ -62,6 +62,7 @@ export function WhatsAppView({ client, numbers, reload }) {
 
   const save = async () => {
     if (!form.nome_display.trim()) return;
+    if (!client.id || client.id === 'demo-id') { alert("Erro: conta sem registro. Faça logout e login novamente."); return; }
     setSaving(true);
     try {
       if (editing) await WhatsAppNumbers.update(client.id, editing, form);
