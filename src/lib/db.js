@@ -69,6 +69,9 @@ export const Clientes = {
   },
 
   async create(data) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error("Sem sessão autenticada. Faça login com e-mail/senha para salvar dados.");
+
     const { data: row, error } = await supabase
       .from("clients")
       .insert({
@@ -83,6 +86,7 @@ export const Clientes = {
       .select("id")
       .single();
     check(error, "Clientes.create");
+    if (!row?.id) throw new Error("Registro não retornado pelo banco — verifique as permissões RLS.");
     return row.id;
   },
 
