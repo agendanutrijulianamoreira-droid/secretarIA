@@ -8,13 +8,13 @@ const FUNCOES = ["Agendamentos", "Atendimento geral", "FAQ / Dúvidas", "Vendas 
 
 function AgentForm({ editing, form, upd, saving, onSave, onClose }) {
   return (
-    <div className="fixed inset-0 bg-background/90 backdrop-blur-md z-[200] flex items-start justify-center p-6 overflow-y-auto">
-      <Card className="w-full max-w-xl animate-fade-in p-0 overflow-hidden shadow-2xl border-primary/20 my-auto">
-        <div className="px-10 py-8 border-b border-border-subtle flex items-center justify-between bg-surface-up/30 sticky top-0 z-10">
+    <div className="fixed inset-0 bg-background/90 backdrop-blur-md z-[200] flex flex-col">
+      <Card className="w-full h-full animate-fade-in p-0 rounded-none flex flex-col overflow-hidden shadow-2xl border-0">
+        <div className="px-10 py-8 border-b border-border-subtle flex items-center justify-between bg-surface-up/30 shrink-0">
           <h4 className="text-xl font-black text-main tracking-tighter uppercase">{editing ? "Editar Agente" : "Novo Agente"}</h4>
           <button onClick={onClose} className="h-10 w-10 rounded-xl bg-surface-up flex items-center justify-center text-tertiary hover:text-main transition-all cursor-pointer"><X size={20} /></button>
         </div>
-        <div className="p-10 space-y-6">
+        <div className="flex-1 overflow-y-auto p-10 space-y-6">
           <Inp label="Nome do agente *" value={form.nome_display} onChange={upd('nome_display')} placeholder="Ex: Recepção, Vendas VIP, Suporte..." icon={Bot} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Inp label="Nome da IA" value={form.ia_nome} onChange={upd('ia_nome')} placeholder="Ex: Ana, Clara, Sofia..." icon={User} />
