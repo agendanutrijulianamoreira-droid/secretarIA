@@ -1,9 +1,21 @@
 import { useState } from "react";
-import { Search, ShieldCheck, Users, Megaphone, UserPlus, Edit2, Trash2, Smartphone, Calendar, CheckCircle2, Zap, Clock } from "lucide-react";
+import { Search, ShieldCheck, Users, Megaphone, UserPlus, Edit2, Trash2, Smartphone, Calendar, CheckCircle2, Zap, Clock, FileSpreadsheet } from "lucide-react";
 import { Pacientes, Campanhas } from "../../lib/db";
-import { Btn, Inp, PageTitle } from "../../pages/ClientPortal";
+import { Btn, Inp, PageTitle, Pill } from "../../pages/ClientPortal";
 import { PacienteModal } from "./PacienteModal";
 import { CampanhaModal } from "./CampanhaModal";
+import { ImportarPacientesModal } from "./ImportarPacientesModal";
+
+const TAG_PALETTE = [
+  { color: "#10B981", bg: "rgba(16,185,129,0.12)" },
+  { color: "#6366F1", bg: "rgba(99,102,241,0.12)" },
+  { color: "#F59E0B", bg: "rgba(245,158,11,0.12)" },
+  { color: "#EC4899", bg: "rgba(236,72,153,0.12)" },
+  { color: "#0EA5E9", bg: "rgba(14,165,233,0.12)" },
+  { color: "#8B5CF6", bg: "rgba(139,92,246,0.12)" },
+  { color: "#F97316", bg: "rgba(249,115,22,0.12)" },
+];
+const tagColor = tag => TAG_PALETTE[tag.charCodeAt(0) % TAG_PALETTE.length];
 
 const CAMP_TIPOS   = Campanhas.TIPOS;
 const STATUS_CAMP  = {
@@ -15,10 +27,11 @@ const STATUS_CAMP  = {
 };
 
 export default function CRM2View({ client, pacientes, campanhas }) {
-  const [tab,      setTab]      = useState("pacientes");
-  const [editPac,  setEditPac]  = useState(null);
-  const [showCamp, setShowCamp] = useState(false);
-  const [search,   setSearch]   = useState("");
+  const [tab,        setTab]        = useState("pacientes");
+  const [editPac,    setEditPac]    = useState(null);
+  const [showCamp,   setShowCamp]   = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [search,     setSearch]     = useState("");
 
   const filtered = pacientes.filter(p =>
     (p.nome || "").toLowerCase().includes(search.toLowerCase()) || p.telefone?.includes(search)
@@ -33,7 +46,10 @@ export default function CRM2View({ client, pacientes, campanhas }) {
     <div className="space-y-12 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <PageTitle icon={Users} title="Base de Clientes" subtitle="Gestão de cadastros e comunicação estratégica." />
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap">
+          <button onClick={() => setShowImport(true)} className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-surface-up/50 border border-border-subtle text-main font-black text-[10px] uppercase tracking-[0.2em] hover:border-primary/40 hover:bg-surface-up transition-all cursor-pointer">
+            <FileSpreadsheet size={16} className="text-primary" /> Importar Planilha
+          </button>
           <button onClick={() => setShowCamp(true)} className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-surface-up/50 border border-border-subtle text-main font-black text-[10px] uppercase tracking-[0.2em] hover:border-primary/40 hover:bg-surface-up transition-all cursor-pointer">
             <Megaphone size={16} className="text-primary" /> Criar Campanha
           </button>
@@ -71,6 +87,11 @@ export default function CRM2View({ client, pacientes, campanhas }) {
                       {p.data_nascimento && <span className="flex items-center gap-2 text-primary/80"><Calendar size={14} /> {p.data_nascimento}</span>}
                       {p.origem === "lead_convertido" && <span className="flex items-center gap-2 text-emerald-500"><CheckCircle2 size={14} /> Convertido via IA</span>}
                     </div>
+                    {p.tags?.length > 0 && (
+                      <div className="mt-3 flex flex-wrap justify-center md:justify-start gap-2">
+                        {p.tags.map(tag => { const c = tagColor(tag); return <Pill key={tag} color={c.color} bg={c.bg}>{tag}</Pill>; })}
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <button onClick={() => setEditPac(p)} className="h-12 w-12 flex items-center justify-center rounded-2xl bg-surface-up border border-border-subtle text-tertiary hover:text-primary transition-all cursor-pointer"><Edit2 size={18} /></button>
@@ -122,6 +143,7 @@ export default function CRM2View({ client, pacientes, campanhas }) {
 
       {editPac !== null && <PacienteModal clientId={client.id} initial={editPac} onClose={() => setEditPac(null)} />}
       {showCamp && <CampanhaModal clientId={client.id} pacientes={pacientes} onClose={() => setShowCamp(false)} />}
+      {showImport && <ImportarPacientesModal clientId={client.id} onClose={() => setShowImport(false)} />}
     </div>
   );
 }

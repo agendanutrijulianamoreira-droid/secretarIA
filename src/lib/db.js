@@ -233,10 +233,29 @@ export const Pacientes = {
   async create(clienteId, data) {
     const { data: row, error } = await supabase
       .from("pacientes")
-      .insert({ client_id: clienteId, nome: "", telefone: "", email: "", data_nascimento: "", observacoes: "", ativo: true, origem: "manual", contato_id: null, created_at: now(), updated_at: now(), ...data })
+      .insert({ client_id: clienteId, nome: "", telefone: "", email: "", data_nascimento: "", observacoes: "", tags: [], ativo: true, origem: "manual", contato_id: null, created_at: now(), updated_at: now(), ...data })
       .select("id").single();
     check(error, "Pacientes.create");
     return row.id;
+  },
+
+  async bulkCreate(clienteId, rows) {
+    const records = rows.map(r => ({
+      client_id:       clienteId,
+      nome:            r.nome            || "",
+      telefone:        r.telefone        || "",
+      email:           r.email           || "",
+      data_nascimento: r.data_nascimento || "",
+      observacoes:     r.observacoes     || "",
+      tags:            r.tags            || [],
+      ativo:           true,
+      origem:          "manual",
+      contato_id:      null,
+      created_at:      now(),
+      updated_at:      now(),
+    }));
+    const { error } = await supabase.from("pacientes").insert(records);
+    check(error, "Pacientes.bulkCreate");
   },
 
   async update(clienteId, pacienteId, data) {

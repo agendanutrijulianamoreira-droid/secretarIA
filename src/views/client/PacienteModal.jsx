@@ -1,19 +1,25 @@
 import { useState } from "react";
-import { X, Users, Smartphone, MessageSquare, Calendar, CheckCircle2 } from "lucide-react";
+import { X, Users, Smartphone, MessageSquare, Calendar, CheckCircle2, Tag } from "lucide-react";
 import { Pacientes } from "../../lib/db";
 import { Btn, Inp, Card } from "../../pages/ClientPortal";
 
+function tagsToStr(tags) { return Array.isArray(tags) ? tags.join(", ") : (tags || ""); }
+function strToTags(s) { return s.split(",").map(t => t.trim()).filter(Boolean); }
+
 export function PacienteModal({ clientId, initial, onClose }) {
-  const [f,       setF]       = useState(initial || { nome: "", telefone: "", email: "", data_nascimento: "", observacoes: "" });
+  const init = { nome: "", telefone: "", email: "", data_nascimento: "", observacoes: "", tags: [], ...initial };
+  const [f,       setF]       = useState({ ...init, _tagsStr: tagsToStr(init.tags) });
   const [saving,  setSaving]  = useState(false);
   const up = k => v => setF(p => ({ ...p, [k]: v }));
+  const upTags = v => setF(p => ({ ...p, _tagsStr: v, tags: strToTags(v) }));
 
   const save = async () => {
     if (!f.nome.trim() || !f.telefone.trim()) return;
     setSaving(true);
     try {
-      if (f.id) await Pacientes.update(clientId, f.id, f);
-      else      await Pacientes.create(clientId, f);
+      const { _tagsStr, ...payload } = f;
+      if (f.id) await Pacientes.update(clientId, f.id, payload);
+      else      await Pacientes.create(clientId, payload);
       onClose();
     } finally { setSaving(false); }
   };
@@ -37,7 +43,8 @@ export function PacienteModal({ clientId, initial, onClose }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Inp label="Data de Nascimento" value={f.data_nascimento} onChange={up("data_nascimento")} placeholder="DD/MM/AAAA" icon={Calendar} />
           </div>
-          <Inp label="Observações" value={f.observacoes} onChange={up("observacoes")} placeholder="Objetivos, restrições, informações relevantes..." rows={5} />
+          <Inp label="Observações" value={f.observacoes} onChange={up("observacoes")} placeholder="Objetivos, restrições, informações relevantes..." rows={3} />
+          <Inp label="Tags (separadas por vírgula)" value={f._tagsStr} onChange={upTags} placeholder="Ex: VIP, retorno, plano-premium" icon={Tag} />
           <div className="pt-6 flex gap-4">
             <button onClick={onClose} className="flex-1 py-5 rounded-2xl bg-surface-up border border-border-subtle text-secondary font-black text-[10px] uppercase tracking-[0.3em] hover:bg-surface transition-all cursor-pointer">Cancelar</button>
             <Btn disabled={saving || !f.nome || !f.telefone} onClick={save} className="flex-1" icon={CheckCircle2}>
