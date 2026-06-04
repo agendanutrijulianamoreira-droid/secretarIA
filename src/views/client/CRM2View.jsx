@@ -141,7 +141,7 @@ export default function CRM2View({ client, pacientes, campanhas }) {
 
       {editPac !== null && <PacienteModal clientId={client.id} initial={editPac} onClose={() => setEditPac(null)} />}
       {showCamp && <CampanhaModal clientId={client.id} pacientes={pacientes} onClose={() => setShowCamp(false)} />}
-      {showImport && <ImportarPacientesModal clientId={client.id} onClose={() => setShowImport(false)} />}
+      {showImport && <ImportarPacientesModal clientId={client.id} pacientes={pacientes} onClose={() => setShowImport(false)} />}
     </div>
   );
 }

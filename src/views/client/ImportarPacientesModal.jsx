@@ -2,15 +2,15 @@ import { useState, useRef } from "react";
 import { X, Upload, FileSpreadsheet, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Pacientes } from "../../lib/db";
 import { Btn, Card } from "../../pages/ClientPortal";
-import { IMPORT_FIELDS, parseCSV, autoMap, buildRows, downloadTemplate } from "./importarUtils";
+import { IMPORT_FIELDS, parseCSV, autoMap, buildRows, deduplicateRows, downloadTemplate } from "./importarUtils";
 
-export function ImportarPacientesModal({ clientId, onClose }) {
+export function ImportarPacientesModal({ clientId, pacientes, onClose }) {
   const [csv,     setCSV]     = useState(null);
   const [mapping, setMapping] = useState({});
   const [url,     setUrl]     = useState("");
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
-  const [done,    setDone]    = useState(null);
+  const [result,  setResult]  = useState(null);
   const fileRef = useRef(null);
 
   const load = text => {
@@ -45,9 +45,9 @@ export function ImportarPacientesModal({ clientId, onClose }) {
   const doImport = async () => {
     setLoading(true); setError("");
     try {
-      const rows = buildRows(csv.data, mapping);
-      await Pacientes.bulkCreate(clientId, rows);
-      setDone(rows.length);
+      const { toImport, skipped } = deduplicateRows(buildRows(csv.data, mapping), pacientes);
+      if (toImport.length) await Pacientes.bulkCreate(clientId, toImport);
+      setResult({ imported: toImport.length, skipped });
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
   };
@@ -68,12 +68,19 @@ export function ImportarPacientesModal({ clientId, onClose }) {
         </div>
 
         <div className="p-10 space-y-8 max-h-[70vh] overflow-y-auto">
-          {done !== null ? (
-            <div className="text-center py-8 space-y-4">
-              <CheckCircle2 size={64} className="mx-auto text-emerald-500" />
-              <p className="text-2xl font-black text-main">{done} clientes importados!</p>
-              <p className="text-sm text-tertiary">Dados já disponíveis na base de clientes.</p>
-              <Btn onClick={onClose} className="mt-4">Fechar</Btn>
+          {result !== null ? (
+            <div className="space-y-5 py-2">
+              <div className="p-5 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex items-center gap-4">
+                <CheckCircle2 size={28} className="text-emerald-500 shrink-0" />
+                <p className="font-black text-main">{result.imported} {result.imported === 1 ? "cliente importado" : "clientes importados"} com sucesso</p>
+              </div>
+              {result.skipped.length > 0 && <div className="space-y-2">
+                <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">{result.skipped.length} {result.skipped.length === 1 ? "registro ignorado" : "registros ignorados"}</p>
+                <div className="max-h-44 overflow-y-auto space-y-1.5 pr-1">
+                  {result.skipped.map((s, i) => <div key={i} className="flex gap-2 p-3 rounded-xl bg-surface-up/30 border border-border-subtle text-xs"><AlertTriangle size={13} className="text-amber-400 mt-px shrink-0"/><span><strong className="text-main">{s.row.nome || "—"}</strong> — {s.reason}</span></div>)}
+                </div>
+              </div>}
+              <Btn onClick={onClose} className="w-full">Fechar</Btn>
             </div>
           ) : !csv ? (
             <div className="space-y-8">
