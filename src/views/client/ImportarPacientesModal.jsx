@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { X, Upload, FileSpreadsheet, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Pacientes } from "../../lib/db";
 import { Btn, Card } from "../../pages/ClientPortal";
-import { IMPORT_FIELDS, parseCSV, autoMap, buildRows } from "./importarUtils";
+import { IMPORT_FIELDS, parseCSV, autoMap, buildRows, downloadTemplate } from "./importarUtils";
 
 export function ImportarPacientesModal({ clientId, onClose }) {
   const [csv,     setCSV]     = useState(null);
@@ -98,6 +98,9 @@ export function ImportarPacientesModal({ clientId, onClose }) {
                 </div>
               </button>
               <input ref={fileRef} type="file" accept=".csv,.tsv,.txt" className="hidden" onChange={onFile} />
+              <button onClick={downloadTemplate} className="w-full py-3 rounded-2xl border border-dashed border-primary/30 text-primary/70 hover:text-primary hover:border-primary/60 text-[10px] font-black uppercase tracking-[0.2em] transition-all cursor-pointer">
+                Baixar Planilha Modelo (.csv)
+              </button>
               {error && <p className="flex items-center gap-2 text-sm text-red-400"><AlertTriangle size={16} />{error}</p>}
             </div>
           ) : (

@@ -53,3 +53,35 @@ export function buildRows(data, mapping) {
     }))
     .filter(r => r.nome && r.telefone);
 }
+
+function triggerDownload(content, filename, mime = "text/csv;charset=utf-8;") {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+const CSV_HEADERS = ["Nome", "Telefone", "Email", "Data de Nascimento", "Observações", "Tags"];
+const esc = v => `"${(v || "").replace(/"/g, '""')}"`;
+const toCSV = (headers, rows) => [headers.map(esc), ...rows.map(r => headers.map(h => esc(r[h])))].map(r => r.join(",")).join("\n");
+
+export function downloadTemplate() {
+  const examples = [
+    { Nome: "Maria Silva", Telefone: "+55 11 99999-0001", Email: "maria@email.com", "Data de Nascimento": "15/03/1990", Observações: "Paciente desde 2020", Tags: "VIP, retorno" },
+    { Nome: "João Santos", Telefone: "+55 11 99999-0002", Email: "", "Data de Nascimento": "", Observações: "", Tags: "ativo" },
+  ];
+  triggerDownload(toCSV(CSV_HEADERS, examples), "modelo-importacao.csv");
+}
+
+export function exportPacientes(pacientes) {
+  const rows = pacientes.map(p => ({
+    Nome: p.nome, Telefone: p.telefone, Email: p.email || "",
+    "Data de Nascimento": p.data_nascimento || "",
+    Observações: p.observacoes || "",
+    Tags: (p.tags || []).join(", "),
+  }));
+  triggerDownload(toCSV(CSV_HEADERS, rows), "clientes.csv");
+}

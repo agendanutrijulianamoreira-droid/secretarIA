@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Search, ShieldCheck, Users, Megaphone, UserPlus, Edit2, Trash2, Smartphone, Calendar, CheckCircle2, Zap, Clock, FileSpreadsheet } from "lucide-react";
+import { Search, ShieldCheck, Users, Megaphone, UserPlus, Edit2, Trash2, Smartphone, Calendar, CheckCircle2, Zap, Clock, FileSpreadsheet, Download } from "lucide-react";
 import { Pacientes, Campanhas } from "../../lib/db";
 import { Btn, Inp, PageTitle, Pill } from "../../pages/ClientPortal";
 import { PacienteModal } from "./PacienteModal";
 import { CampanhaModal } from "./CampanhaModal";
 import { ImportarPacientesModal } from "./ImportarPacientesModal";
+import { exportPacientes } from "./importarUtils";
 
 const TAG_PALETTE = [
   { color: "#10B981", bg: "rgba(16,185,129,0.12)" },
@@ -47,12 +48,9 @@ export default function CRM2View({ client, pacientes, campanhas }) {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <PageTitle icon={Users} title="Base de Clientes" subtitle="Gestão de cadastros e comunicação estratégica." />
         <div className="flex gap-4 flex-wrap">
-          <button onClick={() => setShowImport(true)} className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-surface-up/50 border border-border-subtle text-main font-black text-[10px] uppercase tracking-[0.2em] hover:border-primary/40 hover:bg-surface-up transition-all cursor-pointer">
-            <FileSpreadsheet size={16} className="text-primary" /> Importar Planilha
-          </button>
-          <button onClick={() => setShowCamp(true)} className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-surface-up/50 border border-border-subtle text-main font-black text-[10px] uppercase tracking-[0.2em] hover:border-primary/40 hover:bg-surface-up transition-all cursor-pointer">
-            <Megaphone size={16} className="text-primary" /> Criar Campanha
-          </button>
+          {[[FileSpreadsheet,"Importar Planilha",()=>setShowImport(true)],[Download,"Exportar CSV",()=>exportPacientes(pacientes)],[Megaphone,"Criar Campanha",()=>setShowCamp(true)]].map(([I,l,fn])=>(
+            <button key={l} onClick={fn} className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-surface-up/50 border border-border-subtle text-main font-black text-[10px] uppercase tracking-[0.2em] hover:border-primary/40 hover:bg-surface-up transition-all cursor-pointer"><I size={16} className="text-primary"/>{l}</button>
+          ))}
           <Btn onClick={() => setEditPac({})} icon={UserPlus}>Novo Cadastro</Btn>
         </div>
       </div>
