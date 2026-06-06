@@ -1,4 +1,4 @@
-import { Power, Settings } from "lucide-react";
+import { Power, Settings, ChevronRight } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Logo } from "./Logo";
 import { NAV, NavItem, Btn } from "./ClientUI";
@@ -7,32 +7,19 @@ export function ClientSidebar({ client, view, setView, numPendentes, onBack }) {
   const initials = client.name?.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase() || "?";
 
   return (
-    <aside className="w-[300px] glass-card border-r-0 border-l-0 rounded-none flex flex-col fixed h-screen z-[100]">
-      <div className="p-10 flex items-center justify-between">
-        <Logo size={32} />
-        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse" />
+    <aside className="w-[240px] bg-surface border-r border-border flex flex-col fixed h-screen z-[100]">
+      {/* Logo */}
+      <div className="h-16 px-6 flex items-center border-b border-border">
+        <Logo size={26} />
       </div>
 
-      <div className="px-6 py-4">
-        <div className="flex items-center gap-4 p-5 rounded-3xl bg-surface-up/30 border border-border-subtle group hover:border-primary/20 transition-all cursor-pointer">
-          <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black border border-primary/20 shadow-inner group-hover:scale-105 transition-transform">
-            {initials}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h4 className="text-xs font-black text-main truncate leading-none uppercase tracking-tight">{client.name}</h4>
-            <div className="mt-2">
-              <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20">{client.plan}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto custom-scrollbar">
         {NAV.map(item => (
           <div key={item.id} className="relative">
             <NavItem item={item} active={view === item.id} onClick={() => setView(item.id)} />
             {item.id === "ia" && numPendentes > 0 && (
-              <span className="absolute top-3.5 right-5 h-5 w-5 rounded-full bg-cta text-white text-[10px] font-black flex items-center justify-center shadow-lg shadow-cta/20 ring-4 ring-surface">
+              <span className="absolute top-2.5 right-3 h-4 w-4 rounded-full bg-amber-500 text-white text-[9px] font-black flex items-center justify-center shadow-sm">
                 {numPendentes}
               </span>
             )}
@@ -40,16 +27,33 @@ export function ClientSidebar({ client, view, setView, numPendentes, onBack }) {
         ))}
       </nav>
 
-      <div className="p-8 space-y-4">
+      {/* User Profile */}
+      <div className="border-t border-border p-3 space-y-1">
         {onBack && (
-          <Btn variant="ghost" className="w-full" onClick={onBack} icon={Settings}>Admin Portal</Btn>
+          <button
+            onClick={onBack}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-secondary hover:bg-surface-up hover:text-main transition-all text-[11px] font-semibold cursor-pointer"
+          >
+            <Settings size={14} />
+            Admin Portal
+          </button>
         )}
-        <button
-          onClick={() => supabase.auth.signOut()}
-          className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-red-500/5 border border-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all cursor-pointer"
-        >
-          <Power size={14} strokeWidth={3} /> Logout
-        </button>
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface-up transition-all cursor-pointer group">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-black text-xs border border-primary/20 shrink-0">
+            {initials}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-main truncate leading-tight">{client.name}</p>
+            <span className="text-[9px] font-black text-primary uppercase tracking-widest">{client.plan}</span>
+          </div>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="opacity-0 group-hover:opacity-100 p-1 rounded text-red-400 hover:text-red-500 transition-all cursor-pointer"
+            title="Sair"
+          >
+            <Power size={13} strokeWidth={2.5} />
+          </button>
+        </div>
       </div>
     </aside>
   );

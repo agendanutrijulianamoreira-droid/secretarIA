@@ -40,12 +40,10 @@ export default function ClientPortalMain({ client, onBack }) {
   return (
     <div className="flex min-h-screen bg-background text-main font-sans selection:bg-primary/20 selection:text-primary overflow-hidden">
       <ClientSidebar client={client} view={view} setView={setView} numPendentes={numPendentes} onBack={onBack} />
-      <main className="flex-1 ml-[300px] min-h-screen flex flex-col relative">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-cta/5 rounded-full blur-[100px] pointer-events-none" />
+      <main className="flex-1 ml-[240px] min-h-screen flex flex-col relative">
         <ClientHeader viewLabel={VIEW_LABELS[view]} numbers={numbers} />
-        <div className="flex-1 p-12 overflow-x-hidden relative z-10">
-          <div className="max-w-7xl mx-auto pb-20">
+        <div className="flex-1 p-6 lg:p-8 overflow-x-hidden bg-surface-up/30">
+          <div className="max-w-7xl mx-auto pb-12">
             {view === "dashboard"  && <ClientDashboardView client={client} leads={leads} pacientes={pacientes} whatsappNums={numbers} />}
             {view === "whatsapp"   && <WhatsAppView client={client} numbers={numbers} reload={reloadNumbers} />}
             {view === "agentes"    && <AgentesView client={client} />}

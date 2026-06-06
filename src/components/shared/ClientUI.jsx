@@ -125,10 +125,17 @@ export const NAV = [
 export function NavItem({ item, active, onClick }) {
   const Icon = item.icon;
   return (
-    <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${active ? 'bg-primary/10 text-primary' : 'text-tertiary hover:bg-surface-up hover:text-secondary'}`}>
-      <Icon size={18} className={`${active ? 'text-primary' : 'text-tertiary group-hover:text-secondary'} transition-colors`} />
-      <span className={`text-[11px] font-black uppercase tracking-widest ${active ? 'text-primary' : ''}`}>{item.label}</span>
-      {active && <div className="ml-auto w-1 h-4 rounded-full bg-primary" />}
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group cursor-pointer ${
+        active
+          ? 'bg-primary/10 text-primary'
+          : 'text-secondary hover:bg-surface-up hover:text-main'
+      }`}
+    >
+      <Icon size={16} strokeWidth={active ? 2.5 : 2} className="shrink-0 transition-colors" />
+      <span className={`text-[12px] font-medium flex-1 text-left ${active ? 'font-semibold' : ''}`}>{item.label}</span>
+      {active && <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
     </button>
   );
 }

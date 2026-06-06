@@ -82,7 +82,7 @@
   }
 
   .bento-card {
-    @apply relative overflow-hidden rounded-2xl p-8 border shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md cursor-pointer;
+    @apply relative overflow-hidden rounded-xl p-6 border shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md cursor-pointer;
     background-color: var(--color-surface);
     border-color: var(--color-border);
   }
